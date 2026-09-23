@@ -198,6 +198,12 @@ PCR was run. Real amplification depends on melting temperature, salt, enzyme, cy
 conditions and concentration, and assays tolerate more mismatch in practice than a
 thermodynamics-free model suggests. `likely_failing` is a hypothesis, not a result.
 
+**No melting-temperature model.** A mismatch is counted by position and number, not by how
+much it actually costs in ΔG. [`primer-designer`](https://github.com/hammasbuilds/primer-designer)
+does the nearest-neighbour thermodynamics for the *design* side of this problem; wiring its
+Tm calculation in here would turn `likely_failing` from a rule of thumb into an estimate.
+That is the most valuable thing missing.
+
 **`SEVERE_MISMATCH_LOAD = 3` is a judgement call**, stated in the source so it can be
 argued with rather than buried. So is the five-base 3′ window.
 
@@ -260,6 +266,13 @@ tests/                      71 tests, none touching the network
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256
 pinned, so the suite never depends on NCBI being reachable.
+
+## Also worth reading
+
+| | |
+|---|---|
+| **[primer-designer](https://github.com/hammasbuilds/primer-designer)** | The other half: designing primers that survive drift, with real thermodynamics |
+| **[clcuv-surveillance](https://github.com/hammasbuilds/clcuv-surveillance)** | Mutation atlas and novel-strain calls from viral sequence data |
 
 ## Keywords
 
