@@ -96,25 +96,31 @@ def main() -> int:
             label += f"   [baseline {base} mismatch vs reference]"
         print(label)
         print(
-            f"  {'period':<9}{'n':>6}{'usable':>8}{'intact':>8}{'rate':>8}"
-            f"{'excl%':>8}{'3prime':>8}{'lost':>6}"
+            f"  {'period':<9}{'n':>6}{'usable':>8}{'perfect':>9}"
+            f"{'failing':>9}{'excl%':>8}{'3prime':>8}{'lost':>6}"
         )
         for summary in summaries.values():
-            rate = summary.intact_rate
+            pr, fr = summary.perfect_rate, summary.failing_rate
             print(
                 f"  {summary.period:<9}{summary.total:>6}{summary.usable:>8}"
-                f"{summary.intact:>8}"
-                f"{('  n/a' if rate is None else f'{rate:>7.1%}')}"
+                f"{('      n/a' if pr is None else f'{pr:>8.1%}')}"
+                f"{('      n/a' if fr is None else f'{fr:>8.1%}')}"
                 f"{summary.excluded_rate:>8.1%}{summary.three_prime:>8}"
                 f"{summary.lost_oligo:>6}" + ("" if summary.reliable else "   (too few)")
             )
         if movement["enough_to_say"]:
             print(
-                f"  {movement['first_period']} {movement['first_rate']:.1%} "
-                f"(n={movement['first_n']})  ->  "
+                f"  perfect match   {movement['first_period']} "
+                f"{movement['first_rate']:.1%} (n={movement['first_n']})  ->  "
                 f"{movement['last_period']} {movement['last_rate']:.1%} "
                 f"(n={movement['last_n']})   change {movement['change']:+.1%}"
-                f"   worst {movement['worst_period']} {movement['worst_rate']:.1%}"
+            )
+            print(
+                f"  likely failing  {movement['first_period']} "
+                f"{movement['first_failing_rate']:.1%}  ->  "
+                f"{movement['last_period']} {movement['last_failing_rate']:.1%}"
+                f"   worst {movement['worst_failing_period']} "
+                f"{movement['worst_failing_rate']:.1%}"
             )
         else:
             print(
@@ -133,8 +139,10 @@ def main() -> int:
                 p: {
                     "total": s.total,
                     "usable": s.usable,
-                    "intact": s.intact,
-                    "intact_rate": s.intact_rate,
+                    "perfect": s.perfect,
+                    "failing": s.failing,
+                    "perfect_rate": s.perfect_rate,
+                    "failing_rate": s.failing_rate,
                     "excluded_rate": s.excluded_rate,
                     "three_prime": s.three_prime,
                     "lost_oligo": s.lost_oligo,

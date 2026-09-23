@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from assaydrift.analyze import (  # noqa: E402
     MIN_PERIOD_SAMPLES,
+    SEVERE_MISMATCH_LOAD,
     AssayResult,
     PeriodSummary,
     evaluate,
@@ -27,13 +28,14 @@ from assaydrift.ncbi import Record  # noqa: E402
 from assaydrift.primers import by_name  # noqa: E402
 
 
-def hit(mismatches=0, ambiguous=0, three_prime=0, found=True):
+def hit(mismatches=0, ambiguous=0, three_prime=0, found=True, role="forward"):
     return Hit(
         position=10,
         mismatches=mismatches,
         ambiguous=ambiguous,
         three_prime_mismatches=three_prime,
         found=found,
+        role=role,
     )
 
 
@@ -86,20 +88,19 @@ class TestUsability:
         assert not AssayResult("X", "A", "2021-Q1", {}).usable
 
 
-class TestIntactness:
-    def test_a_perfect_match_is_intact(self):
-        assert AssayResult("X", "A", "p", {"f": hit()}).intact()
+class TestPerfectMatch:
+    """The sensitive measure: does every oligo still match exactly?"""
 
-    def test_a_three_prime_mismatch_breaks_the_assay(self):
-        """One mismatch under the polymerase's start point is not like one in
-        the middle, so it is not allowed to average away."""
-        r = AssayResult("X", "A", "p", {"f": hit(mismatches=1, three_prime=1)})
-        assert not r.intact()
+    def test_an_exact_match_is_perfect(self):
+        assert AssayResult("X", "A", "p", {"f": hit()}).perfect()
 
-    def test_a_missing_binding_site_breaks_the_assay(self):
+    def test_any_mismatch_ends_a_perfect_match(self):
+        assert not AssayResult("X", "A", "p", {"f": hit(mismatches=1)}).perfect()
+
+    def test_a_missing_binding_site_is_not_a_perfect_match(self):
         r = AssayResult("X", "A", "p", {"f": hit(found=False)})
         assert r.any_oligo_lost
-        assert not r.intact()
+        assert not r.perfect()
 
     def test_an_assay_with_a_known_baseline_mismatch_is_not_drifted_on_day_one(self):
         """Charite RdRp shipped with one mismatch to SARS-CoV-2.
@@ -108,8 +109,52 @@ class TestIntactness:
         every sequence ever collected, including the 2019 reference.
         """
         r = AssayResult("X", "Charite RdRp", "p", {"r": hit(mismatches=1)})
-        assert not r.intact(baseline=0)
-        assert r.intact(baseline=1)
+        assert not r.perfect(baseline=0)
+        assert r.perfect(baseline=1)
+
+
+class TestLikelyFailing:
+    """The consequential measure, and a much higher bar than perfect()."""
+
+    def test_one_mismatch_away_from_the_three_prime_end_is_not_failure(self):
+        """The correction that mattered most.
+
+        Requiring a perfect match to call an assay working reported CDC N1 and
+        Charite E at 0% through 2022-2024, while laboratories were still
+        running both successfully. A single mismatch mid-oligo barely moves the
+        melting temperature.
+        """
+        r = AssayResult("X", "A", "p", {"f": hit(mismatches=1, three_prime=0)})
+        assert not r.perfect()
+        assert not r.likely_failing()
+
+    def test_a_three_prime_mismatch_on_a_primer_is_failure(self):
+        r = AssayResult("X", "A", "p", {"f": hit(mismatches=1, three_prime=1, role="forward")})
+        assert r.likely_failing()
+
+    def test_a_three_prime_mismatch_on_a_PROBE_is_not_failure(self):
+        """A hydrolysis probe is never extended.
+
+        Its 3' end carries the quencher and is chemically blocked, so the
+        extension-blocking logic does not apply. Counting probe 3' mismatches as
+        fatal is what first reported CDC N1 as dead in 2022 - the Omicron
+        mutation under its probe happens to sit two bases from the probe's 3'
+        end, which is meaningless for a probe.
+        """
+        r = AssayResult("X", "A", "p", {"p": hit(mismatches=1, three_prime=1, role="probe")})
+        assert not r.likely_failing()
+        assert r.three_prime_mismatches == 0
+
+    def test_a_missing_binding_site_is_failure(self):
+        assert AssayResult("X", "A", "p", {"f": hit(found=False)}).likely_failing()
+
+    def test_a_heavy_mismatch_load_is_failure(self):
+        r = AssayResult("X", "A", "p", {"f": hit(mismatches=SEVERE_MISMATCH_LOAD)})
+        assert r.likely_failing()
+
+    def test_the_baseline_is_subtracted_before_the_load_threshold(self):
+        r = AssayResult("X", "A", "p", {"f": hit(mismatches=SEVERE_MISMATCH_LOAD)})
+        assert not r.likely_failing(baseline=1)
 
 
 class TestSummaries:
@@ -121,8 +166,8 @@ class TestSummaries:
         s = summarise(results)["2021-Q1"]
         assert s.total == 2
         assert s.usable == 1
-        assert s.intact == 1
-        assert s.intact_rate == 1.0, "a gappy genome must not read as a failed assay"
+        assert s.perfect == 1
+        assert s.perfect_rate == 1.0, "a gappy genome must not read as a failed assay"
         assert s.excluded_rate == 0.5
 
     def test_a_period_with_nothing_usable_reports_none_not_zero(self):
@@ -130,7 +175,8 @@ class TestSummaries:
         results = [AssayResult("a", "A", "2021-Q1", {"f": hit(ambiguous=1)})]
         s = summarise(results)["2021-Q1"]
         assert s.usable == 0
-        assert s.intact_rate is None
+        assert s.perfect_rate is None
+        assert s.failing_rate is None
 
     def test_periods_come_back_in_order(self):
         results = [
@@ -141,8 +187,8 @@ class TestSummaries:
         assert list(summarise(results)) == ["2020-Q3", "2021-Q2", "2022-Q1"]
 
     def test_a_small_period_is_marked_unreliable(self):
-        small = PeriodSummary("2021-Q1", total=3, usable=3, intact=3)
-        big = PeriodSummary("2021-Q2", total=999, usable=MIN_PERIOD_SAMPLES, intact=1)
+        small = PeriodSummary("2021-Q1", total=3, usable=3, perfect=3)
+        big = PeriodSummary("2021-Q2", total=999, usable=MIN_PERIOD_SAMPLES, perfect=1)
         assert not small.reliable
         assert big.reliable
 
@@ -150,7 +196,7 @@ class TestSummaries:
 class TestTrend:
     def _summaries(self, pairs):
         return {
-            period: PeriodSummary(period, total=n, usable=n, intact=int(round(rate * n)))
+            period: PeriodSummary(period, total=n, usable=n, perfect=int(round(rate * n)))
             for period, rate, n in pairs
         }
 

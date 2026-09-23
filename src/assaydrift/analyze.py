@@ -35,6 +35,14 @@ from .primers import Assay
 # Below this, a period's rate is too noisy to read as a trend point.
 MIN_PERIOD_SAMPLES = 25
 
+# Total mismatches across an assay's three oligos, above the assay's own
+# baseline, at which binding is assumed to fail even without a 3' hit. Three is
+# a judgement call rather than a measured threshold: it is the point at which a
+# 20-25mer has lost enough complementarity that the melting temperature falls
+# below a typical 60C annealing step. It is stated here so it can be argued
+# with rather than buried.
+SEVERE_MISMATCH_LOAD = 3
+
 
 def period_of(collected: str, granularity: str = "quarter") -> str | None:
     """Bucket a GenBank collection_date. Returns None when it cannot be read.
@@ -88,25 +96,54 @@ class AssayResult:
 
     @property
     def three_prime_mismatches(self) -> int:
-        return sum(h.three_prime_mismatches for h in self.hits.values())
+        """3' mismatches that can stop extension - primers only.
+
+        A hydrolysis probe's 3' end is blocked by its quencher and is never
+        extended, so a mismatch there is an ordinary binding penalty rather than
+        a stop signal. Counting probe 3' mismatches here reported CDC N1 as
+        having failed outright in 2022, because the Omicron mutation under its
+        probe happens to sit two bases from that probe's 3' end.
+        """
+        return sum(h.blocks_extension for h in self.hits.values())
 
     @property
     def any_oligo_lost(self) -> bool:
         """An oligo that cannot be found at all - the assay has no binding site."""
         return any(not h.found for h in self.hits.values())
 
-    def intact(self, baseline: int = 0) -> bool:
-        """Whether the assay should still amplify.
+    def perfect(self, baseline: int = 0) -> bool:
+        """Every oligo matches exactly.
+
+        This is the clean drift signal: it falls as soon as the target changes
+        under any oligo, whether or not the change is enough to break the test.
 
         `baseline` is the assay's own mismatch count against the reference
         genome, so an assay that shipped with a known mismatch is not scored as
         drifted on day one. See primers.KNOWN_REFERENCE_MISMATCHES.
         """
+        return not self.any_oligo_lost and self.total_mismatches <= baseline
+
+    def likely_failing(self, baseline: int = 0) -> bool:
+        """Whether the assay would plausibly stop detecting the sample.
+
+        Deliberately a much higher bar than `perfect`. A single mismatch near
+        the 5' end of a 26-base primer barely moves the melting temperature, and
+        an assay carrying one keeps working - the Charite E assay stayed in
+        clinical use through Omicron with exactly that. Treating any mismatch as
+        failure reported these assays at 0% while laboratories were still
+        running them successfully, which is an overclaim in the alarming
+        direction.
+
+        What actually stops a reaction:
+          - an oligo with no binding site left at all
+          - a mismatch in the last five bases of a PRIMER, where extension starts
+          - a heavy mismatch load across the assay, which drops binding outright
+        """
         if self.any_oligo_lost:
-            return False
+            return True
         if self.three_prime_mismatches > 0:
-            return False
-        return self.total_mismatches <= baseline
+            return True
+        return self.total_mismatches - baseline >= SEVERE_MISMATCH_LOAD
 
 
 def evaluate(record: Record, assay: Assay, granularity: str = "quarter") -> AssayResult | None:
@@ -125,20 +162,35 @@ class PeriodSummary:
     period: str
     total: int = 0  # sequences with this assay evaluated
     usable: int = 0  # ... and with no N under any oligo
-    intact: int = 0  # ... and still expected to amplify
+    perfect: int = 0  # ... and matching every oligo exactly
+    failing: int = 0  # ... and plausibly no longer amplifying
     lost_oligo: int = 0  # an oligo with no binding site at all
-    three_prime: int = 0  # a mismatch in the last 5 bases of some oligo
+    three_prime: int = 0  # a mismatch in the last 5 bases of a PRIMER
     mismatch_counts: list[int] = field(default_factory=list)
 
     @property
-    def intact_rate(self) -> float | None:
-        """Share of *usable* sequences the assay should still detect.
+    def perfect_rate(self) -> float | None:
+        """Share of usable sequences the assay matches exactly.
+
+        The sensitive measure: it moves as soon as the target changes under any
+        oligo, whether or not the change is enough to break the test.
 
         None rather than 0.0 when nothing was usable: an assay that could not be
-        measured is not an assay that failed, and a 0.0 here would be plotted as
+        measured is not an assay that failed, and 0.0 would be plotted as
         catastrophic drift.
         """
-        return self.intact / self.usable if self.usable else None
+        return self.perfect / self.usable if self.usable else None
+
+    @property
+    def failing_rate(self) -> float | None:
+        """Share that would plausibly no longer be detected.
+
+        The consequential measure, and a much higher bar - see
+        AssayResult.likely_failing. Reported alongside perfect_rate because the
+        gap between them is the interesting part: an assay can drift a long way
+        before it stops working.
+        """
+        return self.failing / self.usable if self.usable else None
 
     @property
     def excluded_rate(self) -> float | None:
@@ -171,8 +223,10 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
         summary.mismatch_counts.append(result.total_mismatches)
         if result.three_prime_mismatches > 0:
             summary.three_prime += 1
-        if result.intact(baseline):
-            summary.intact += 1
+        if result.perfect(baseline):
+            summary.perfect += 1
+        if result.likely_failing(baseline):
+            summary.failing += 1
     return dict(sorted(out.items()))
 
 
@@ -183,7 +237,7 @@ def trend(summaries: dict[str, PeriodSummary]) -> dict:
     slope invites more confidence than the data supports; the honest summary is
     where it started, where it ended, and how many sequences are behind each.
     """
-    reliable = [s for s in summaries.values() if s.reliable and s.intact_rate is not None]
+    reliable = [s for s in summaries.values() if s.reliable and s.perfect_rate is not None]
     if len(reliable) < 2:
         return {"periods": len(reliable), "enough_to_say": False}
     first, last = reliable[0], reliable[-1]
@@ -191,12 +245,18 @@ def trend(summaries: dict[str, PeriodSummary]) -> dict:
         "periods": len(reliable),
         "enough_to_say": True,
         "first_period": first.period,
-        "first_rate": first.intact_rate,
+        "first_rate": first.perfect_rate,
         "first_n": first.usable,
         "last_period": last.period,
-        "last_rate": last.intact_rate,
+        "last_rate": last.perfect_rate,
         "last_n": last.usable,
-        "change": last.intact_rate - first.intact_rate,
-        "worst_period": min(reliable, key=lambda s: s.intact_rate).period,
-        "worst_rate": min(s.intact_rate for s in reliable),
+        "change": last.perfect_rate - first.perfect_rate,
+        "worst_period": min(reliable, key=lambda s: s.perfect_rate).period,
+        "worst_rate": min(s.perfect_rate for s in reliable),
+        # The consequential measure, alongside the sensitive one. The gap
+        # between them is the point: an assay drifts long before it breaks.
+        "first_failing_rate": first.failing_rate,
+        "last_failing_rate": last.failing_rate,
+        "worst_failing_rate": max(s.failing_rate for s in reliable),
+        "worst_failing_period": max(reliable, key=lambda s: s.failing_rate).period,
     }

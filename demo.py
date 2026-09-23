@@ -76,36 +76,41 @@ def show_drift() -> None:
     print("=" * 78)
     print("THE FINDING - would each assay still detect what was circulating?")
     print("=" * 78)
-    print("Share of sequences collected in each quarter that the assay should")
-    print("still amplify. Sequences with unknown bases under an oligo are")
-    print("excluded, never counted as failures - see match.py.\n")
+    print("Two different questions, and the gap between them is the point:\n")
+    print("  exact match    every oligo still matches perfectly - the sensitive")
+    print("                 measure, which moves as soon as the target changes")
+    print("  likely failing would plausibly no longer amplify - a much higher")
+    print("                 bar, needing a 3' primer mismatch or a lost site\n")
+    print("Sequences with unknown bases under an oligo are excluded from both,")
+    print("never counted as failures - see match.py.\n")
 
+    print(f"  {'assay':<18}{'exact match':>26}{'likely failing':>22}")
     for name, data in payload.items():
+        movement = data["trend"]
         label = name
         if data["retired"]:
-            label += "  [retired by CDC]"
+            label += " (retired)"
         if data["baseline_mismatches"]:
-            label += f"  [shipped with {data['baseline_mismatches']} mismatch]"
-        print(label)
-        movement = data["trend"]
-        if movement.get("enough_to_say"):
-            print(
-                f"   {movement['first_period']}  {movement['first_rate']:>6.1%}"
-                f"  (n={movement['first_n']})"
-            )
-            print(
-                f"   {movement['last_period']}  {movement['last_rate']:>6.1%}"
-                f"  (n={movement['last_n']})"
-            )
-            print(
-                f"   change {movement['change']:+.1%}"
-                f"    worst quarter {movement['worst_period']} "
-                f"at {movement['worst_rate']:.1%}"
-            )
-        else:
-            print("   not enough reliable periods to claim a trend")
-        print()
+            label += " *"
+        if not movement.get("enough_to_say"):
+            print(f"  {label:<18}   not enough reliable periods to claim a trend")
+            continue
+        print(
+            f"  {label:<18}"
+            f"{movement['first_period']} {movement['first_rate']:>6.1%}"
+            f"  ->  {movement['last_period']} {movement['last_rate']:>6.1%}"
+            f"{movement['last_failing_rate']:>12.1%}"
+            f"   worst {movement['worst_failing_rate']:.1%}"
+            f" ({movement['worst_failing_period']})"
+        )
 
+    print("\n  * shipped with a known mismatch to its target; scored against that")
+    print("    baseline rather than being reported as drifted on day one.\n")
+    print("An assay can lose its exact match completely and keep working: CDC N1")
+    print("and Charite E both went to 0% and stayed in clinical use, because their")
+    print("mutations weaken binding without blocking extension. Charite RdRp is the")
+    print("one that actually broke, and only while Delta circulated - G15451A sits")
+    print("one base from its forward primer's 3' end, where polymerase starts.\n")
     print("Full per-quarter tables: results/drift.json, or run scripts/analyse.py")
 
 

@@ -27,7 +27,7 @@ difference.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 # What each IUPAC code is allowed to be.
 IUPAC: dict[str, str] = {
@@ -73,6 +73,7 @@ class Hit:
     ambiguous: int  # target base is N - unknown, counted, never guessed
     three_prime_mismatches: int
     found: bool = True
+    role: str = ""
 
     @property
     def usable(self) -> bool:
@@ -81,6 +82,23 @@ class Hit:
         An alignment with unknown bases under it is not evidence either way.
         """
         return self.found and self.ambiguous == 0
+
+    @property
+    def blocks_extension(self) -> int:
+        """3' mismatches that can actually stop the reaction.
+
+        **Only on a primer.** The 3'-end rule exists because polymerase extends
+        from that terminus, so a mismatch there prevents extension. A hydrolysis
+        probe is never extended - its 3' end carries the quencher and is
+        chemically blocked - so a mismatch there weakens binding like any other
+        and does not stop amplification.
+
+        Counting probe 3' mismatches as assay-breaking is what first made the
+        CDC N1 assay look like it had stopped working outright in 2022: the
+        Omicron mutation under its probe sits two bases from the probe's 3' end,
+        which is meaningless for a probe and fatal for a primer.
+        """
+        return 0 if self.role == "probe" else self.three_prime_mismatches
 
 
 NOT_FOUND = Hit(
@@ -187,5 +205,8 @@ def find_oligo(sequence: str, oligo: str, role: str) -> Hit:
     that appears in a forward-strand genome record. Searching for it as written
     finds nothing and reports every assay as failed.
     """
-    probe = reverse_complement(oligo) if role == "reverse" else oligo
-    return find(probe, sequence)
+    search_for = reverse_complement(oligo) if role == "reverse" else oligo
+    hit = find(search_for, sequence)
+    # The role travels with the hit, because whether a 3' mismatch matters
+    # depends on it: a primer gets extended from that end, a probe does not.
+    return replace(hit, role=role)
