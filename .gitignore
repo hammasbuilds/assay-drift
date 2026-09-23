@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Downloaded from NCBI, not authored here. `scripts/fetch.py` rebuilds it, and
+# the HTTP cache makes a rebuild cost NCBI nothing. Committing ~250 MB of
+# sequence would also mean committing somebody else's database.
+data/cache/
+data/sequences.jsonl
+data/fetch.log
+data/partial.json
+
+# Scratch launcher for the background fetch, not part of the project.
+run_fetch.bat

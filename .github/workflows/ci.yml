@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # No dependencies and no network in the tests, so the matrix is free.
+    # Running it proves the zero-dependency claim rather than asserting it.
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install pytest ruff
+      - run: ruff check src tests scripts demo.py
+      - run: ruff format --check src tests scripts demo.py
+      # The suite never touches NCBI: the reference genome is vendored at
+      # tests/data. A test that needs a public API to be up is a test that
+      # fails on someone else's outage.
+      - run: pytest -q
+      - run: python demo.py
