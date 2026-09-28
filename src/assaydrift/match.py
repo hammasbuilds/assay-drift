@@ -228,11 +228,19 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
             if position >= 0 and position not in seen:
                 seen.add(position)
                 scored = score_at(oligo, target, position, three_prime_at_start)
-                if scored is not None and (best is None or _preference(scored) < _preference(best)):
+                # Anything above MAX_MISMATCHES is noise found elsewhere in a
+                # 30,000 base genome, so it is dropped here rather than after
+                # the ranking: a 9-mismatch coincidence has few unknowns and
+                # would otherwise outrank a real but gappy site, turning "this
+                # genome cannot say" into "this assay has no binding site".
+                if scored is None or scored.mismatches > MAX_MISMATCHES:
+                    start = target.find(seed, start + 1)
+                    continue
+                if best is None or _preference(scored) < _preference(best):
                     best = scored
             start = target.find(seed, start + 1)
 
-    if best is None or best.mismatches > MAX_MISMATCHES:
+    if best is None:
         return NOT_FOUND
     return best
 

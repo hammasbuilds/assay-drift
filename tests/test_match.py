@@ -136,6 +136,23 @@ class TestAmbiguousTargetBases:
         assert hit.mismatches == 1
         assert hit.ambiguous == 0
 
+    def test_an_unreadable_site_stays_unknown_rather_than_becoming_lost(self):
+        """ "Cannot say" and "no binding site left" are opposite conclusions.
+
+        A record whose binding site is entirely `N` is missing data; a record
+        with no binding site is an assay that has lost its target, which
+        `likely_failing` treats as failure. A noise alignment elsewhere in the
+        genome must not be allowed to promote the first into the second, so
+        candidates above MAX_MISMATCHES are discarded before ranking.
+        """
+        primer = "ACGTTGCAAGGTTGCAACTT"
+        noise = "ACGTTGCAATTAAGCTTAGG"  # shares a seed, then disagrees a lot
+        genome = PAD + noise + PAD + "N" * len(primer) + PAD
+        hit = find(primer, genome)
+        assert hit.found, "an unreadable site is unknown, not missing"
+        assert hit.ambiguous >= len(primer) - 1
+        assert not hit.usable
+
     def test_a_fully_unknown_window_is_not_reported_as_a_perfect_match(self):
         """Zero mismatches over unknown bases is not a match, it is no evidence.
 
