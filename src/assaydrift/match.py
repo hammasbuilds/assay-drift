@@ -136,8 +136,18 @@ def _seeds(oligo: str, k: int = 8) -> list[tuple[int, str]]:
     return out
 
 
-def score_at(oligo: str, target: str, position: int) -> Hit | None:
-    """Score this oligo against the target starting at `position`."""
+def score_at(
+    oligo: str, target: str, position: int, three_prime_at_start: bool = False
+) -> Hit | None:
+    """Score this oligo against the target starting at `position`.
+
+    `three_prime_at_start` says which end of the *search string* is the oligo's
+    3' terminus. It is False for an oligo searched as written, and True for one
+    searched as its reverse complement: reverse-complementing turns a sequence
+    end for end, so the primer's 3' base becomes index 0 of the string being
+    searched. Getting this wrong evaluates the extension-blocking rule - the
+    whole point of the 3' window - at the harmless end of every reverse primer.
+    """
     window = target[position : position + len(oligo)]
     if len(window) != len(oligo):
         return None
@@ -151,7 +161,8 @@ def score_at(oligo: str, target: str, position: int) -> Hit | None:
         if actual in IUPAC[base]:
             continue
         mismatches += 1
-        if last - index < THREE_PRIME_WINDOW:
+        distance_from_3_prime = index if three_prime_at_start else last - index
+        if distance_from_3_prime < THREE_PRIME_WINDOW:
             three_prime += 1
     return Hit(
         position=position,
@@ -161,21 +172,54 @@ def score_at(oligo: str, target: str, position: int) -> Hit | None:
     )
 
 
-def find(oligo: str, target: str) -> Hit:
-    """Best binding site for this oligo on this strand of the target."""
+def _preference(hit: Hit) -> tuple[int, int]:
+    """How good an alignment is, lower being better.
+
+    Fewest *unconfirmed* positions first, then fewest real mismatches. A
+    position is confirmed only when the target says a definite base and that
+    base is one the oligo can be; both a mismatch and an `N` leave it
+    unconfirmed.
+
+    Ranking on mismatches alone is what let a run of `N` beat the real binding
+    site: `_pattern` treats target `N` as a wildcard, so a gap of `N` as long as
+    the oligo scores zero mismatches anywhere in the genome. Counting unknowns
+    against an alignment is what distinguishes "this site matches" from "this
+    site says nothing".
+    """
+    return (hit.mismatches + hit.ambiguous, hit.mismatches)
+
+
+def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
+    """Best binding site for this oligo on this strand of the target.
+
+    `three_prime_at_start` is passed through to `score_at`; see there. Callers
+    that have already reverse-complemented a reverse primer must set it, and
+    `find_oligo` does it for them.
+    """
     oligo = oligo.upper()
     target = target.upper()
+    bad = set(oligo) - set(IUPAC)
+    if bad:
+        raise ValueError(f"not IUPAC nucleotide codes: {sorted(bad)}")
     if not oligo or len(target) < len(oligo):
         return NOT_FOUND
+
+    best: Hit | None = None
 
     # Fast path: a perfect site, allowing N. Most genomes, most assays.
     exact = _pattern(oligo).search(target)
     if exact is not None:
-        scored = score_at(oligo, target, exact.start())
-        if scored is not None and scored.mismatches == 0:
-            return scored
+        scored = score_at(oligo, target, exact.start(), three_prime_at_start)
+        if scored is not None:
+            if scored.mismatches == 0 and scored.ambiguous == 0:
+                return scored
+            # Zero mismatches over unknown bases is not a match, it is no
+            # evidence - and `re.search` returns the leftmost hit, so a
+            # sequencing gap early in the genome would otherwise be preferred
+            # over the real binding site. Keep it only as a fallback for a
+            # genome that has nothing better anywhere.
+            best = scored
 
-    best: Hit | None = None
     seen: set[int] = set()
     for offset, seed in _seeds(oligo):
         start = target.find(seed)
@@ -183,13 +227,8 @@ def find(oligo: str, target: str) -> Hit:
             position = start - offset
             if position >= 0 and position not in seen:
                 seen.add(position)
-                scored = score_at(oligo, target, position)
-                if scored is not None and (
-                    best is None
-                    # Prefer fewer real mismatches; break ties on fewer unknowns,
-                    # so a clean read wins over a gappy one at the same score.
-                    or (scored.mismatches, scored.ambiguous) < (best.mismatches, best.ambiguous)
-                ):
+                scored = score_at(oligo, target, position, three_prime_at_start)
+                if scored is not None and (best is None or _preference(scored) < _preference(best)):
                     best = scored
             start = target.find(seed, start + 1)
 
@@ -204,9 +243,16 @@ def find_oligo(sequence: str, oligo: str, role: str) -> Hit:
     A reverse primer binds the template strand, so it is its reverse complement
     that appears in a forward-strand genome record. Searching for it as written
     finds nothing and reports every assay as failed.
+
+    Reverse-complementing also flips which end of the search string is the
+    primer's 3' terminus, which is why `three_prime_at_start` travels with it:
+    without that, the extension-blocking rule is applied to the 5' end of every
+    reverse primer, so a real 3'-terminal mismatch scores zero and a harmless
+    5' one is reported as assay-breaking.
     """
-    search_for = reverse_complement(oligo) if role == "reverse" else oligo
-    hit = find(search_for, sequence)
+    reverse = role == "reverse"
+    search_for = reverse_complement(oligo) if reverse else oligo
+    hit = find(search_for, sequence, three_prime_at_start=reverse)
     # The role travels with the hit, because whether a 3' mismatch matters
     # depends on it: a primer gets extended from that end, a probe does not.
     return replace(hit, role=role)

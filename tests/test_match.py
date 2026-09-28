@@ -102,6 +102,40 @@ class TestAmbiguousTargetBases:
         primer = "ACGTACGTACGTACGTACGT"
         assert find(primer, PAD + primer + PAD).usable
 
+    def test_a_run_of_unknown_bases_elsewhere_does_not_beat_the_real_site(self):
+        """The regression that inflated the exclusion rate twenty-fold.
+
+        `_pattern` treats target `N` as a wildcard so a sequencing gap cannot
+        hide a binding site. The cost is that a run of `N` as long as the oligo
+        matches the pattern *anywhere*, with zero mismatches - and `re.search`
+        returns the leftmost hit. The matcher used to accept that, report the
+        gap's unknown bases as the oligo's, and drop the record from every rate
+        as unmeasurable while a clean binding site sat further along the genome.
+        """
+        primer = "ACGTTGCAAGGTTGCAACTT"
+        genome = PAD + "N" * (2 * len(primer)) + PAD + primer + PAD
+        hit = find(primer, genome)
+        assert hit.position == 2 * len(PAD) + 2 * len(primer), "the real site, not the gap"
+        assert hit.ambiguous == 0
+        assert hit.mismatches == 0
+        assert hit.usable, "a genome with a gap elsewhere is still evidence here"
+
+    def test_an_unknown_run_does_not_beat_a_real_site_carrying_a_mismatch(self):
+        """The same preference, where it costs something to get right.
+
+        A gap scores zero mismatches, so ranking on mismatches alone prefers it
+        even over a site that is genuinely there. Unknown bases have to count
+        against an alignment, or "no evidence" outranks "evidence of drift" -
+        which loses exactly the records the study is about.
+        """
+        primer = "ACGTTGCAAGGTTGCAACTT"
+        drifted = primer[:-1] + "A"
+        genome = PAD + "N" * (2 * len(primer)) + PAD + drifted + PAD
+        hit = find(primer, genome)
+        assert hit.position == 2 * len(PAD) + 2 * len(primer)
+        assert hit.mismatches == 1
+        assert hit.ambiguous == 0
+
     def test_a_fully_unknown_window_is_not_reported_as_a_perfect_match(self):
         """Zero mismatches over unknown bases is not a match, it is no evidence.
 
@@ -144,6 +178,59 @@ class TestThreePrimeEnd:
             assert hit.three_prime_mismatches == expected
 
 
+class TestThreePrimeEndOnAReversePrimer:
+    """The 3' end of a reverse primer is the *start* of what is searched for.
+
+    A reverse primer is looked for as its reverse complement, because that is
+    what appears in a forward-strand genome record - and reverse-complementing
+    turns the sequence end for end. Scoring the window's last index as the 3'
+    terminus therefore evaluates the extension-blocking rule at the primer's 5'
+    end: every real 3'-terminal mismatch scored zero, and harmless 5' ones were
+    reported as assay-breaking. Nothing caught it because every test above uses
+    a forward oligo.
+    """
+
+    # Not a palindrome - see TestStrand.
+    PRIMER = "ACGTTGCAAGGTTGCAACTT"
+
+    def _genome(self, primer: str) -> str:
+        return PAD + reverse_complement(primer) + PAD
+
+    def test_a_mismatch_at_the_primers_own_3_prime_base_is_flagged(self):
+        drifted = self.PRIMER[:-1] + ("A" if self.PRIMER[-1] != "A" else "C")
+        hit = find_oligo(self._genome(drifted), self.PRIMER, "reverse")
+        assert hit.mismatches == 1
+        assert hit.three_prime_mismatches == 1
+        assert hit.blocks_extension == 1
+
+    def test_a_mismatch_at_the_primers_own_5_prime_base_is_not_flagged(self):
+        drifted = ("A" if self.PRIMER[0] != "A" else "C") + self.PRIMER[1:]
+        hit = find_oligo(self._genome(drifted), self.PRIMER, "reverse")
+        assert hit.mismatches == 1
+        assert hit.three_prime_mismatches == 0, "the 5' end is not the business end"
+
+    def test_the_window_boundary_counts_from_the_primers_3_prime_end(self):
+        inside = len(self.PRIMER) - THREE_PRIME_WINDOW
+        for index, expected in ((inside, 1), (inside - 1, 0)):
+            drifted = list(self.PRIMER)
+            drifted[index] = "A" if self.PRIMER[index] != "A" else "C"
+            hit = find_oligo(self._genome("".join(drifted)), self.PRIMER, "reverse")
+            assert hit.mismatches == 1
+            assert hit.three_prime_mismatches == expected
+
+    def test_forward_and_reverse_agree_on_the_same_oligo(self):
+        """The same mismatch, on the strand each primer actually binds.
+
+        A forward primer read off the given strand and a reverse primer read off
+        its complement are the same measurement, so a 3'-terminal mismatch must
+        score the same either way.
+        """
+        drifted = self.PRIMER[:-1] + ("A" if self.PRIMER[-1] != "A" else "C")
+        forward = find_oligo(PAD + drifted + PAD, self.PRIMER, "forward")
+        reverse = find_oligo(self._genome(drifted), self.PRIMER, "reverse")
+        assert forward.three_prime_mismatches == reverse.three_prime_mismatches == 1
+
+
 class TestStrand:
     """A reverse primer appears in a forward-strand record as its reverse
     complement. Searching for it as written finds nothing and reports every
@@ -183,3 +270,16 @@ class TestEdges:
         primer = "ACGTACGTACGTACGTACGT"
         hit = find(primer, primer + PAD)
         assert hit.found and hit.position == 0 and hit.mismatches == 0
+
+    def test_a_non_iupac_letter_in_the_oligo_is_a_clear_error(self):
+        """`find` is the entry point for a user bringing their own primer.
+
+        It used to raise `KeyError: 'X'` from deep inside the scorer, which says
+        nothing about what was wrong or which oligo caused it.
+        """
+        with pytest.raises(ValueError, match="IUPAC"):
+            find("ACGTXCGTACGTACGTACGT", "ACGT" * 20)
+
+    def test_a_non_iupac_letter_is_caught_through_find_oligo_too(self):
+        with pytest.raises(ValueError, match="IUPAC"):
+            find_oligo("ACGT" * 20, "ACGT ACGTACGTACGTACG".replace(" ", "Q"), "reverse")
