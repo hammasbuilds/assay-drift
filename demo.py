@@ -3,9 +3,9 @@
     python demo.py
 
 Two halves. First the setup check: every published oligo is aligned against the
-2019 reference genome, vendored in tests/data. If those do not match, nothing
-downstream means anything, so it is the first thing shown rather than a detail
-in a test file.
+2019 reference genome, vendored inside the package. If those do not match,
+nothing downstream means anything, so it is the first thing shown rather than
+a detail in a test file.
 
 Then the finding, read from results/drift.json - the output of a real run over
 genomes downloaded from GenBank. Rebuild it with:
@@ -16,7 +16,6 @@ genomes downloaded from GenBank. Rebuild it with:
 
 from __future__ import annotations
 
-import gzip
 import json
 import sys
 from pathlib import Path
@@ -25,15 +24,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from assaydrift import primers  # noqa: E402
 from assaydrift.match import find_oligo  # noqa: E402
+from assaydrift.reference import genome as reference_genome  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
-REFERENCE = ROOT / "tests" / "data" / "NC_045512.2.json.gz"
 RESULTS = ROOT / "results" / "drift.json"
 
 
 def show_reference_check() -> None:
-    with gzip.open(REFERENCE, "rt", encoding="utf-8") as handle:
-        genome = json.load(handle)["sequence"]
+    genome = reference_genome()
 
     print("=" * 78)
     print("SETUP CHECK - every published oligo against the 2019 reference genome")

@@ -10,8 +10,9 @@ deposited, and must match perfectly. The one real exception is listed by name in
 `primers.KNOWN_REFERENCE_MISMATCHES` with the reason, which is the difference
 between documenting a property of an assay and quietly loosening a threshold.
 
-The reference is vendored at `tests/data/NC_045512.2.json.gz` (9 KB) so the
-suite never touches the network. A test that needs NCBI to be reachable is a
+The reference is vendored at `src/assaydrift/data/NC_045512.2.json.gz` (9 KB)
+so the suite never touches the network, and so it ships inside the wheel for
+`demo.py` and the CLI too. A test that needs NCBI to be reachable is a
 test that fails on a plane, in CI behind a proxy, and on the day NCBI has an
 outage - and the reference genome has not changed since 2020.
 """
@@ -31,7 +32,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from assaydrift import primers  # noqa: E402
 from assaydrift.match import IUPAC, find_oligo  # noqa: E402
 
-FIXTURE = Path(__file__).resolve().parent / "data" / "NC_045512.2.json.gz"
+FIXTURE = (
+    Path(__file__).resolve().parent.parent / "src" / "assaydrift" / "data" / "NC_045512.2.json.gz"
+)
 
 # Pinned so a corrupted or swapped fixture fails loudly rather than silently
 # changing what "matches the reference" means.
