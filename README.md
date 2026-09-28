@@ -53,7 +53,11 @@ worth reading.
 
 ### Three mutations, found from raw sequence and named
 
-The tool does not know about variants. It aligns oligos and counts. These fell out of it:
+The tool does not know about variants. It aligns oligos and counts, and names
+whatever disagrees with the 2019 reference — run `python scripts/analyse.py`
+and read `results/mutations.json`, or the per-assay tables it prints. Below
+are the top hit for the three assays this README discusses; the same command
+writes every oligo's top 5.
 
 | Assay | Position in oligo | Genome coordinate | Change | What it is |
 |---|---|---|---|---|

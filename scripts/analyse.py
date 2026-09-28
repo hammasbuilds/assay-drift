@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from assaydrift import primers  # noqa: E402
 from assaydrift.analyze import evaluate, summarise, trend  # noqa: E402
+from assaydrift.mutations import observe, rank  # noqa: E402
 from assaydrift.ncbi import Record  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -65,6 +66,18 @@ def main() -> int:
     ap.add_argument("--data", type=Path, default=ROOT / "data" / "sequences.jsonl")
     ap.add_argument("--json", type=Path, default=ROOT / "results" / "drift.json")
     ap.add_argument("--granularity", default="quarter", choices=["quarter", "year", "month"])
+    ap.add_argument(
+        "--mutations-json",
+        type=Path,
+        default=ROOT / "results" / "mutations.json",
+        help="where the named-mutation table (C28311T, ...) is written",
+    )
+    ap.add_argument(
+        "--top-mutations",
+        type=int,
+        default=5,
+        help="how many named mutations to keep per assay, most frequent first",
+    )
     args = ap.parse_args()
 
     records = list(load(args.data))
@@ -156,6 +169,43 @@ def main() -> int:
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(payload, indent=1), encoding="utf-8")
     print(f"written to {args.json}")
+
+    print("\nNamed mutations under each oligo (most frequent first)")
+    observations, mut_denominators = observe(records, primers.ASSAYS, args.granularity)
+    mutations_payload = {}
+    for assay in primers.ASSAYS:
+        assay_observations = {
+            key: obs for key, obs in observations.items() if obs.site.assay == assay.name
+        }
+        ranked = rank(assay_observations, mut_denominators)[: args.top_mutations]
+        if not ranked:
+            continue
+        print(f"  {assay.name}")
+        entries = []
+        for obs, overall_rate in ranked:
+            window_flag = " [3' window]" if obs.site.in_three_prime_window else ""
+            print(
+                f"    {obs.name:<10} {obs.site.oligo:<10} base {obs.site.base_in_oligo} of "
+                f"{obs.site.oligo_length}  overall {overall_rate:.1%}{window_flag}"
+            )
+            entries.append(
+                {
+                    "name": obs.name,
+                    "oligo": obs.site.oligo,
+                    "role": obs.site.role,
+                    "base_in_oligo": obs.site.base_in_oligo,
+                    "oligo_length": obs.site.oligo_length,
+                    "bases_from_3_prime_end": obs.site.bases_from_3_prime_end,
+                    "in_three_prime_window": obs.site.in_three_prime_window,
+                    "genome_position": obs.site.genome_position,
+                    "overall_rate": overall_rate,
+                    "total": obs.total,
+                }
+            )
+        mutations_payload[assay.name] = entries
+    args.mutations_json.parent.mkdir(parents=True, exist_ok=True)
+    args.mutations_json.write_text(json.dumps(mutations_payload, indent=1), encoding="utf-8")
+    print(f"written to {args.mutations_json}")
     return 0
 
 

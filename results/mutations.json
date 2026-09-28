@@ -1,0 +1,312 @@
+{
+ "CDC N1": [
+  {
+   "name": "C28311T",
+   "oligo": "N1-P",
+   "role": "probe",
+   "base_in_oligo": 3,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 21,
+   "in_three_prime_window": false,
+   "genome_position": 28311,
+   "overall_rate": 0.7660818713450293,
+   "total": 2096
+  },
+  {
+   "name": "T28297C",
+   "oligo": "N1-F",
+   "role": "forward",
+   "base_in_oligo": 11,
+   "oligo_length": 20,
+   "bases_from_3_prime_end": 9,
+   "in_three_prime_window": false,
+   "genome_position": 28297,
+   "overall_rate": 0.23940058479532164,
+   "total": 655
+  },
+  {
+   "name": "A28330G",
+   "oligo": "N1-P",
+   "role": "probe",
+   "base_in_oligo": 22,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 2,
+   "in_three_prime_window": false,
+   "genome_position": 28330,
+   "overall_rate": 0.08698830409356725,
+   "total": 238
+  },
+  {
+   "name": "C28291A",
+   "oligo": "N1-F",
+   "role": "forward",
+   "base_in_oligo": 5,
+   "oligo_length": 20,
+   "bases_from_3_prime_end": 15,
+   "in_three_prime_window": false,
+   "genome_position": 28291,
+   "overall_rate": 0.04239766081871345,
+   "total": 116
+  },
+  {
+   "name": "C28312T",
+   "oligo": "N1-P",
+   "role": "probe",
+   "base_in_oligo": 4,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 20,
+   "in_three_prime_window": false,
+   "genome_position": 28312,
+   "overall_rate": 0.019005847953216373,
+   "total": 52
+  }
+ ],
+ "CDC N2": [
+  {
+   "name": "T29164C",
+   "oligo": "N2-F",
+   "role": "forward",
+   "base_in_oligo": 1,
+   "oligo_length": 20,
+   "bases_from_3_prime_end": 19,
+   "in_three_prime_window": false,
+   "genome_position": 29164,
+   "overall_rate": 0.03319956220357534,
+   "total": 91
+  },
+  {
+   "name": "C29215T",
+   "oligo": "N2-R",
+   "role": "reverse",
+   "base_in_oligo": 16,
+   "oligo_length": 18,
+   "bases_from_3_prime_end": 2,
+   "in_three_prime_window": true,
+   "genome_position": 29215,
+   "overall_rate": 0.024078803356439256,
+   "total": 66
+  },
+  {
+   "name": "A29221G",
+   "oligo": "N2-R",
+   "role": "reverse",
+   "base_in_oligo": 10,
+   "oligo_length": 18,
+   "bases_from_3_prime_end": 8,
+   "in_three_prime_window": false,
+   "genome_position": 29221,
+   "overall_rate": 0.0036483035388544327,
+   "total": 10
+  },
+  {
+   "name": "C29200T",
+   "oligo": "N2-P",
+   "role": "probe",
+   "base_in_oligo": 13,
+   "oligo_length": 23,
+   "bases_from_3_prime_end": 10,
+   "in_three_prime_window": false,
+   "genome_position": 29200,
+   "overall_rate": 0.003283473184968989,
+   "total": 9
+  },
+  {
+   "name": "T29164A",
+   "oligo": "N2-F",
+   "role": "forward",
+   "base_in_oligo": 1,
+   "oligo_length": 20,
+   "bases_from_3_prime_end": 19,
+   "in_three_prime_window": false,
+   "genome_position": 29164,
+   "overall_rate": 0.0021889821233126595,
+   "total": 6
+  }
+ ],
+ "CDC N3": [
+  {
+   "name": "G28681T",
+   "oligo": "N3-F",
+   "role": "forward",
+   "base_in_oligo": 1,
+   "oligo_length": 22,
+   "bases_from_3_prime_end": 21,
+   "in_three_prime_window": false,
+   "genome_position": 28681,
+   "overall_rate": 0.021715526601520086,
+   "total": 60
+  },
+  {
+   "name": "C28724T",
+   "oligo": "N3-P",
+   "role": "probe",
+   "base_in_oligo": 21,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 3,
+   "in_three_prime_window": false,
+   "genome_position": 28724,
+   "overall_rate": 0.01737242128121607,
+   "total": 48
+  },
+  {
+   "name": "C28708T",
+   "oligo": "N3-P",
+   "role": "probe",
+   "base_in_oligo": 5,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 19,
+   "in_three_prime_window": false,
+   "genome_position": 28708,
+   "overall_rate": 0.005066956207021353,
+   "total": 14
+  },
+  {
+   "name": "G28727T",
+   "oligo": "N3-P",
+   "role": "probe",
+   "base_in_oligo": 24,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 0,
+   "in_three_prime_window": false,
+   "genome_position": 28727,
+   "overall_rate": 0.005066956207021353,
+   "total": 14
+  },
+  {
+   "name": "A28715G",
+   "oligo": "N3-P",
+   "role": "probe",
+   "base_in_oligo": 12,
+   "oligo_length": 24,
+   "bases_from_3_prime_end": 12,
+   "in_three_prime_window": false,
+   "genome_position": 28715,
+   "overall_rate": 0.004343105320304018,
+   "total": 12
+  }
+ ],
+ "Charite E": [
+  {
+   "name": "C26270T",
+   "oligo": "E-F",
+   "role": "forward",
+   "base_in_oligo": 2,
+   "oligo_length": 26,
+   "bases_from_3_prime_end": 24,
+   "in_three_prime_window": false,
+   "genome_position": 26270,
+   "overall_rate": 0.7654545454545455,
+   "total": 2105
+  },
+  {
+   "name": "A26275G",
+   "oligo": "E-F",
+   "role": "forward",
+   "base_in_oligo": 7,
+   "oligo_length": 26,
+   "bases_from_3_prime_end": 19,
+   "in_three_prime_window": false,
+   "genome_position": 26275,
+   "overall_rate": 0.021454545454545455,
+   "total": 59
+  },
+  {
+   "name": "A26269G",
+   "oligo": "E-F",
+   "role": "forward",
+   "base_in_oligo": 1,
+   "oligo_length": 26,
+   "bases_from_3_prime_end": 25,
+   "in_three_prime_window": false,
+   "genome_position": 26269,
+   "overall_rate": 0.0014545454545454545,
+   "total": 4
+  },
+  {
+   "name": "C26270A",
+   "oligo": "E-F",
+   "role": "forward",
+   "base_in_oligo": 2,
+   "oligo_length": 26,
+   "bases_from_3_prime_end": 24,
+   "in_three_prime_window": false,
+   "genome_position": 26270,
+   "overall_rate": 0.0014545454545454545,
+   "total": 4
+  },
+  {
+   "name": "A26271T",
+   "oligo": "E-F",
+   "role": "forward",
+   "base_in_oligo": 3,
+   "oligo_length": 26,
+   "bases_from_3_prime_end": 23,
+   "in_three_prime_window": false,
+   "genome_position": 26271,
+   "overall_rate": 0.0014545454545454545,
+   "total": 4
+  }
+ ],
+ "Charite RdRp": [
+  {
+   "name": "G15451A",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "base_in_oligo": 21,
+   "oligo_length": 22,
+   "bases_from_3_prime_end": 1,
+   "in_three_prime_window": true,
+   "genome_position": 15451,
+   "overall_rate": 0.11070911722141824,
+   "total": 306
+  },
+  {
+   "name": "C15480T",
+   "oligo": "RdRp-P",
+   "role": "probe",
+   "base_in_oligo": 11,
+   "oligo_length": 25,
+   "bases_from_3_prime_end": 14,
+   "in_three_prime_window": false,
+   "genome_position": 15480,
+   "overall_rate": 0.002532561505065123,
+   "total": 7
+  },
+  {
+   "name": "G15452T",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "base_in_oligo": 22,
+   "oligo_length": 22,
+   "bases_from_3_prime_end": 0,
+   "in_three_prime_window": true,
+   "genome_position": 15452,
+   "overall_rate": 0.001808972503617945,
+   "total": 5
+  },
+  {
+   "name": "A15477T",
+   "oligo": "RdRp-P",
+   "role": "probe",
+   "base_in_oligo": 8,
+   "oligo_length": 25,
+   "bases_from_3_prime_end": 17,
+   "in_three_prime_window": false,
+   "genome_position": 15477,
+   "overall_rate": 0.001447178002894356,
+   "total": 4
+  },
+  {
+   "name": "C15450T",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "base_in_oligo": 20,
+   "oligo_length": 22,
+   "bases_from_3_prime_end": 2,
+   "in_three_prime_window": true,
+   "genome_position": 15450,
+   "overall_rate": 0.000723589001447178,
+   "total": 2
+  }
+ ]
+}
