@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import json
+import os
 import re
 import time
 import urllib.error
@@ -26,10 +28,41 @@ from dataclasses import dataclass
 from pathlib import Path
 
 BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-CACHE = Path(__file__).resolve().parents[2] / "data" / "cache"
+
+
+def _cache_dir() -> Path:
+    """Where downloaded GenBank pages are kept.
+
+    `ASSAY_DRIFT_CACHE` wins; otherwise `data/cache` beside the checkout when
+    the package is running from one, and the user's cache directory when it is
+    not. Computing it from `__file__` unconditionally meant an installed wheel
+    wrote its HTTP cache inside the virtualenv, which is somebody else's
+    directory and gets deleted with the environment.
+    """
+    override = os.environ.get("ASSAY_DRIFT_CACHE")
+    if override:
+        return Path(override).expanduser()
+    root = Path(__file__).resolve().parents[2]
+    if (root / "pyproject.toml").exists() and (root / "src").is_dir():
+        return root / "data" / "cache"
+    if os.name == "nt":
+        base = os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local"
+    else:
+        base = os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache"
+    return Path(base) / "assay-drift"
+
+
+# Resolved on each use rather than pinned at import, so setting the
+# environment variable in a test or a shell actually takes effect.
+CACHE = _cache_dir()
 
 # NCBI asks for a real address so they can contact you before blocking you.
-UA = "assay-drift/0.1 (research tool; jigglybear157@gmail.com)"
+# Override it when you run this yourself, so a rate-limit warning reaches you
+# and not the person who happened to write the tool.
+UA = os.environ.get(
+    "ASSAY_DRIFT_USER_AGENT",
+    "assay-drift/0.1 (research tool; https://github.com/hammasbuilds/assay-drift)",
+)
 
 # Three per second is the documented limit without an API key. The sleep is
 # deliberate and not configurable downward: this is somebody else's free
@@ -62,8 +95,62 @@ class Record:
         return int(found.group(0)) if found else None
 
 
+class DataError(ValueError):
+    """A local sequence dump could not be read."""
+
+
+REQUIRED_FIELDS = ("accession", "organism", "sequence", "collected")
+
+
+def read_jsonl(path: Path, *, on_bad_line=None):
+    """Records from a JSONL dump, one per line, reporting where it went wrong.
+
+    `scripts/fetch.py` writes this format and users point the tools at their own
+    files, so a malformed line is an ordinary event rather than a bug. It is
+    reported as `path:line: what` and, when `on_bad_line` is given, handed over
+    and skipped instead of ending the run - a single truncated line should not
+    cost 2,000 good ones.
+
+    `length` and `country` are optional; the four fields above are not, because
+    a record without a sequence or a collection date cannot enter the study at
+    all and silently defaulting either is how a drift study invents a trend.
+    """
+    if not path.exists():
+        raise DataError(f"no data at {path} - run scripts/fetch.py first")
+    empty = True
+    with path.open(encoding="utf-8") as handle:
+        for number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+                if not isinstance(row, dict):
+                    raise DataError(f"expected a JSON object, got {type(row).__name__}")
+                missing = [field for field in REQUIRED_FIELDS if field not in row]
+                if missing:
+                    raise DataError(f"missing field(s) {', '.join(missing)}")
+                record = Record(
+                    accession=row["accession"],
+                    organism=row["organism"],
+                    sequence=row["sequence"],
+                    collected=row["collected"],
+                    country=row.get("country", ""),
+                    length=int(row.get("length") or len(row["sequence"])),
+                )
+            except (json.JSONDecodeError, DataError, TypeError, ValueError) as exc:
+                problem = DataError(f"{path}:{number}: {exc}")
+                if on_bad_line is None:
+                    raise problem from exc
+                on_bad_line(problem)
+                continue
+            empty = False
+            yield record
+    if empty:
+        raise DataError(f"{path} contains no usable records")
+
+
 def _slot(url: str) -> Path:
-    return CACHE / f"{hashlib.blake2b(url.encode(), digest_size=10).hexdigest()}.gz"
+    return _cache_dir() / f"{hashlib.blake2b(url.encode(), digest_size=10).hexdigest()}.gz"
 
 
 def _get(url: str, max_age: float = 30 * 86400) -> str:
@@ -90,7 +177,7 @@ def _get(url: str, max_age: float = 30 * 86400) -> str:
             with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
                 text = response.read().decode("utf-8", "replace")
             _last_call = time.time()
-            CACHE.mkdir(parents=True, exist_ok=True)
+            slot.parent.mkdir(parents=True, exist_ok=True)
             with gzip.open(slot, "wt", encoding="utf-8") as handle:
                 handle.write(text)
             return text
