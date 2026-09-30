@@ -2,12 +2,11 @@
 <p align="center"><i>Does this PCR test still match what is circulating?</i></p>
 
 <p align="center">
-  <a href="#the-result">The result</a> &middot;
+  <a href="#results">Results</a> &middot;
   <a href="#what-a-pcr-test-actually-is">What a PCR test is</a> &middot;
   <a href="#how-it-works">How it works</a> &middot;
   <a href="#run-it">Run it</a> &middot;
-  <a href="#what-this-does-not-do">What it does NOT do</a> &middot;
-  <a href="#problems-hit-while-building-this">Problems hit</a>
+  <a href="#scope">Scope</a> 
 </p>
 
 <p align="center">
@@ -32,7 +31,7 @@ This measures that from public data: 2,765 dated SARS-CoV-2 genomes from GenBank
 
 ---
 
-## The result
+## Results
 
 Share of sequences collected each year that each assay matched **exactly**, and the share
 it would plausibly **no longer detect**. Those are very different questions and the gap
@@ -195,7 +194,7 @@ chart here would be decoration that hides the sample size behind each point.*
 
 ---
 
-## What this does NOT do
+## Scope
 
 **It predicts, it does not test.** Every claim here is about sequence complementarity. No
 PCR was run. Real amplification depends on melting temperature, salt, enzyme, cycling
@@ -219,42 +218,6 @@ the unusual. These rates describe deposited sequences, not circulating virus.
 a two-point difference.
 
 **One organism, five assays.** The method is general; the numbers are about SARS-CoV-2.
-
----
-
-## Problems hit while building this
-
-**Counting `N` as a mismatch would have invented the entire finding.** Sequencing quality
-varies from 0.5% to 44.8% unknown bases by year in this dataset. Treating those as
-disagreements would produce a confident downward trend that is a measure of laboratory
-practice, not of the virus.
-
-**The 3′-end rule was being applied to probes.** Polymerase extends from a primer's 3′
-terminus, which is why a mismatch there is fatal — but a hydrolysis probe is never extended.
-The Omicron mutation under the CDC N1 probe happens to sit two bases from that probe's 3′
-end, so the first version of this reported N1 as having failed outright in 2022. Meaningless
-for a probe, fatal for a primer, and the code did not know the difference.
-
-**"Still works" was defined as "matches perfectly", which is an overclaim.** Under that
-definition CDC N1 and Charité E read 0% from 2022 onward, while laboratories were running
-both successfully. A single mismatch near the 5′ end of a 26-base primer barely moves the
-melting temperature. Split into `perfect` and `likely_failing`, which is the more
-interesting pair anyway.
-
-**One primer did not match the reference genome — and it was not a typo.** The rule in
-`primers.py` is that an oligo failing against NC_045512.2 is a transcription error. One
-failed. The Charité RdRp reverse primer carries `S` (G or C) where SARS-CoV-2 has `T`: it
-was designed for SARS-related coronaviruses from sequences predating SARS-CoV-2, so that
-assay has **never** matched its target perfectly. It sits 14 bases from the 3′ end, which is
-why it worked anyway. Recorded in `KNOWN_REFERENCE_MISMATCHES` with its reason, and
-subtracted as a baseline so the assay is not scored as drifted on day one — rather than
-loosening the test that caught it.
-
-**A palindromic test fixture silently disabled a test.** The strand-handling test used a
-primer that is its own reverse complement, so it was present on both strands and the test
-could not have failed whatever the code did.
-
----
 
 ## Layout
 
