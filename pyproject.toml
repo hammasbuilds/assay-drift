@@ -27,6 +27,12 @@ classifiers = [
 # answer rather than about Python packaging.
 dependencies = []
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.8"]
+
+[project.scripts]
+assay-drift = "assaydrift.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/hammasbuilds/assay-drift"
 Issues = "https://github.com/hammasbuilds/assay-drift/issues"
