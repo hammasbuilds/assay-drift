@@ -140,3 +140,45 @@ class TestRankAndPeak:
         period, rate = peak(obs, denominators)
         assert period == "2020"
         assert rate == 0.9
+
+
+class TestN2ThreePrimeSignal:
+    """C29215T, the 2026 CDC N2 signal, pinned from the reference genome.
+
+    The README's central claim changed because of this one substitution, so the
+    two facts it rests on are pinned here: that the site is two bases from the
+    N2 reverse primer's 3' end, and that one mismatch there is enough to make
+    the assay likely-failing rather than merely drifted.
+    """
+
+    def test_c29215t_sits_two_bases_from_the_n2_reverse_primer_3_prime_end(self):
+        assay = by_name("CDC N2")
+        sites = reference_sites([assay])
+        site = next(s for s in sites["N2-R"] if s.genome_position == 29215)
+        assert site.oligo == "N2-R"
+        assert site.role == "reverse"
+        assert site.bases_from_3_prime_end == 2
+        assert site.in_three_prime_window
+
+    def test_it_is_named_c29215t_and_not_its_reverse_complement(self):
+        sample = _record("x", _genome_with(29215, "T"), "2026-01-15")
+        observations, _ = observe([sample], [by_name("CDC N2")], "quarter")
+        assert [o.name for o in observations.values()] == ["C29215T"]
+
+    def test_one_mismatch_there_makes_the_assay_likely_failing(self):
+        from assaydrift.analyze import evaluate
+
+        sample = _record("x", _genome_with(29215, "T"), "2026-01-15")
+        result = evaluate(sample, by_name("CDC N2"))
+        assert result.usable
+        assert not result.perfect()
+        assert result.likely_failing()
+        assert result.total_mismatches == 1  # not a severe mismatch load
+
+    def test_the_same_substitution_mid_oligo_is_drift_not_failure(self):
+        from assaydrift.analyze import evaluate
+
+        sample = _record("x", _genome_with(29221, "G"), "2026-01-15")  # 8 bases in
+        result = evaluate(sample, by_name("CDC N2"))
+        assert not result.perfect()
+        assert not result.likely_failing()
