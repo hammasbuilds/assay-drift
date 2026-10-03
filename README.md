@@ -13,7 +13,7 @@
   <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-102-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-103-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -189,7 +189,7 @@ git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
 
 python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 102 tests, no network, no install step
+pytest -q               # 103 tests, no network, no install step
 ```
 
 Nothing to install — zero runtime dependencies, standard library only.
@@ -208,9 +208,21 @@ Or with `make`: `make demo`, `make test`, `make lint`, `make fetch`, `make analy
 The same scoring rules, applied to files you supply — no network, no GenBank:
 
 ```bash
-pip install -e .                      # or: python -m assaydrift check ...
-assay-drift check --primers my_assay.tsv --sequences genomes.fasta --json out.json
+pip install -e .        # only needed for the CLI; demo and tests need no install
+assay-drift check --primers examples/cdc_n2.tsv --sequences examples/two_genomes.fasta
 ```
+
+```
+sequence                verdict                 N2-F        N2-R        N2-P
+NC_045512.2             perfect                  0mm         0mm         0mm
+synthetic_C29215T       likely_failing           0mm      1mm/3'         0mm
+
+perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)
+```
+
+The two shipped example sequences are the 2019 reference and the same genome carrying
+C29215T, the 2026 N2 mutation above — one base, and the verdict changes. Point it at your
+own files with `--primers my_assay.tsv --sequences genomes.fasta --json out.json`.
 
 `my_assay.tsv` is one oligo per line, `name<TAB>role<TAB>sequence`, role being `forward`,
 `reverse` or `probe`; `#` comments and blank lines are skipped. Each sequence comes back as
@@ -300,7 +312,8 @@ src/assaydrift/analyze.py   grouping by collection date, rates, trend
 src/assaydrift/cli.py       assay-drift check: your own primers against your own FASTA
 scripts/fetch.py            year-stratified download
 scripts/analyse.py          the report
-tests/                      102 tests, none touching the network
+examples/                   a primers TSV and two genomes, for the CLI quickstart
+tests/                      103 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256

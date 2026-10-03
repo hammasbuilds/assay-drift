@@ -108,3 +108,22 @@ def test_analyse_without_data_exits_nonzero(tmp_path):
     )
     assert proc.returncode == 1
     assert "run scripts/fetch.py first" in proc.stderr
+
+
+def test_shipped_example_reproduces_the_readme_output(capsys):
+    """The example files in the README's quickstart must keep working."""
+    code = main(
+        [
+            "check",
+            "--primers",
+            str(ROOT / "examples" / "cdc_n2.tsv"),
+            "--sequences",
+            str(ROOT / "examples" / "two_genomes.fasta"),
+        ]
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "NC_045512.2             perfect" in out
+    assert "synthetic_C29215T       likely_failing" in out
+    assert "1mm/3'" in out
+    assert "perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)" in out
