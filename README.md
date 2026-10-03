@@ -20,7 +20,7 @@
 
 ---
 
-> ### Two of five published assays stopped matching their target entirely — 99.3% to 0.0% — and neither is predicted to have stopped working. The difference is *where* the mutation landed.
+> ### Two of five published assays stopped matching their target entirely — 99.3% to 0.0% — and both stayed in clinical use. A third is 90.8% and is the one that broke. The difference is *where* the mutation landed.
 
 A PCR diagnostic fails **silently**. When the target mutates under the primer binding site,
 amplification stops, and a failed amplification looks exactly like a negative sample. There
@@ -134,6 +134,8 @@ quarter, which is why the per-quarter tables exist.
 **CDC N1 and Charité E lost their exact match completely, and kept working.** Their Omicron
 mutations sit at base 3 of a probe and base 2 of a 26-base primer. Both weaken binding
 slightly. Neither stops the reaction — and both assays remained in clinical use throughout.
+N1's residual likely-failing rate (10.9% in 2026-Q3) comes from sequences carrying three or
+more mismatches across the whole assay, not from a 3′-end hit.
 
 **Charité RdRp is the one that actually broke, and worst while Delta circulated.** In
 2021-Q4, 44.5% of sequences carried G15451A — one base from the 3′ terminus of its forward
