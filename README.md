@@ -13,7 +13,7 @@
   <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-103-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-106-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -79,9 +79,11 @@ Three things are true at once, and reporting only the first would overstate it:
   site is unambiguous in every sequence counted, and the base is `T` where the reference and
   the primer both say `C`.
 - **The 2026-Q1/Q2 magnitude is a sampling artefact.** The hits are geographically clustered
-  and arrive in consecutive accession blocks — single-submitter batches. Across all 2026
-  sequences it is 53/333 (15.9%); in Wisconsin sequences 24/59 (40.7%), in Californian ones
-  6/86 (7.0%) and in UK ones 0/69. 2026-Q1 is Wisconsin-heavy and 2026-Q3 is California- and
+  and arrive in consecutive accession blocks — single-submitter batches. `scripts/analyse.py`
+  prints and stores where every 3′-window mutation was collected, over all years pooled:
+  `USA: Wisconsin 24/74, USA: California 10/186, USA: Michigan 7/27, USA: Missouri 4/26,
+  USA: Washington 4/163`. Within 2026 alone it is 53/333 sequences (15.9%) overall, 24/59 in
+  Wisconsin and 0/69 in the UK. 2026-Q1 is Wisconsin-heavy and 2026-Q3 is California- and
   UK-heavy, which is most of the difference between 30.6% and 5.1%. GenBank is not a random
   sample of infections, and this is what that caveat looks like in practice.
 - **2026-Q2 has n=29.** It clears the 25-sequence reporting floor and nothing more. Its
@@ -189,7 +191,7 @@ git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
 
 python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 103 tests, no network, no install step
+pytest -q               # 106 tests, no network, no install step
 ```
 
 Nothing to install — zero runtime dependencies, standard library only.
@@ -313,7 +315,7 @@ src/assaydrift/cli.py       assay-drift check: your own primers against your own
 scripts/fetch.py            year-stratified download
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      103 tests, none touching the network
+tests/                      106 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256

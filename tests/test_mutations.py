@@ -182,3 +182,71 @@ class TestN2ThreePrimeSignal:
         result = evaluate(sample, by_name("CDC N2"))
         assert not result.perfect()
         assert not result.likely_failing()
+
+
+class TestPlaces:
+    """Where a mutation was collected, which is how a batch is told from a wave."""
+
+    def _records(self):
+        from assaydrift.reference import genome
+
+        carrying = _genome_with(29215, "T")
+        clean = genome()
+        rows = []
+        for i in range(8):  # one place deposits a batch, almost all carrying
+            rows.append(
+                Record(
+                    accession=f"a{i}",
+                    organism="x",
+                    sequence=carrying if i < 6 else clean,
+                    collected="2026-01-15",
+                    country="USA: Wisconsin",
+                    length=0,
+                )
+            )
+        for i in range(10):  # another sequences more and finds one
+            rows.append(
+                Record(
+                    accession=f"b{i}",
+                    organism="x",
+                    sequence=carrying if i < 1 else clean,
+                    collected="2026-01-15",
+                    country="USA: California",
+                    length=0,
+                )
+            )
+        return rows
+
+    def _observation(self, rows):
+        observations, denominators = observe(rows, [by_name("CDC N2")], "quarter")
+        return next(o for o in observations.values() if o.name == "C29215T"), denominators
+
+    def test_rate_is_per_place_not_over_the_whole_study(self):
+        from assaydrift.mutations import places
+
+        observation, denominators = self._observation(self._records())
+        rows = {place: (n, total) for place, n, total, _ in places(observation, denominators)}
+        assert rows == {"USA: Wisconsin": (6, 8), "USA: California": (1, 10)}
+
+    def test_sub_locality_is_dropped_so_one_place_is_one_group(self):
+        from assaydrift.mutations import place_of, places
+
+        assert place_of("USA: AZ, Maricopa") == "USA: AZ"
+        assert place_of("") == "unknown"
+        rows = self._records()
+        rows[0] = Record(
+            accession=rows[0].accession,
+            organism="x",
+            sequence=rows[0].sequence,
+            collected="2026-01-15",
+            country="USA: Wisconsin, Dane",
+            length=0,
+        )
+        observation, denominators = self._observation(rows)
+        counts = {place: n for place, n, _t, _r in places(observation, denominators)}
+        assert counts["USA: Wisconsin"] == 6
+
+    def test_period_denominators_are_unaffected_by_the_place_keys(self):
+        observation, denominators = self._observation(self._records())
+        assert denominators["CDC N2|2026-Q1"] == 18
+        assert rank({("N2-R", 2, "A"): observation}, denominators)[0][1] == 7 / 18

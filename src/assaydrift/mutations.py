@@ -63,6 +63,10 @@ class Observation:
     site: Site
     alt_base: str
     by_period: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    # Where the carrying sequences were collected. A mutation that is 30% of a
+    # quarter because one laboratory deposited a batch is not 30% of anything
+    # epidemiological, and only the geography shows the difference.
+    by_place: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     @property
     def name(self) -> str:
@@ -119,6 +123,35 @@ def _search_string(oligo: Oligo) -> str:
     return reverse_complement(oligo.sequence) if oligo.role == "reverse" else oligo.sequence
 
 
+def place_of(country: str) -> str:
+    """The collection place, normalised enough to group on.
+
+    GenBank writes this as `USA: Wisconsin`, `USA: AZ, Maricopa` or
+    `United Kingdom: Surrey`. Everything after the first comma is a sub-locality
+    that splits the same place into many groups, so it is dropped; an empty
+    field becomes "unknown" rather than being silently merged with a real place.
+    """
+    place = (country or "").split(",")[0].strip()
+    return place or "unknown"
+
+
+def places(
+    observation: Observation, denominators: dict[str, int], top: int = 5
+) -> list[tuple[str, int, int, float]]:
+    """Where this substitution was found: place, carrying, sequenced, rate.
+
+    The denominator is every usable sequence from that place for the same
+    assay, so a place that deposited one carrying sequence and nothing else
+    reads as 1/1 rather than as a high rate over the whole study.
+    """
+    out = []
+    for place, count in observation.by_place.items():
+        total = denominators.get(f"{observation.site.assay}@{place}", 0)
+        out.append((place, count, total, count / total if total else 0.0))
+    out.sort(key=lambda row: (-row[1], row[0]))
+    return out[:top]
+
+
 def observe(
     records: list[Record] | None = None,
     assays: list[Assay] | None = None,
@@ -156,6 +189,7 @@ def observe(
             if not all(hit.usable for hit in hits.values()):
                 continue  # unknown bases under an oligo: no evidence either way
             denominators[f"{assay.name}|{period}"] += 1
+            denominators[f"{assay.name}@{place_of(record.country)}"] += 1
             for oligo in assay.oligos:
                 hit = hits[oligo.name]
                 search = searched[oligo.name]
@@ -174,6 +208,7 @@ def observe(
                     if key not in observations:
                         observations[key] = Observation(site=site, alt_base=actual)
                     observations[key].by_period[period] += 1
+                    observations[key].by_place[place_of(record.country)] += 1
     return observations, dict(denominators)
 
 

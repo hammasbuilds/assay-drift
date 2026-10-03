@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from assaydrift import primers  # noqa: E402
 from assaydrift.analyze import evaluate, summarise, trend  # noqa: E402
-from assaydrift.mutations import observe, rank  # noqa: E402
+from assaydrift.mutations import observe, places, rank  # noqa: E402
 from assaydrift.ncbi import Record  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -184,10 +184,18 @@ def main() -> int:
         entries = []
         for obs, overall_rate in ranked:
             window_flag = " [3' window]" if obs.site.in_three_prime_window else ""
+            top_places = places(obs, mut_denominators)
             print(
                 f"    {obs.name:<10} {obs.site.oligo:<10} base {obs.site.base_in_oligo} of "
                 f"{obs.site.oligo_length}  overall {overall_rate:.1%}{window_flag}"
             )
+            if obs.site.in_three_prime_window:
+                # Where a 3'-window mutation was collected decides how much a
+                # per-quarter rate can carry: a batch from one laboratory moves
+                # a quarter a long way without telling you anything about what
+                # is circulating anywhere else.
+                shown = ", ".join(f"{place} {n}/{total}" for place, n, total, _rate in top_places)
+                print(f"      collected in: {shown}")
             entries.append(
                 {
                     "name": obs.name,
@@ -200,6 +208,11 @@ def main() -> int:
                     "genome_position": obs.site.genome_position,
                     "overall_rate": overall_rate,
                     "total": obs.total,
+                    "by_period": dict(sorted(obs.by_period.items())),
+                    "top_places": [
+                        {"place": place, "carrying": n, "sequenced": total, "rate": rate}
+                        for place, n, total, rate in top_places
+                    ],
                 }
             )
         mutations_payload[assay.name] = entries
