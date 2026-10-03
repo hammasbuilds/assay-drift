@@ -56,6 +56,20 @@ leaves zero, and in 2026-Q1 and 2026-Q2 it is 28.7% (n=115) and 34.5% (n=29). Th
 mutation, not an artefact, and the next section says exactly what it is and how much weight
 the per-quarter figure can carry.
 
+### The same data by year
+
+Quarters are what the committed `results/drift.json` holds; `scripts/analyse.py --granularity
+year` regroups the same 2,765 sequences and is the better view when a quarter's sample is
+thin. Nothing in the story changes, and the N2 figure lands between its swinging quarters:
+
+| Assay | Exact match 2020 | Exact match 2026 | Likely failing 2026 | Likely failing, worst year |
+|---|---:|---:|---:|---|
+| **CDC N1** | 99.0% | **0.0%** | 7.0% | 7.0% (2026) |
+| **Charité E** | 98.8% | **0.0%** | 0.9% | 0.9% (2026) |
+| **Charité RdRp** | 98.3% | 87.0% | 13.0% | **38.3% (2021)** |
+| CDC N3 *(retired)* | 99.3% | 90.3% | 0.9% | 2.0% (2023) |
+| **CDC N2** | 98.0% | 68.8% | **15.8%** | 15.8% (2026) |
+
 ### What happened to CDC N2 in 2026
 
 The hits are a single substitution, **C29215T**, two bases from the 3′ end of the N2 reverse
