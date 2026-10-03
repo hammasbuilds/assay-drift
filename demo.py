@@ -107,8 +107,13 @@ def show_drift() -> None:
     print("An assay can lose its exact match completely and keep working: CDC N1")
     print("and Charite E both went to 0% and stayed in clinical use, because their")
     print("mutations weaken binding without blocking extension. Charite RdRp is the")
-    print("one that actually broke, and only while Delta circulated - G15451A sits")
-    print("one base from its forward primer's 3' end, where polymerase starts.\n")
+    print("one that broke worst, and while Delta circulated - G15451A sits one")
+    print("base from its forward primer's 3' end, where polymerase starts.\n")
+    print("CDC N2 was the quiet one until 2025: C29215T, two bases from its")
+    print("reverse primer's 3' end, is absent before 2025 and reaches 30.6% of")
+    print("2026-Q1 sequences. Read that quarter's rate with the sampling caveat")
+    print("in the README - the hits are clustered by submitting laboratory, and")
+    print("the same mutation is 5.1% of 2026-Q3.\n")
     print("Full per-quarter tables: results/drift.json, or run scripts/analyse.py")
 
 
