@@ -352,6 +352,9 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
             best = scored
 
     seen: set[int] = set()
+    # Positions a seed pointed at that the mismatch cap rejected. An indel inside the
+    # site puts the RIGHT position in here, so they are kept for the gapped pass.
+    rejected: set[int] = set()
     for offset, seed in _seeds(oligo):
         start = target.find(seed)
         while start != -1:
@@ -365,13 +368,23 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
                 # would otherwise outrank a real but gappy site, turning "this
                 # genome cannot say" into "this assay has no binding site".
                 if scored is None or scored.mismatches > MAX_MISMATCHES:
+                    # Keep the position anyway. An indel inside the site makes every
+                    # base after it compare against its neighbour, so the ungapped
+                    # score at the RIGHT place is terrible and gets dropped here - and
+                    # then nothing is left and the site reports as absent. A 3-base
+                    # deletion in a 22-mer primer did exactly that: NOT_FOUND, which
+                    # reads as "this assay has no binding site" rather than "there is a
+                    # deletion in it". The gapped pass below is the only thing that can
+                    # tell those apart, and it has to be allowed to see these.
+                    if position >= 0:
+                        rejected.add(position)
                     start = target.find(seed, start + 1)
                     continue
                 if best is None or _preference(scored) < _preference(best):
                     best = scored
             start = target.find(seed, start + 1)
 
-    if best is None:
+    if best is None and not rejected:
         return NOT_FOUND
 
     # Only now, and only if the best ungapped alignment looks bad enough that an indel
@@ -379,27 +392,54 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
     # substitution drift and must not be refitted as a gap; above that, one deleted base
     # can masquerade as a run of mismatches and - worse - manufacture mismatches inside
     # the 3' window, which is the signal this tool reports as stopping the reaction.
-    if best.mismatches > 2 and best.position >= 0:
+    # Rejected positions are a last resort, used only when nothing survived the cap.
+    # Letting them compete with a surviving alignment lets a gapped NOISE site beat a
+    # genuinely unreadable one: a binding site that is entirely `N` is "cannot say", and
+    # promoting a 5-mismatch-plus-a-gap coincidence over it turns that into "the assay
+    # has lost its target", which is the opposite conclusion.
+    anchors: set[int] = set()
+    if best is None:
+        anchors |= rejected
+    elif best.position >= 0 and best.mismatches > 2:
+        anchors.add(best.position)
+    if anchors:
         # The start has to be searched, not assumed. An indel shifts everything after it,
         # so the best UNGAPPED alignment of a site containing one lands off the true
         # start - a 3-base deletion put it 3 bases early and a 3-base insertion 3 late -
         # and a window anchored on that start cannot be repaired by gaps alone.
         candidates = []
-        for shift in range(-MAX_GAPS, MAX_GAPS + 1):
-            start = best.position + shift
-            if start < 0:
-                continue
-            window = target[start : start + len(oligo) + MAX_GAPS]
-            if len(window) < len(oligo) - MAX_GAPS:
-                continue
-            gapped = _align_gapped(oligo, window, three_prime_at_start)
-            if gapped is not None:
-                score = gapped.mismatches + gapped.ambiguous + GAP_OPEN
+        for anchor in anchors:
+            for shift in range(-MAX_GAPS, MAX_GAPS + 1):
+                start = anchor + shift
+                if start < 0:
+                    continue
+                window = target[start : start + len(oligo) + MAX_GAPS]
+                if len(window) < len(oligo) - MAX_GAPS:
+                    continue
+                gapped = _align_gapped(oligo, window, three_prime_at_start)
+                if gapped is None:
+                    continue
+                # Affine, matching _align_gapped: one run of gaps is one event. Scoring
+                # per gap base here would reject a 3-base deletion that the aligner had
+                # already decided was the better explanation.
+                score = (
+                    gapped.mismatches
+                    + gapped.ambiguous
+                    + GAP_OPEN
+                    + GAP_EXTEND * max(0, gapped.indels - 1)
+                )
                 candidates.append((score, abs(shift), start, gapped))
         if candidates:
             score, _, start, gapped = min(candidates, key=lambda c: (c[0], c[1]))
-            if score < best.mismatches + best.ambiguous:
+            # Against the ungapped alternative, or against the cap when there was no
+            # usable ungapped alignment at all.
+            ceiling = (
+                best.mismatches + best.ambiguous if best is not None else MAX_MISMATCHES + 1
+            )
+            if score < ceiling:
                 return replace(gapped, position=start)
+    if best is None:
+        return NOT_FOUND
     return best
 
 
