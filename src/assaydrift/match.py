@@ -60,6 +60,19 @@ THREE_PRIME_WINDOW = 5
 MAX_MISMATCHES = 8
 
 
+# Indels an alignment may use to explain a site before giving up. Three covers the
+# in-frame deletions that actually circulate (Alpha's ORF1a delta-3675-3677, S
+# delta-69-70); beyond that the site is not this primer's binding site any more.
+MAX_GAPS = 3
+
+# Affine gap costs, against a mismatch's 1: opening a gap costs GAP_OPEN and each
+# further base GAP_EXTEND, so one three-base deletion is one event (2.0 + 2 x 0.5 = 3.0)
+# rather than three. A flat per-base cost charged it 6.0, exactly tying the six
+# mismatches it explained, and the alignment lost on the tie.
+GAP_OPEN = 2.0
+GAP_EXTEND = 0.5
+
+
 def reverse_complement(sequence: str) -> str:
     return sequence.translate(COMPLEMENT)[::-1]
 
@@ -74,6 +87,10 @@ class Hit:
     three_prime_mismatches: int
     found: bool = True
     role: str = ""
+    # Indels the alignment needed to explain this site. Zero on the ordinary
+    # substitution path; non-zero means the site was explained by a deletion or
+    # insertion rather than by a run of mismatches.
+    indels: int = 0
 
     @property
     def usable(self) -> bool:
@@ -172,6 +189,120 @@ def score_at(
     )
 
 
+def _align_gapped(
+    oligo: str, window: str, three_prime_at_start: bool, max_gaps: int = MAX_GAPS
+) -> Hit | None:
+    """Score this oligo against a window allowing up to `max_gaps` indels.
+
+    `score_at` compares base i of the oligo with base i of the target, which is
+    the right thing for a substitution and the wrong thing for an indel: every
+    position after a deletion is compared against its neighbour, so one deleted
+    base reads as a run of mismatches. A single base deleted in the middle of a
+    21-mer was reported as **eight** mismatches with **three** of them inside
+    the 3' window - and a 3' mismatch is the one signal this tool treats as
+    stopping the reaction. So a real deletion in the middle of a primer site
+    was reported as the primer's business end being destroyed.
+
+    Deletions are not hypothetical in this domain: Alpha carried ORF1a
+    delta-3675-3677 and S delta-69-70, and a deletion inside a primer site is
+    exactly the kind of event an assay owner needs told apart from drift.
+
+    Gap costs are affine: GAP_OPEN to start a gap and GAP_EXTEND per extra base, so
+    one three-base deletion is charged as a single event rather than as three. A flat
+    per-base cost made a three-base deletion cost exactly as much as the six mismatches
+    it explained, so the alignment was rejected on a tie and the deletion stayed
+    misreported. A mismatch costs 1, so no gap is opened to save a single substitution
+    and substitution-only drift - the common case - stays on the ungapped path.
+
+    Returns None when no gapped alignment consumes the whole oligo, or when it needed
+    more than `max_gaps` gap bases.
+    """
+    n, m = len(oligo), len(window)
+    if n == 0 or m == 0:
+        return None
+    oligo, window = oligo.upper(), window.upper()
+    big = float("inf")
+
+    # Gotoh's three states: M aligns a base to a base, D puts the oligo base over a gap
+    # (deleted from the target), I puts a target base over a gap (inserted in it).
+    # Separate states are what make the gap penalty affine - a flat matrix cannot tell
+    # "opening a gap" from "continuing one".
+    M = [[big] * (m + 1) for _ in range(n + 1)]
+    D = [[big] * (m + 1) for _ in range(n + 1)]
+    I = [[big] * (m + 1) for _ in range(n + 1)]  # noqa: E741 - the standard name
+    M[0][0] = 0.0
+    for j in range(1, m + 1):
+        I[0][j] = GAP_OPEN + GAP_EXTEND * (j - 1)
+    for i in range(1, n + 1):
+        D[i][0] = GAP_OPEN + GAP_EXTEND * (i - 1)
+
+    for i in range(1, n + 1):
+        base = oligo[i - 1]
+        for j in range(1, m + 1):
+            actual = window[j - 1]
+            step = 0.0 if (actual == "N" or actual in IUPAC[base]) else 1.0
+            M[i][j] = min(M[i - 1][j - 1], D[i - 1][j - 1], I[i - 1][j - 1]) + step
+            D[i][j] = min(D[i - 1][j] + GAP_EXTEND, M[i - 1][j] + GAP_OPEN,
+                          I[i - 1][j] + GAP_OPEN)
+            I[i][j] = min(I[i][j - 1] + GAP_EXTEND, M[i][j - 1] + GAP_OPEN,
+                          D[i][j - 1] + GAP_OPEN)
+
+    ends = [(min(M[n][j], D[n][j], I[n][j]), abs(j - n), j)
+            for j in range(max(0, n - max_gaps), min(m, n + max_gaps) + 1)]
+    ends = [e for e in ends if e[0] < big]
+    if not ends:
+        return None
+    _, _, end_j = min(ends)
+
+    # Traceback through the state that actually produced each cell.
+    mismatches = ambiguous = three_prime = gaps = 0
+    i, j = n, end_j
+    state = min(("M", M[i][j]), ("D", D[i][j]), ("I", I[i][j]), key=lambda kv: kv[1])[0]
+    while i > 0 or j > 0:
+        if state == "M":
+            if i == 0 or j == 0:
+                state = "D" if j == 0 else "I"
+                continue
+            base, actual = oligo[i - 1], window[j - 1]
+            if actual == "N":
+                ambiguous += 1
+            elif actual not in IUPAC[base]:
+                mismatches += 1
+                # Measured on the OLIGO index, which the alignment preserves - that is
+                # the whole reason for aligning before counting 3' mismatches.
+                distance = (i - 1) if three_prime_at_start else (n - i)
+                if distance < THREE_PRIME_WINDOW:
+                    three_prime += 1
+            step = 0.0 if (actual == "N" or actual in IUPAC[base]) else 1.0
+            previous = M[i][j] - step
+            i, j = i - 1, j - 1
+            state = min(("M", M[i][j]), ("D", D[i][j]), ("I", I[i][j]),
+                        key=lambda kv: abs(kv[1] - previous))[0]
+        elif state == "D":
+            gaps += 1
+            came_from_extend = i > 1 and abs(D[i][j] - (D[i - 1][j] + GAP_EXTEND)) < 1e-9
+            i -= 1
+            state = "D" if came_from_extend else "M"
+            if i == 0 and j == 0:
+                break
+        else:
+            gaps += 1
+            came_from_extend = j > 1 and abs(I[i][j] - (I[i][j - 1] + GAP_EXTEND)) < 1e-9
+            j -= 1
+            state = "I" if came_from_extend else "M"
+            if i == 0 and j == 0:
+                break
+    if gaps == 0 or gaps > max_gaps:
+        return None
+    return Hit(
+        position=-1,
+        mismatches=mismatches,
+        ambiguous=ambiguous,
+        three_prime_mismatches=three_prime,
+        indels=gaps,
+    )
+
+
 def _preference(hit: Hit) -> tuple[int, int]:
     """How good an alignment is, lower being better.
 
@@ -242,6 +373,33 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
 
     if best is None:
         return NOT_FOUND
+
+    # Only now, and only if the best ungapped alignment looks bad enough that an indel
+    # is the likelier explanation. A site with two or fewer mismatches is ordinary
+    # substitution drift and must not be refitted as a gap; above that, one deleted base
+    # can masquerade as a run of mismatches and - worse - manufacture mismatches inside
+    # the 3' window, which is the signal this tool reports as stopping the reaction.
+    if best.mismatches > 2 and best.position >= 0:
+        # The start has to be searched, not assumed. An indel shifts everything after it,
+        # so the best UNGAPPED alignment of a site containing one lands off the true
+        # start - a 3-base deletion put it 3 bases early and a 3-base insertion 3 late -
+        # and a window anchored on that start cannot be repaired by gaps alone.
+        candidates = []
+        for shift in range(-MAX_GAPS, MAX_GAPS + 1):
+            start = best.position + shift
+            if start < 0:
+                continue
+            window = target[start : start + len(oligo) + MAX_GAPS]
+            if len(window) < len(oligo) - MAX_GAPS:
+                continue
+            gapped = _align_gapped(oligo, window, three_prime_at_start)
+            if gapped is not None:
+                score = gapped.mismatches + gapped.ambiguous + GAP_OPEN
+                candidates.append((score, abs(shift), start, gapped))
+        if candidates:
+            score, _, start, gapped = min(candidates, key=lambda c: (c[0], c[1]))
+            if score < best.mismatches + best.ambiguous:
+                return replace(gapped, position=start)
     return best
 
 
