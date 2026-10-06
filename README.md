@@ -184,10 +184,33 @@ year of data, which cannot show drift at all.
 
 **An `N` in the target is missing data, not a mismatch.** This is the load-bearing decision.
 Sequencing quality changed enormously over the pandemic — in this run the exclusion rate runs from
-0.0% of sequences in 2020-2023 to 2.3% in 2024, and 9.5% for one assay in a single quarter
-(CDC N1, 2024-Q4) — so counting unknown bases as mismatches would
+0.0% of sequences in 2020-2022 and 0.1% in 2023 to 2.5% in 2024, and 10.1% for one assay in a
+single quarter (CDC N1, 2024-Q4) — so counting unknown bases as mismatches would
 manufacture a *time trend* out of laboratory practice and present it as viral drift. Oligos
 with an unknown base under them are excluded from the rates and reported separately.
+
+**A site has to be similar enough to be the site at all.** An 18-mer scored against every
+offset of a 29,903-base genome will always find somewhere that matches to within 5 bases by
+chance; brute force over the reference puts the best *wrong* site for the catalogue's fifteen
+oligos at 27%–42% divergence. A candidate site is therefore capped at a fifth of the oligo's
+length in definite mismatches, not at a flat number — a flat cap of 8 is 31% of a 26-mer but
+44% of an 18-mer, and admitted a coincidence for ten of the fifteen. Above the cap the answer
+is "no binding site", which is a different statement from "the site could not be read": with
+all 18 bases of CDC N2's reverse primer masked as `N`, the flat cap reported a site 8,436
+bases away with 7 mismatches as a usable measurement, where the honest answer — and now the
+output — is the real locus with 18 unknown bases and excluded from every rate.
+
+**The search has to be able to find a drifted site, not only a perfect one.** Candidate
+positions come from exact seeds, and the seed length is computed from the oligo so that two
+substitutions anywhere in it cannot break every seed. Fixed 8-base seeds at every fourth
+offset gave an 18-mer three seeds covering bases 0-15, which left two of its bases in no
+seed at all: enumerating every pair of positions, **31.4% of all two-mismatch sites in an
+18-mer came back as "no binding site"** — a much stronger claim than "it has two
+substitutions", and CDC N2's reverse primer is an 18-mer. It is now 0.0% at every oligo
+length in the catalogue, and three-mismatch misses fell from 60.8% to 0.5%. This changed no
+number in the committed run, because the mutations that circulate in these sites are single
+substitutions at recurring positions and one mismatch was never missed; it matters for
+`check`, where the primers and sequences are your own.
 
 **Ambiguity codes in a primer are a real mixture.** `R` means the oligo was synthesised as
 both A and G, so it genuinely matches both. Charité RdRp uses them deliberately, to catch

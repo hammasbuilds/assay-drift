@@ -57,7 +57,36 @@ THREE_PRIME_WINDOW = 5
 
 # Above this many definite mismatches, an alignment is not the primer's binding
 # site any more - it is noise found somewhere else in a 30,000 base genome.
+# The absolute ceiling, kept for the longest oligos and for the NOT_FOUND sentinel.
 MAX_MISMATCHES = 8
+
+# An absolute cap cannot do this job, because the catalogue's oligos are 18 to 26 bases
+# and 8 mismatches is 31% of a 26-mer but 44% of an 18-mer. Measured by brute force over
+# the 29,903-base reference, scoring every oligo at every offset that is not its own
+# locus, the best WRONG site is:
+#
+#     N2-R   (18)  5 mismatches  28%        N3-F   (22)  6 mismatches  27%
+#     N2-F   (20)  6 mismatches  30%        RdRp-P (25)  8 mismatches  32%
+#     E-P    (26) 11 mismatches  42%        N1-P   (24) 10 mismatches  42%
+#
+# Coincidence starts at 27% of the oligo's length, and the flat cap of 8 admitted a
+# coincidental site for 10 of the 15 oligos. That is not hypothetical: masking all 18
+# bases of N2-R's site with N made `find` report position 20,776 - 8,436 bases from the
+# real site - with 7 mismatches and `usable` true, instead of saying the site could not be
+# read. The ambiguous alignment at the true locus was already being kept as a fallback and
+# lost the ranking to the coincidence, because `_preference` adds unknowns to mismatches
+# and 7 beats 18.
+#
+# A fifth of the oligo leaves clear air under every measured coincidence while staying
+# well above real substitution drift, which is a handful of bases at most - a primer
+# diverging by a fifth would not amplify anyway.
+MAX_MISMATCH_SHARE = 0.20
+MIN_MISMATCH_CAP = 2
+
+
+def mismatch_cap(oligo_length: int) -> int:
+    """How many definite mismatches a site may have and still be this oligo's site."""
+    return min(MAX_MISMATCHES, max(MIN_MISMATCH_CAP, int(oligo_length * MAX_MISMATCH_SHARE)))
 
 
 # Indels an alignment may use to explain a site before giving up. Three covers the
@@ -137,16 +166,43 @@ def _pattern(oligo: str) -> re.Pattern[str]:
     return re.compile("".join(f"[{IUPAC[base]}N]" for base in oligo.upper()))
 
 
-def _seeds(oligo: str, k: int = 8) -> list[tuple[int, str]]:
+# Mismatches the seed search is guaranteed to see through. With m mismatches an oligo
+# splits into m+1 clean runs totalling len-m bases, so the longest is at least
+# (len - m) // (m + 1) - and a seed no longer than that must land inside one of them.
+SEED_GUARANTEE = 2
+MIN_SEED = 5
+MAX_SEED = 8
+
+
+def _seed_length(oligo_length: int) -> int:
+    """Longest seed that still cannot be missed by SEED_GUARANTEE mismatches."""
+    safe = (oligo_length - SEED_GUARANTEE) // (SEED_GUARANTEE + 1)
+    return max(MIN_SEED, min(MAX_SEED, safe))
+
+
+def _seeds(oligo: str, k: int | None = None) -> list[tuple[int, str]]:
     """Unambiguous k-mers of the oligo, with their offsets.
 
-    Used to find candidate positions fast. By the pigeonhole principle an
-    alignment with few mismatches must contain at least one exact seed, so
-    searching seeds with `str.find` (which runs at C speed) beats sliding a
-    window over 30,000 bases in Python by a wide margin.
+    Used to find candidate positions fast: searching seeds with `str.find`, which runs at
+    C speed, beats sliding a window over 30,000 bases in Python by a wide margin.
+
+    The length and the stride both matter, and both used to be wrong. Fixed 8-mers at a
+    stride of 4 gave an 18-mer exactly three seeds - 0-7, 4-11, 8-15 - which do not tile
+    it and leave bases 16-17 inside no seed at all, so two substitutions could break every
+    seed and the site came back NOT_FOUND. Enumerated over every pair of positions, that
+    was **31.4% of all two-mismatch sites in an 18-mer**, 6.9% in a 22-mer, and 60.8% of
+    three-mismatch sites in an 18-mer. CDC N2's reverse primer is an 18-mer, and
+    NOT_FOUND is read as "this assay has no binding site" - a far stronger claim than "it
+    has two substitutions", and the one this tool exists to tell apart.
+
+    So the seed is sized to the oligo rather than fixed, and every offset is used rather
+    than every other one. The docstring's appeal to the pigeonhole principle only holds
+    once both are true.
     """
+    if k is None:
+        k = _seed_length(len(oligo))
     out = []
-    for start in range(0, len(oligo) - k + 1, max(1, k // 2)):
+    for start in range(0, len(oligo) - k + 1):
         piece = oligo[start : start + k]
         if all(base in "ACGT" for base in piece):
             out.append((start, piece))
@@ -336,6 +392,7 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
         return NOT_FOUND
 
     best: Hit | None = None
+    cap = mismatch_cap(len(oligo))
 
     # Fast path: a perfect site, allowing N. Most genomes, most assays.
     exact = _pattern(oligo).search(target)
@@ -362,12 +419,14 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
             if position >= 0 and position not in seen:
                 seen.add(position)
                 scored = score_at(oligo, target, position, three_prime_at_start)
-                # Anything above MAX_MISMATCHES is noise found elsewhere in a
-                # 30,000 base genome, so it is dropped here rather than after
-                # the ranking: a 9-mismatch coincidence has few unknowns and
-                # would otherwise outrank a real but gappy site, turning "this
+                # Anything above the cap is noise found elsewhere in a 30,000
+                # base genome, so it is dropped here rather than after the
+                # ranking: a coincidence has few unknowns and would otherwise
+                # outrank a real but gappy or unreadable site, turning "this
                 # genome cannot say" into "this assay has no binding site".
-                if scored is None or scored.mismatches > MAX_MISMATCHES:
+                # The cap is a share of the oligo's length, not a flat 8 - see
+                # MAX_MISMATCH_SHARE for the measurement that fixed it there.
+                if scored is None or scored.mismatches > cap:
                     # Keep the position anyway. An indel inside the site makes every
                     # base after it compare against its neighbour, so the ungapped
                     # score at the RIGHT place is terrible and gets dropped here - and
@@ -434,7 +493,7 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
             # Against the ungapped alternative, or against the cap when there was no
             # usable ungapped alignment at all.
             ceiling = (
-                best.mismatches + best.ambiguous if best is not None else MAX_MISMATCHES + 1
+                best.mismatches + best.ambiguous if best is not None else cap + 1
             )
             if score < ceiling:
                 return replace(gapped, position=start)

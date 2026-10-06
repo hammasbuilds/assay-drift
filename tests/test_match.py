@@ -14,9 +14,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from assaydrift.match import (  # noqa: E402
+    MAX_MISMATCHES,
     THREE_PRIME_WINDOW,
     find,
     find_oligo,
+    mismatch_cap,
     reverse_complement,
     score_at,
 )
@@ -256,10 +258,26 @@ class TestStrand:
     # Deliberately NOT a palindrome. The first version of this test used
     # ACGTTGCAACGTTGCAACGT, which is its own reverse complement, so it was
     # present on both strands and the strand logic could not be tested at all.
-    PRIMER = "ACGTTGCAAGGTTGCAACTT"
+    #
+    # "Not a palindrome" turned out to be too weak a requirement. The replacement,
+    # ACGTTGCAAGGTTGCAACTT, differs from its own reverse complement in only 4 of 20
+    # positions - and the mismatch cap for a 20-mer is 4, so once the seed search was
+    # fixed to actually find two- and three-mismatch sites, the primer read forward
+    # matched its own reverse complement at the cap and the test failed. The fixture has
+    # to be FAR from its reverse complement, not merely unequal, and the next test
+    # asserts that rather than leaving it to inspection.
+    PRIMER = "GAAACAGAACTCGGGTAATT"
 
-    def test_the_fixture_is_not_its_own_reverse_complement(self):
-        assert reverse_complement(self.PRIMER) != self.PRIMER
+    def test_the_fixture_is_far_from_its_own_reverse_complement(self):
+        """Otherwise the next test passes for the wrong reason, or not at all."""
+        other = reverse_complement(self.PRIMER)
+        assert other != self.PRIMER
+        differences = sum(a != b for a, b in zip(self.PRIMER, other, strict=True))
+        assert differences > mismatch_cap(len(self.PRIMER)), (
+            f"only {differences} differences, which is within the "
+            f"{mismatch_cap(len(self.PRIMER))}-mismatch cap, so a forward read of this "
+            "primer legitimately matches its own reverse complement"
+        )
 
     def test_a_reverse_primer_is_found_via_its_reverse_complement(self):
         genome = PAD + reverse_complement(self.PRIMER) + PAD
@@ -300,3 +318,64 @@ class TestEdges:
     def test_a_non_iupac_letter_is_caught_through_find_oligo_too(self):
         with pytest.raises(ValueError, match="IUPAC"):
             find_oligo("ACGT" * 20, "ACGT ACGTACGTACGTACG".replace(" ", "Q"), "reverse")
+
+
+class TestACoincidenceIsNotTheBindingSite:
+    """A site has to be similar enough to plausibly BE the oligo's site.
+
+    The cap on definite mismatches used to be a flat 8. The catalogue's oligos are 18 to
+    26 bases, so that is 31% of a 26-mer and 44% of an 18-mer, and brute force over the
+    reference genome puts the best WRONG site for each of the fifteen oligos at 27%-42%
+    divergence - which means the flat cap admitted a coincidence for ten of them.
+    """
+
+    def test_the_cap_is_a_share_of_the_oligo_not_a_flat_number(self):
+        assert mismatch_cap(18) == 3
+        assert mismatch_cap(26) == 5
+        # Never above the absolute ceiling, and never so low that ordinary drift in a
+        # very short oligo is refused.
+        assert mismatch_cap(400) == MAX_MISMATCHES
+        assert mismatch_cap(4) == 2
+
+    def test_an_unreadable_site_beats_a_coincidence_elsewhere(self):
+        """The bug this exists for, in miniature.
+
+        With every base of the real site replaced by N, the ungapped pass finds a
+        coincidence somewhere else in the target. `_preference` ranks on
+        `mismatches + ambiguous`, so a 7-mismatch coincidence scored better than the real
+        locus under 18 unknown bases and won - and the answer came back as a confident
+        measurement at a position thousands of bases away, with `usable` true.
+
+        The honest answer is the real locus, unreadable, excluded from every rate.
+        """
+        oligo = "ACGTTGCAATCGGATCAG"
+        assert len(oligo) == 18
+        # A target carrying the site once, then the same site masked, with a coincidence
+        # available in between: PAD contains no run resembling the oligo.
+        decoy = "ACGTTGCAATCGGATCAG"
+        decoy = decoy[:4] + "TTTTTTT" + decoy[11:]  # 7 definite mismatches
+        target = PAD + decoy + PAD + "N" * len(oligo) + PAD
+
+        hit = find(oligo, target)
+        # The property is not which window wins - several overlap the masked run and any
+        # of them is an honest "cannot say" - but that the answer is NOT the readable
+        # coincidence. The coincidence has no unknown bases and would be usable.
+        assert hit.ambiguous > 0, (
+            f"returned a readable site at {hit.position} with {hit.mismatches} "
+            "mismatches, when the real site is unreadable"
+        )
+        assert hit.usable is False
+
+    def test_a_seven_mismatch_site_in_an_eighteen_mer_is_not_a_site(self):
+        oligo = "ACGTTGCAATCGGATCAG"
+        decoy = oligo[:4] + "TTTTTTT" + oligo[11:]
+        hit = find(oligo, PAD + decoy + PAD)
+        assert not hit.found, "7 of 18 bases is 39% divergence - that is not a binding site"
+
+    def test_ordinary_substitution_drift_is_still_found(self):
+        """The cap must not refuse the real thing it exists to measure."""
+        oligo = "ACGTTGCAATCGGATCAG"
+        drifted = "T" + oligo[1:9] + "A" + oligo[10:]  # 2 mismatches, 11%
+        hit = find(oligo, PAD + drifted + PAD)
+        assert hit.found and hit.position == len(PAD)
+        assert hit.mismatches == 2 and hit.usable

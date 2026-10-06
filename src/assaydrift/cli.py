@@ -102,10 +102,27 @@ def check(assay: Assay, sequences: list[tuple[str, str]]) -> list[dict]:
                 "oligos": {
                     o: {
                         "found": h.found,
+                        "role": h.role,
                         "position": h.position,
                         "mismatches": h.mismatches if h.found else None,
                         "unknown_bases": h.ambiguous,
+                        # `usable` is a property, so it was invisible to anyone reading
+                        # this file - and its own docstring is "whether this measurement
+                        # can go into a rate", because an alignment with unknown bases
+                        # under it is not evidence either way. Leaving it out meant a
+                        # consumer computing a rate from this JSON would count exactly the
+                        # rows the property exists to exclude.
+                        "usable": h.usable if h.found else False,
+                        # The count, not only the boolean below. On a probe
+                        # `blocks_extension` is 0 even with 3' mismatches, because a probe
+                        # is never extended - so the boolean alone cannot distinguish "no
+                        # 3' mismatches" from "3' mismatches that do not block".
+                        "three_prime_mismatches": h.three_prime_mismatches if h.found else None,
                         "three_prime_blocking": h.blocks_extension if h.found else None,
+                        # Non-zero means the site was explained by a deletion or insertion
+                        # rather than by a run of mismatches, which changes what the
+                        # mismatch count above is a count of.
+                        "indels": h.indels if h.found else None,
                     }
                     for o, h in result.hits.items()
                 },
