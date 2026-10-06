@@ -216,8 +216,22 @@ mode this measures.
 is dropped and counted — never defaulted to today, which would move old sequences into the
 current period and corrupt exactly the trend being measured. 35 of 2,800 were dropped.
 
-**Downloads are stratified by year.** Sorting newest-first and taking N gives a single
-year of data, which cannot show drift at all.
+**Downloads are stratified by year — the *deposit* year, which is not the same as the
+collection quarter the table is built on.** Sorting newest-first and taking N gives a single
+year of data, which cannot show drift at all, so the query is split per deposit year. But
+within each year the sample is the newest-*deposited* records, and those were mostly
+*collected* in that year's final quarter. The collection-quarter distribution is that shape:
+2021-Q4 holds 330, 2022-Q4 421, 2023-Q4 423, 2025-Q4 327, while **2022-Q1, 2024-Q2 and
+2024-Q3 hold nothing at all** and 2024 has only Q1 and Q4 — a nine-month hole. Ten of the
+24 populated quarters fall below the 25-sequence floor.
+
+So the series is seven annual clumps spread unevenly across quarters, not a quarterly
+time series, and adjacent quarters can come from different clumps — which is also why
+2026-Q1 is Wisconsin-heavy and 2026-Q3 California-heavy. The year view
+(`--granularity year`) is the honest granularity for this corpus and is published
+alongside. **The fix is to stratify by collection quarter and sample randomly within
+each stratum**, which would change every number here and has not been done; until it is,
+read the year table first.
 
 **An `N` in the target is missing data, not a mismatch.** This is the load-bearing decision.
 Sequencing quality changed enormously over the pandemic — in this run the exclusion rate runs from
@@ -388,7 +402,7 @@ src/assaydrift/primers.py   five published assays, with sources
 src/assaydrift/match.py     oligo alignment: IUPAC, unknown bases, strand, 3' end
 src/assaydrift/analyze.py   grouping by collection date, rates, trend
 src/assaydrift/cli.py       assay-drift check: your own primers against your own FASTA
-scripts/fetch.py            year-stratified download
+scripts/fetch.py            deposit-year-stratified download; --from-manifest rebuilds exactly
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
 tests/                      131 tests, none touching the network
