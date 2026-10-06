@@ -13,7 +13,7 @@
   <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-131-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-134-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -281,7 +281,7 @@ git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
 
 python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 131 tests, no network, no install step
+pytest -q               # 134 tests, no network, no install step
 ```
 
 Nothing to install — zero runtime dependencies, standard library only.
@@ -405,7 +405,7 @@ src/assaydrift/cli.py       assay-drift check: your own primers against your own
 scripts/fetch.py            deposit-year-stratified download; --from-manifest rebuilds exactly
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      131 tests, none touching the network
+tests/                      134 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256

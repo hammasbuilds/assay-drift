@@ -127,3 +127,48 @@ def test_shipped_example_reproduces_the_readme_output(capsys):
     assert "synthetic_C29215T       likely_failing" in out
     assert "1mm/3'" in out
     assert "perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)" in out
+
+
+class TestARecordTooShortToJudge:
+    """A sequence shorter than the oligo is not evidence that the assay fails.
+
+    `check` reported a four-base FASTA record as `likely_failing` with all three oligos
+    "lost". `find` correctly returns NOT_FOUND when the target is shorter than the oligo,
+    but `verdict` reached `likely_failing` through `any_oligo_lost`, and its only route to
+    "unknown" was `not usable and not any_oligo_lost` - which a lost oligo closed off.
+
+    It matters because `check` takes an arbitrary FASTA and partial or amplicon-only
+    GenBank records are routine. The `drift` pipeline was never affected: the shipped
+    corpus has a 29,469-base minimum.
+    """
+
+    def test_a_four_base_record_is_unknown_not_failing(self, tmp_path):
+        from assaydrift.cli import check
+        from assaydrift.primers import by_name
+
+        assay = by_name("CDC N2")
+        rows = check(assay, [("tiny", "ACGT")])
+        assert rows[0]["verdict"] == "unknown", (
+            "a record too short to hold any oligo was judged, not refused"
+        )
+
+    def test_a_record_long_enough_for_some_oligos_is_still_refused(self):
+        """Partial coverage is still no basis for a verdict about the whole assay."""
+        from assaydrift.cli import check
+        from assaydrift.primers import by_name
+
+        assay = by_name("CDC N2")
+        shortest = min(len(o.sequence) for o in assay.oligos)
+        longest = max(len(o.sequence) for o in assay.oligos)
+        assert shortest != longest, "this test needs oligos of differing length"
+        rows = check(assay, [("partial", "A" * ((shortest + longest) // 2))])
+        assert rows[0]["verdict"] == "unknown"
+
+    def test_a_full_length_genome_is_still_judged(self):
+        """The guard must not swallow the real case."""
+        from assaydrift.cli import check
+        from assaydrift.primers import by_name
+        from assaydrift.reference import genome
+
+        rows = check(by_name("CDC N2"), [("ref", genome())])
+        assert rows[0]["verdict"] == "perfect"

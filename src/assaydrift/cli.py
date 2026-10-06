@@ -81,7 +81,23 @@ def read_fasta(path: Path) -> list[tuple[str, str]]:
     return records
 
 
-def verdict(result: AssayResult) -> str:
+def too_short(sequence: str, assay: Assay) -> int:
+    """How many oligos cannot physically fit in this sequence.
+
+    A record shorter than an oligo has no binding site for it by construction, which is
+    not the same fact as a binding site having been lost. Partial and amplicon-only
+    GenBank records are routine input to `check`.
+    """
+    return sum(1 for oligo in assay.oligos if len(sequence) < len(oligo.sequence))
+
+
+def verdict(result: AssayResult, sequence: str = "", assay: Assay | None = None) -> str:
+    # FIRST, because "there was nowhere for the oligo to bind" is not evidence about the
+    # assay. `find` returns NOT_FOUND when the target is shorter than the oligo, and
+    # `any_oligo_lost` then carried that into `likely_failing` - so a four-base record was
+    # reported as an assay that would no longer amplify, with three oligos "lost".
+    if assay is not None and sequence and too_short(sequence, assay):
+        return "unknown"
     if not result.usable and not result.any_oligo_lost:
         return "unknown"
     if result.likely_failing():
@@ -98,7 +114,7 @@ def check(assay: Assay, sequences: list[tuple[str, str]]) -> list[dict]:
         rows.append(
             {
                 "sequence": name,
-                "verdict": verdict(result),
+                "verdict": verdict(result, sequence, assay),
                 "oligos": {
                     o: {
                         "found": h.found,
