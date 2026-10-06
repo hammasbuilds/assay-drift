@@ -104,11 +104,17 @@ def show_drift() -> None:
 
     print("\n  * shipped with a known mismatch to its target; scored against that")
     print("    baseline rather than being reported as drifted on day one.\n")
-    print("An assay can lose its exact match completely and keep working: CDC N1")
-    print("and Charite E both went to 0% and stayed in clinical use, because their")
-    print("mutations weaken binding without blocking extension. Charite RdRp is the")
-    print("one that broke worst, and while Delta circulated - G15451A sits one")
-    print("base from its forward primer's 3' end, where polymerase starts.\n")
+    # An earlier version printed "stayed in clinical use" and "broke worst". The
+    # first was unsourced and wrong for the CDC panel, whose EUA request was
+    # withdrawn after 2021-12-31; the second contradicts this tool's own scope, which
+    # predicts from sequence complementarity and runs no PCR.
+    print("An assay can lose its exact match completely with every mutation in a")
+    print("position that does not stop the reaction: CDC N1 and Charite E both")
+    print("went to 0%, and their mutations weaken binding without blocking")
+    print("extension. Charite RdRp is the one most likely to have failed, and")
+    print("while Delta circulated - G15451A sits one base from its forward")
+    print("primer's 3' end, where polymerase starts. That is a prediction from")
+    print("sequence, not a measured failure.\n")
     print("CDC N2 was the quiet one until 2025: C29215T, two bases from its")
     print("reverse primer's 3' end, is absent before 2025 and reaches 30.6% of")
     print("2026-Q1 sequences. Read that quarter's rate with the sampling caveat")

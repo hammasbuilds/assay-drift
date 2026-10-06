@@ -13,14 +13,14 @@
   <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-106-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-124-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
 
 ---
 
-> ### Two of five published assays stopped matching their target entirely — 99.3% to 0.0% — and both stayed in clinical use. A third is 90.8% and is the one that broke. The difference is *where* the mutation landed.
+> ### Two of five published assays stopped matching their target entirely — 99.3% to 0.0% — and neither mutation is at a position that stops the reaction. A third never lost its exact match, and in 2021-Q4 44.5% of sequences carried a mutation one base from its primer's 3′ end. The difference is *where* the mutation landed, not how much of it there is.
 
 A PCR diagnostic fails **silently**. When the target mutates under the primer binding site,
 amplification stops, and a failed amplification looks exactly like a negative sample. There
@@ -133,18 +133,31 @@ quarter, which is why the per-quarter tables exist.
 
 **CDC N1 and Charité E lost their exact match completely, and kept working.** Their Omicron
 mutations sit at base 3 of a probe and base 2 of a 26-base primer. Both weaken binding
-slightly. Neither stops the reaction — and both assays remained in clinical use throughout.
+slightly. Neither is at a position that stops the reaction.
 N1's residual likely-failing rate (10.9% in 2026-Q3) comes from sequences carrying three or
 more mismatches across the whole assay, not from a 3′-end hit.
 
-**Charité RdRp is the one that actually broke, and worst while Delta circulated.** In
+**On whether these assays stayed in use — the one thing here that is not sequence
+arithmetic.** CDC withdrew its EUA request for the 2019-nCoV Real-Time RT-PCR
+Diagnostic Panel, which N1 and N2 belong to, effective after
+[2021-12-31](https://www.aacc.org/cln/articles/2021/september/cdc-planning-to-withdraw-request-for-eua-of-sars-cov-2-pcr-test)
+— on the stated grounds that hundreds of other tests had been authorised and CDC's
+was no longer needed, **not** that it had stopped detecting its target. The N1 and N2
+oligo sets outlived the panel inside third-party assays, but this repository has no
+source for which ones or for how long, so it does not claim it. An earlier version of
+this README asserted that both assays "stayed in clinical use" throughout the window.
+That was unsourced and, for the CDC panel itself, wrong.
+
+**Charité RdRp is the one most likely to have failed, and worst while Delta circulated.** In
 2021-Q4, 44.5% of sequences carried G15451A — one base from the 3′ terminus of its forward
 primer. Polymerase extends from that terminus, so a mismatch there can stop amplification
 outright. Its likely-failing rate hit **44.5% in 2021-Q4**, fell to 3.1% in 2022-Q4 when
 Omicron displaced Delta, and runs at 9–24% across the 2025–2026 quarters.
 
-An assay can drift almost completely and remain perfectly usable. An assay can look
-healthy on a mismatch count and be broken. Only the position tells you which.
+An assay can drift almost completely with every mutation in a position that does not
+stop the reaction. An assay can look healthy on a mismatch count and carry the one
+mutation that does. Only the position tells you which — and this is a prediction from
+sequence complementarity, not a measured failure: no PCR was run here.
 
 📊 **Full per-quarter tables: [`results/drift.json`](results/drift.json)**
 
@@ -230,7 +243,7 @@ git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
 
 python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 106 tests, no network, no install step
+pytest -q               # 124 tests, no network, no install step
 ```
 
 Nothing to install — zero runtime dependencies, standard library only.
@@ -354,7 +367,7 @@ src/assaydrift/cli.py       assay-drift check: your own primers against your own
 scripts/fetch.py            year-stratified download
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      106 tests, none touching the network
+tests/                      124 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256
