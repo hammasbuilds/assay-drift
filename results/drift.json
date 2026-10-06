@@ -25,6 +25,8 @@
    "2020-Q1": {
     "total": 153,
     "usable": 153,
+    "clusters": 11,
+    "effective_n": 2.37,
     "perfect": 152,
     "failing": 0,
     "perfect_rate": 0.9934640522875817,
@@ -38,6 +40,8 @@
    "2020-Q2": {
     "total": 132,
     "usable": 132,
+    "clusters": 7,
+    "effective_n": 2.82,
     "perfect": 131,
     "failing": 0,
     "perfect_rate": 0.9924242424242424,
@@ -51,6 +55,8 @@
    "2020-Q3": {
     "total": 101,
     "usable": 101,
+    "clusters": 8,
+    "effective_n": 3.63,
     "perfect": 100,
     "failing": 0,
     "perfect_rate": 0.9900990099009901,
@@ -64,6 +70,8 @@
    "2020-Q4": {
     "total": 19,
     "usable": 19,
+    "clusters": 2,
+    "effective_n": 1.23,
     "perfect": 18,
     "failing": 0,
     "perfect_rate": 0.9473684210526315,
@@ -77,6 +85,8 @@
    "2021-Q1": {
     "total": 58,
     "usable": 58,
+    "clusters": 10,
+    "effective_n": 3.82,
     "perfect": 56,
     "failing": 0,
     "perfect_rate": 0.9655172413793104,
@@ -90,6 +100,8 @@
    "2021-Q2": {
     "total": 23,
     "usable": 23,
+    "clusters": 4,
+    "effective_n": 2.14,
     "perfect": 22,
     "failing": 1,
     "perfect_rate": 0.9565217391304348,
@@ -103,6 +115,8 @@
    "2021-Q3": {
     "total": 7,
     "usable": 7,
+    "clusters": 3,
+    "effective_n": 2.58,
     "perfect": 5,
     "failing": 0,
     "perfect_rate": 0.7142857142857143,
@@ -116,6 +130,8 @@
    "2021-Q4": {
     "total": 330,
     "usable": 330,
+    "clusters": 20,
+    "effective_n": 5.18,
     "perfect": 142,
     "failing": 0,
     "perfect_rate": 0.4303030303030303,
@@ -129,6 +145,8 @@
    "2022-Q2": {
     "total": 3,
     "usable": 3,
+    "clusters": 2,
+    "effective_n": 1.8,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -142,6 +160,8 @@
    "2022-Q3": {
     "total": 13,
     "usable": 13,
+    "clusters": 3,
+    "effective_n": 2.19,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -155,6 +175,8 @@
    "2022-Q4": {
     "total": 421,
     "usable": 421,
+    "clusters": 42,
+    "effective_n": 19.18,
     "perfect": 0,
     "failing": 11,
     "perfect_rate": 0.0,
@@ -168,6 +190,8 @@
    "2023-Q1": {
     "total": 2,
     "usable": 2,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -181,6 +205,8 @@
    "2023-Q2": {
     "total": 5,
     "usable": 5,
+    "clusters": 2,
+    "effective_n": 1.92,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -194,6 +220,8 @@
    "2023-Q3": {
     "total": 12,
     "usable": 11,
+    "clusters": 3,
+    "effective_n": 2.12,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -207,6 +235,8 @@
    "2023-Q4": {
     "total": 423,
     "usable": 422,
+    "clusters": 60,
+    "effective_n": 7.49,
     "perfect": 0,
     "failing": 1,
     "perfect_rate": 0.0,
@@ -220,6 +250,8 @@
    "2024-Q1": {
     "total": 159,
     "usable": 159,
+    "clusters": 4,
+    "effective_n": 1.05,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -233,6 +265,8 @@
    "2024-Q4": {
     "total": 158,
     "usable": 142,
+    "clusters": 16,
+    "effective_n": 3.72,
     "perfect": 0,
     "failing": 13,
     "perfect_rate": 0.0,
@@ -246,6 +280,8 @@
    "2025-Q1": {
     "total": 13,
     "usable": 13,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 1,
     "perfect_rate": 0.0,
@@ -259,6 +295,8 @@
    "2025-Q2": {
     "total": 1,
     "usable": 1,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -272,6 +310,8 @@
    "2025-Q3": {
     "total": 65,
     "usable": 65,
+    "clusters": 6,
+    "effective_n": 2.28,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -285,6 +325,8 @@
    "2025-Q4": {
     "total": 327,
     "usable": 325,
+    "clusters": 23,
+    "effective_n": 11.1,
     "perfect": 0,
     "failing": 25,
     "perfect_rate": 0.0,
@@ -298,6 +340,8 @@
    "2026-Q1": {
     "total": 115,
     "usable": 106,
+    "clusters": 11,
+    "effective_n": 3.97,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -311,6 +355,8 @@
    "2026-Q2": {
     "total": 29,
     "usable": 29,
+    "clusters": 14,
+    "effective_n": 4.65,
     "perfect": 0,
     "failing": 2,
     "perfect_rate": 0.0,
@@ -324,6 +370,8 @@
    "2026-Q3": {
     "total": 196,
     "usable": 193,
+    "clusters": 33,
+    "effective_n": 4.56,
     "perfect": 0,
     "failing": 21,
     "perfect_rate": 0.0,
@@ -362,6 +410,8 @@
    "2020-Q1": {
     "total": 153,
     "usable": 153,
+    "clusters": 11,
+    "effective_n": 2.37,
     "perfect": 151,
     "failing": 0,
     "perfect_rate": 0.9869281045751634,
@@ -375,6 +425,8 @@
    "2020-Q2": {
     "total": 132,
     "usable": 132,
+    "clusters": 7,
+    "effective_n": 2.82,
     "perfect": 129,
     "failing": 0,
     "perfect_rate": 0.9772727272727273,
@@ -388,6 +440,8 @@
    "2020-Q3": {
     "total": 101,
     "usable": 101,
+    "clusters": 8,
+    "effective_n": 3.63,
     "perfect": 99,
     "failing": 0,
     "perfect_rate": 0.9801980198019802,
@@ -401,6 +455,8 @@
    "2020-Q4": {
     "total": 19,
     "usable": 19,
+    "clusters": 2,
+    "effective_n": 1.23,
     "perfect": 18,
     "failing": 0,
     "perfect_rate": 0.9473684210526315,
@@ -414,6 +470,8 @@
    "2021-Q1": {
     "total": 58,
     "usable": 58,
+    "clusters": 10,
+    "effective_n": 3.82,
     "perfect": 52,
     "failing": 1,
     "perfect_rate": 0.896551724137931,
@@ -427,6 +485,8 @@
    "2021-Q2": {
     "total": 23,
     "usable": 23,
+    "clusters": 4,
+    "effective_n": 2.14,
     "perfect": 22,
     "failing": 0,
     "perfect_rate": 0.9565217391304348,
@@ -440,6 +500,8 @@
    "2021-Q3": {
     "total": 7,
     "usable": 7,
+    "clusters": 3,
+    "effective_n": 2.58,
     "perfect": 7,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -453,6 +515,8 @@
    "2021-Q4": {
     "total": 330,
     "usable": 330,
+    "clusters": 20,
+    "effective_n": 5.18,
     "perfect": 326,
     "failing": 2,
     "perfect_rate": 0.9878787878787879,
@@ -466,6 +530,8 @@
    "2022-Q2": {
     "total": 3,
     "usable": 3,
+    "clusters": 2,
+    "effective_n": 1.8,
     "perfect": 3,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -479,6 +545,8 @@
    "2022-Q3": {
     "total": 13,
     "usable": 13,
+    "clusters": 3,
+    "effective_n": 2.19,
     "perfect": 13,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -492,6 +560,8 @@
    "2022-Q4": {
     "total": 421,
     "usable": 421,
+    "clusters": 42,
+    "effective_n": 19.18,
     "perfect": 412,
     "failing": 0,
     "perfect_rate": 0.9786223277909739,
@@ -505,6 +575,8 @@
    "2023-Q1": {
     "total": 2,
     "usable": 2,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 2,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -518,6 +590,8 @@
    "2023-Q2": {
     "total": 5,
     "usable": 5,
+    "clusters": 2,
+    "effective_n": 1.92,
     "perfect": 5,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -531,6 +605,8 @@
    "2023-Q3": {
     "total": 12,
     "usable": 12,
+    "clusters": 3,
+    "effective_n": 2.32,
     "perfect": 12,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -544,6 +620,8 @@
    "2023-Q4": {
     "total": 423,
     "usable": 423,
+    "clusters": 60,
+    "effective_n": 7.52,
     "perfect": 417,
     "failing": 0,
     "perfect_rate": 0.9858156028368794,
@@ -557,6 +635,8 @@
    "2024-Q1": {
     "total": 159,
     "usable": 159,
+    "clusters": 4,
+    "effective_n": 1.05,
     "perfect": 159,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -570,6 +650,8 @@
    "2024-Q4": {
     "total": 158,
     "usable": 145,
+    "clusters": 16,
+    "effective_n": 3.6,
     "perfect": 144,
     "failing": 0,
     "perfect_rate": 0.993103448275862,
@@ -583,6 +665,8 @@
    "2025-Q1": {
     "total": 13,
     "usable": 13,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 13,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -596,6 +680,8 @@
    "2025-Q2": {
     "total": 1,
     "usable": 1,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 1,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -609,6 +695,8 @@
    "2025-Q3": {
     "total": 65,
     "usable": 65,
+    "clusters": 6,
+    "effective_n": 2.28,
     "perfect": 51,
     "failing": 1,
     "perfect_rate": 0.7846153846153846,
@@ -622,6 +710,8 @@
    "2025-Q4": {
     "total": 327,
     "usable": 318,
+    "clusters": 24,
+    "effective_n": 11.07,
     "perfect": 256,
     "failing": 12,
     "perfect_rate": 0.8050314465408805,
@@ -635,6 +725,8 @@
    "2026-Q1": {
     "total": 115,
     "usable": 115,
+    "clusters": 11,
+    "effective_n": 4.18,
     "perfect": 52,
     "failing": 33,
     "perfect_rate": 0.45217391304347826,
@@ -648,6 +740,8 @@
    "2026-Q2": {
     "total": 29,
     "usable": 29,
+    "clusters": 14,
+    "effective_n": 4.65,
     "perfect": 14,
     "failing": 10,
     "perfect_rate": 0.4827586206896552,
@@ -661,6 +755,8 @@
    "2026-Q3": {
     "total": 196,
     "usable": 192,
+    "clusters": 33,
+    "effective_n": 4.52,
     "perfect": 165,
     "failing": 10,
     "perfect_rate": 0.859375,
@@ -699,6 +795,8 @@
    "2020-Q1": {
     "total": 153,
     "usable": 153,
+    "clusters": 11,
+    "effective_n": 2.37,
     "perfect": 151,
     "failing": 0,
     "perfect_rate": 0.9869281045751634,
@@ -712,6 +810,8 @@
    "2020-Q2": {
     "total": 132,
     "usable": 132,
+    "clusters": 7,
+    "effective_n": 2.82,
     "perfect": 132,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -725,6 +825,8 @@
    "2020-Q3": {
     "total": 101,
     "usable": 101,
+    "clusters": 8,
+    "effective_n": 3.63,
     "perfect": 100,
     "failing": 0,
     "perfect_rate": 0.9900990099009901,
@@ -738,6 +840,8 @@
    "2020-Q4": {
     "total": 19,
     "usable": 19,
+    "clusters": 2,
+    "effective_n": 1.23,
     "perfect": 19,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -751,6 +855,8 @@
    "2021-Q1": {
     "total": 58,
     "usable": 58,
+    "clusters": 10,
+    "effective_n": 3.82,
     "perfect": 54,
     "failing": 2,
     "perfect_rate": 0.9310344827586207,
@@ -764,6 +870,8 @@
    "2021-Q2": {
     "total": 23,
     "usable": 23,
+    "clusters": 4,
+    "effective_n": 2.14,
     "perfect": 23,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -777,6 +885,8 @@
    "2021-Q3": {
     "total": 7,
     "usable": 7,
+    "clusters": 3,
+    "effective_n": 2.58,
     "perfect": 7,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -790,6 +900,8 @@
    "2021-Q4": {
     "total": 330,
     "usable": 330,
+    "clusters": 20,
+    "effective_n": 5.18,
     "perfect": 328,
     "failing": 0,
     "perfect_rate": 0.9939393939393939,
@@ -803,6 +915,8 @@
    "2022-Q2": {
     "total": 3,
     "usable": 3,
+    "clusters": 2,
+    "effective_n": 1.8,
     "perfect": 3,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -816,6 +930,8 @@
    "2022-Q3": {
     "total": 13,
     "usable": 13,
+    "clusters": 3,
+    "effective_n": 2.19,
     "perfect": 12,
     "failing": 0,
     "perfect_rate": 0.9230769230769231,
@@ -829,6 +945,8 @@
    "2022-Q4": {
     "total": 421,
     "usable": 421,
+    "clusters": 42,
+    "effective_n": 19.18,
     "perfect": 310,
     "failing": 0,
     "perfect_rate": 0.7363420427553444,
@@ -842,6 +960,8 @@
    "2023-Q1": {
     "total": 2,
     "usable": 2,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -855,6 +975,8 @@
    "2023-Q2": {
     "total": 5,
     "usable": 5,
+    "clusters": 2,
+    "effective_n": 1.92,
     "perfect": 5,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -868,6 +990,8 @@
    "2023-Q3": {
     "total": 12,
     "usable": 12,
+    "clusters": 3,
+    "effective_n": 2.32,
     "perfect": 11,
     "failing": 0,
     "perfect_rate": 0.9166666666666666,
@@ -881,6 +1005,8 @@
    "2023-Q4": {
     "total": 423,
     "usable": 423,
+    "clusters": 60,
+    "effective_n": 7.52,
     "perfect": 410,
     "failing": 9,
     "perfect_rate": 0.9692671394799054,
@@ -894,6 +1020,8 @@
    "2024-Q1": {
     "total": 159,
     "usable": 159,
+    "clusters": 4,
+    "effective_n": 1.05,
     "perfect": 157,
     "failing": 0,
     "perfect_rate": 0.9874213836477987,
@@ -907,6 +1035,8 @@
    "2024-Q4": {
     "total": 158,
     "usable": 157,
+    "clusters": 16,
+    "effective_n": 3.22,
     "perfect": 152,
     "failing": 2,
     "perfect_rate": 0.9681528662420382,
@@ -920,6 +1050,8 @@
    "2025-Q1": {
     "total": 13,
     "usable": 13,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 13,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -933,6 +1065,8 @@
    "2025-Q2": {
     "total": 1,
     "usable": 1,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 1,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -946,6 +1080,8 @@
    "2025-Q3": {
     "total": 65,
     "usable": 65,
+    "clusters": 6,
+    "effective_n": 2.28,
     "perfect": 63,
     "failing": 0,
     "perfect_rate": 0.9692307692307692,
@@ -959,6 +1095,8 @@
    "2025-Q4": {
     "total": 327,
     "usable": 327,
+    "clusters": 24,
+    "effective_n": 11.13,
     "perfect": 306,
     "failing": 0,
     "perfect_rate": 0.9357798165137615,
@@ -972,6 +1110,8 @@
    "2026-Q1": {
     "total": 115,
     "usable": 115,
+    "clusters": 11,
+    "effective_n": 4.18,
     "perfect": 113,
     "failing": 1,
     "perfect_rate": 0.9826086956521739,
@@ -985,6 +1125,8 @@
    "2026-Q2": {
     "total": 29,
     "usable": 29,
+    "clusters": 14,
+    "effective_n": 4.65,
     "perfect": 24,
     "failing": 1,
     "perfect_rate": 0.8275862068965517,
@@ -998,6 +1140,8 @@
    "2026-Q3": {
     "total": 196,
     "usable": 195,
+    "clusters": 33,
+    "effective_n": 4.64,
     "perfect": 169,
     "failing": 1,
     "perfect_rate": 0.8666666666666667,
@@ -1036,6 +1180,8 @@
    "2020-Q1": {
     "total": 153,
     "usable": 153,
+    "clusters": 11,
+    "effective_n": 2.37,
     "perfect": 152,
     "failing": 0,
     "perfect_rate": 0.9934640522875817,
@@ -1049,6 +1195,8 @@
    "2020-Q2": {
     "total": 132,
     "usable": 132,
+    "clusters": 7,
+    "effective_n": 2.82,
     "perfect": 131,
     "failing": 0,
     "perfect_rate": 0.9924242424242424,
@@ -1062,6 +1210,8 @@
    "2020-Q3": {
     "total": 101,
     "usable": 101,
+    "clusters": 8,
+    "effective_n": 3.63,
     "perfect": 98,
     "failing": 0,
     "perfect_rate": 0.9702970297029703,
@@ -1075,6 +1225,8 @@
    "2020-Q4": {
     "total": 19,
     "usable": 19,
+    "clusters": 2,
+    "effective_n": 1.23,
     "perfect": 19,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1088,6 +1240,8 @@
    "2021-Q1": {
     "total": 58,
     "usable": 58,
+    "clusters": 10,
+    "effective_n": 3.82,
     "perfect": 57,
     "failing": 0,
     "perfect_rate": 0.9827586206896551,
@@ -1101,6 +1255,8 @@
    "2021-Q2": {
     "total": 23,
     "usable": 23,
+    "clusters": 4,
+    "effective_n": 2.14,
     "perfect": 23,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1114,6 +1270,8 @@
    "2021-Q3": {
     "total": 7,
     "usable": 7,
+    "clusters": 3,
+    "effective_n": 2.58,
     "perfect": 7,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1127,6 +1285,8 @@
    "2021-Q4": {
     "total": 330,
     "usable": 330,
+    "clusters": 20,
+    "effective_n": 5.18,
     "perfect": 147,
     "failing": 0,
     "perfect_rate": 0.44545454545454544,
@@ -1140,6 +1300,8 @@
    "2022-Q2": {
     "total": 3,
     "usable": 3,
+    "clusters": 2,
+    "effective_n": 1.8,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1153,6 +1315,8 @@
    "2022-Q3": {
     "total": 13,
     "usable": 13,
+    "clusters": 3,
+    "effective_n": 2.19,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1166,6 +1330,8 @@
    "2022-Q4": {
     "total": 421,
     "usable": 421,
+    "clusters": 42,
+    "effective_n": 19.18,
     "perfect": 3,
     "failing": 0,
     "perfect_rate": 0.007125890736342043,
@@ -1179,6 +1345,8 @@
    "2023-Q1": {
     "total": 2,
     "usable": 2,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1192,6 +1360,8 @@
    "2023-Q2": {
     "total": 5,
     "usable": 5,
+    "clusters": 2,
+    "effective_n": 1.92,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1205,6 +1375,8 @@
    "2023-Q3": {
     "total": 12,
     "usable": 12,
+    "clusters": 3,
+    "effective_n": 2.32,
     "perfect": 1,
     "failing": 0,
     "perfect_rate": 0.08333333333333333,
@@ -1218,6 +1390,8 @@
    "2023-Q4": {
     "total": 423,
     "usable": 422,
+    "clusters": 60,
+    "effective_n": 7.49,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1231,6 +1405,8 @@
    "2024-Q1": {
     "total": 159,
     "usable": 159,
+    "clusters": 4,
+    "effective_n": 1.05,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1244,6 +1420,8 @@
    "2024-Q4": {
     "total": 158,
     "usable": 149,
+    "clusters": 16,
+    "effective_n": 3.46,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1257,6 +1435,8 @@
    "2025-Q1": {
     "total": 13,
     "usable": 13,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1270,6 +1450,8 @@
    "2025-Q2": {
     "total": 1,
     "usable": 1,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1283,6 +1465,8 @@
    "2025-Q3": {
     "total": 65,
     "usable": 65,
+    "clusters": 6,
+    "effective_n": 2.28,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1296,6 +1480,8 @@
    "2025-Q4": {
     "total": 327,
     "usable": 325,
+    "clusters": 24,
+    "effective_n": 11.13,
     "perfect": 0,
     "failing": 1,
     "perfect_rate": 0.0,
@@ -1309,6 +1495,8 @@
    "2026-Q1": {
     "total": 115,
     "usable": 113,
+    "clusters": 11,
+    "effective_n": 4.15,
     "perfect": 0,
     "failing": 2,
     "perfect_rate": 0.0,
@@ -1322,6 +1510,8 @@
    "2026-Q2": {
     "total": 29,
     "usable": 29,
+    "clusters": 14,
+    "effective_n": 4.65,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1335,6 +1525,8 @@
    "2026-Q3": {
     "total": 196,
     "usable": 195,
+    "clusters": 33,
+    "effective_n": 4.64,
     "perfect": 0,
     "failing": 0,
     "perfect_rate": 0.0,
@@ -1373,6 +1565,8 @@
    "2020-Q1": {
     "total": 153,
     "usable": 153,
+    "clusters": 11,
+    "effective_n": 2.37,
     "perfect": 152,
     "failing": 0,
     "perfect_rate": 0.9934640522875817,
@@ -1386,6 +1580,8 @@
    "2020-Q2": {
     "total": 132,
     "usable": 132,
+    "clusters": 7,
+    "effective_n": 2.82,
     "perfect": 132,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1399,6 +1595,8 @@
    "2020-Q3": {
     "total": 101,
     "usable": 101,
+    "clusters": 8,
+    "effective_n": 3.63,
     "perfect": 97,
     "failing": 0,
     "perfect_rate": 0.9603960396039604,
@@ -1412,6 +1610,8 @@
    "2020-Q4": {
     "total": 19,
     "usable": 19,
+    "clusters": 2,
+    "effective_n": 1.23,
     "perfect": 17,
     "failing": 1,
     "perfect_rate": 0.8947368421052632,
@@ -1425,6 +1625,8 @@
    "2021-Q1": {
     "total": 58,
     "usable": 58,
+    "clusters": 10,
+    "effective_n": 3.82,
     "perfect": 58,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1438,6 +1640,8 @@
    "2021-Q2": {
     "total": 23,
     "usable": 23,
+    "clusters": 4,
+    "effective_n": 2.14,
     "perfect": 16,
     "failing": 7,
     "perfect_rate": 0.6956521739130435,
@@ -1451,6 +1655,8 @@
    "2021-Q3": {
     "total": 7,
     "usable": 7,
+    "clusters": 3,
+    "effective_n": 2.58,
     "perfect": 1,
     "failing": 6,
     "perfect_rate": 0.14285714285714285,
@@ -1464,6 +1670,8 @@
    "2021-Q4": {
     "total": 330,
     "usable": 330,
+    "clusters": 20,
+    "effective_n": 5.18,
     "perfect": 182,
     "failing": 147,
     "perfect_rate": 0.5515151515151515,
@@ -1477,6 +1685,8 @@
    "2022-Q2": {
     "total": 3,
     "usable": 3,
+    "clusters": 2,
+    "effective_n": 1.8,
     "perfect": 3,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1490,6 +1700,8 @@
    "2022-Q3": {
     "total": 13,
     "usable": 13,
+    "clusters": 3,
+    "effective_n": 2.19,
     "perfect": 13,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1503,6 +1715,8 @@
    "2022-Q4": {
     "total": 421,
     "usable": 421,
+    "clusters": 42,
+    "effective_n": 19.18,
     "perfect": 407,
     "failing": 13,
     "perfect_rate": 0.9667458432304038,
@@ -1516,6 +1730,8 @@
    "2023-Q1": {
     "total": 2,
     "usable": 2,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 2,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1529,6 +1745,8 @@
    "2023-Q2": {
     "total": 5,
     "usable": 5,
+    "clusters": 2,
+    "effective_n": 1.92,
     "perfect": 0,
     "failing": 5,
     "perfect_rate": 0.0,
@@ -1542,6 +1760,8 @@
    "2023-Q3": {
     "total": 12,
     "usable": 12,
+    "clusters": 3,
+    "effective_n": 2.32,
     "perfect": 3,
     "failing": 9,
     "perfect_rate": 0.25,
@@ -1555,6 +1775,8 @@
    "2023-Q4": {
     "total": 423,
     "usable": 423,
+    "clusters": 60,
+    "effective_n": 7.52,
     "perfect": 389,
     "failing": 27,
     "perfect_rate": 0.9196217494089834,
@@ -1568,6 +1790,8 @@
    "2024-Q1": {
     "total": 159,
     "usable": 159,
+    "clusters": 4,
+    "effective_n": 1.05,
     "perfect": 157,
     "failing": 2,
     "perfect_rate": 0.9874213836477987,
@@ -1581,6 +1805,8 @@
    "2024-Q4": {
     "total": 158,
     "usable": 158,
+    "clusters": 16,
+    "effective_n": 3.19,
     "perfect": 157,
     "failing": 0,
     "perfect_rate": 0.9936708860759493,
@@ -1594,6 +1820,8 @@
    "2025-Q1": {
     "total": 13,
     "usable": 13,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 13,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1607,6 +1835,8 @@
    "2025-Q2": {
     "total": 1,
     "usable": 1,
+    "clusters": 1,
+    "effective_n": 1.0,
     "perfect": 1,
     "failing": 0,
     "perfect_rate": 1.0,
@@ -1620,6 +1850,8 @@
    "2025-Q3": {
     "total": 65,
     "usable": 65,
+    "clusters": 6,
+    "effective_n": 2.28,
     "perfect": 55,
     "failing": 10,
     "perfect_rate": 0.8461538461538461,
@@ -1633,6 +1865,8 @@
    "2025-Q4": {
     "total": 327,
     "usable": 327,
+    "clusters": 24,
+    "effective_n": 11.13,
     "perfect": 285,
     "failing": 42,
     "perfect_rate": 0.8715596330275229,
@@ -1646,6 +1880,8 @@
    "2026-Q1": {
     "total": 115,
     "usable": 115,
+    "clusters": 11,
+    "effective_n": 4.18,
     "perfect": 96,
     "failing": 19,
     "perfect_rate": 0.8347826086956521,
@@ -1659,6 +1895,8 @@
    "2026-Q2": {
     "total": 29,
     "usable": 29,
+    "clusters": 14,
+    "effective_n": 4.65,
     "perfect": 22,
     "failing": 7,
     "perfect_rate": 0.7586206896551724,
@@ -1672,6 +1910,8 @@
    "2026-Q3": {
     "total": 196,
     "usable": 195,
+    "clusters": 33,
+    "effective_n": 4.66,
     "perfect": 177,
     "failing": 18,
     "perfect_rate": 0.9076923076923077,
@@ -1683,5 +1923,16 @@
     "reliable": true
    }
   }
+ },
+ "_run": {
+  "generated": "2026-10-06T08:57:35+00:00",
+  "granularity": "quarter",
+  "sequences_read": 2765,
+  "manifest": "data/accessions.tsv",
+  "manifest_records": 2765,
+  "corpus_identity_sha256": "0d4e32ee419adc4d786e3c3cdf82b71f001d7266c621c3728be9caef6ede73d3",
+  "tool_version": null,
+  "reproduce": "python scripts/fetch.py --from-manifest && python scripts/analyse.py",
+  "note": "Period rates carry `clusters` and `effective_n` as well as `total` and `usable`. The first two count independent submitter groups; the last two count sequences, and consecutive GenBank accessions come from one submission. A period can pass the 25-sequence floor on an effective n near 1, so read effective_n before any rate."
  }
 }

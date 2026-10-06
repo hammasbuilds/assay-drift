@@ -13,7 +13,7 @@
   <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-124-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-131-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -39,6 +39,30 @@ between them is the whole story. Quarters are the granularity the committed run 
 number below comes from [`results/drift.json`](results/drift.json) and is reprinted by
 `python demo.py`. First and last are the first and last quarters with at least 25 usable
 sequences — `scripts/analyse.py --granularity year` regroups the same data by year.
+
+**Read these as a handful of observations each, not hundreds.** The floor counts *sequences*,
+and sequences are not independent: GenBank hands out consecutive accessions to a single
+submission, and this corpus is drawn from whole deposit batches. Grouping each quarter by
+(country, accession block) and taking the Kish effective sample size — both published per
+quarter in `results/drift.json` as `clusters` and `effective_n` — gives:
+
+| quarter | sequences | submitter groups | effective n |
+|---|---:|---:|---:|
+| 2020-Q1 — the baseline of every row below | 153 | 11 | **2.4** |
+| 2021-Q4 — Charité RdRp's worst quarter | 330 | 20 | 5.2 |
+| 2024-Q1 | 159 | **4** | **1.1** |
+| 2026-Q3 — the endpoint of every row below | 196 | 33 | 4.5 |
+
+The median across the quarters that pass the floor is about 4. So **−99.3** compares a quarter
+worth roughly two independent observations against one worth roughly five, and 2024-Q1 passes
+a 25-sequence floor on an effective n of 1.1. The 0.0% endpoints are a large enough effect to
+survive that; the quarter-to-quarter *shape*, and every worst-quarter figure, are not. No
+confidence interval here would be honest without accounting for the clustering, and none is
+quoted.
+
+Gating the floor on effective n instead would leave two of twenty-four quarters, which would
+delete the series rather than qualify it. The figures are published beside every rate
+instead.
 
 | Assay | Exact match 2020-Q1 | Exact match 2026-Q3 | Change | Likely failing, worst quarter |
 |---|---:|---:|---:|---|
@@ -120,7 +144,7 @@ writes every oligo's top 5.
 | Assay | Position in oligo | Genome coordinate | Change | Share of all sequences |
 |---|---|---|---|---:|
 | CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | C→T | 76.6% |
-| Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | C→T | 76.5% |
+| Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | C→T | 76.7% |
 | Charité RdRp forward | **1 base from the 3′ end** | **G15451A** | G→A | 11.1% |
 | CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | C→T | 2.4% |
 
@@ -243,7 +267,7 @@ git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
 
 python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 124 tests, no network, no install step
+pytest -q               # 131 tests, no network, no install step
 ```
 
 Nothing to install — zero runtime dependencies, standard library only.
@@ -367,7 +391,7 @@ src/assaydrift/cli.py       assay-drift check: your own primers against your own
 scripts/fetch.py            year-stratified download
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      124 tests, none touching the network
+tests/                      131 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256

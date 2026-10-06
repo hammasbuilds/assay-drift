@@ -44,6 +44,20 @@ MIN_PERIOD_SAMPLES = 25
 SEVERE_MISMATCH_LOAD = 3
 
 
+def submitter_block(accession: str, country: str) -> str:
+    """Group records that plausibly arrived in one submission.
+
+    GenBank hands out consecutive accessions to a single submission, so the accession
+    prefix plus the thousand-block, together with the reported country, approximates
+    "same laboratory, same batch". It is a proxy - the records carry no submitter field -
+    and it is deliberately coarse, because the point is not to identify laboratories but
+    to stop a quarter of 159 sequences from 4 groups being read as 159 observations.
+    """
+    match = re.match(r"([A-Za-z]+)(\d+)", accession or "")
+    stem = f"{match.group(1)}{int(match.group(2)) // 1000}" if match else (accession or "?")
+    return f"{country or '?'}|{stem}"
+
+
 def period_of(collected: str, granularity: str = "quarter") -> str | None:
     """Bucket a GenBank collection_date. Returns None when it cannot be read.
 
@@ -84,6 +98,14 @@ class AssayResult:
     assay: str
     period: str
     hits: dict[str, Hit] = field(default_factory=dict)
+    submitter: str = ""
+    """A proxy for "same submitting laboratory, same batch".
+
+    GenBank records carry no submitter field, but consecutive accessions are handed out to
+    one submission, so the accession prefix plus thousand-block together with the reported
+    country groups records that arrived together. Used only to count how many independent
+    groups a period's rate rests on - see PeriodSummary.effective_n.
+    """
 
     @property
     def usable(self) -> bool:
@@ -151,7 +173,12 @@ def evaluate(record: Record, assay: Assay, granularity: str = "quarter") -> Assa
     period = period_of(record.collected, granularity)
     if period is None:
         return None
-    result = AssayResult(accession=record.accession, assay=assay.name, period=period)
+    result = AssayResult(
+        accession=record.accession,
+        assay=assay.name,
+        period=period,
+        submitter=submitter_block(record.accession, getattr(record, "country", "")),
+    )
     for oligo in assay.oligos:
         result.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence, oligo.role)
     return result
@@ -167,6 +194,13 @@ class PeriodSummary:
     lost_oligo: int = 0  # an oligo with no binding site at all
     three_prime: int = 0  # a mismatch in the last 5 bases of a PRIMER
     mismatch_counts: list[int] = field(default_factory=list)
+    submitters: dict[str, int] = field(default_factory=dict)
+    """Usable records per submitter group, for effective_n.
+
+    `usable` counts sequences, and sequences from one submission batch are not
+    independent evidence about a population: a 159-sequence quarter here can be 97%
+    one batch.
+    """
 
     @property
     def perfect_rate(self) -> float | None:
@@ -204,7 +238,31 @@ class PeriodSummary:
         return statistics.median(self.mismatch_counts) if self.mismatch_counts else None
 
     @property
+    def clusters(self) -> int:
+        """How many distinct submitter groups the usable records came from."""
+        return len(self.submitters)
+
+    @property
+    def effective_n(self) -> float | None:
+        """Kish effective sample size over the submitter groups.
+
+        n^2 / sum(group sizes squared): the number of INDEPENDENT observations this
+        period's rate is worth. A period of 159 sequences that is 97% one submission is
+        worth about one. Reported beside every rate because `usable` counts sequences,
+        and sequences from one batch are not independent evidence about a population.
+        """
+        sizes = list(self.submitters.values())
+        total = sum(sizes)
+        if not total:
+            return None
+        return total * total / sum(s * s for s in sizes)
+
+    @property
     def reliable(self) -> bool:
+        # Counts sequences, deliberately unchanged: gating this on effective_n would
+        # leave 2 of 24 quarters and delete the series rather than qualify it. The
+        # independence figure is published alongside instead, so a reader can see that a
+        # "reliable" quarter can rest on one submission.
         return self.usable >= MIN_PERIOD_SAMPLES
 
 
@@ -220,6 +278,9 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
         if not result.usable:
             continue
         summary.usable += 1
+        summary.submitters[result.submitter or result.accession] = (
+            summary.submitters.get(result.submitter or result.accession, 0) + 1
+        )
         summary.mismatch_counts.append(result.total_mismatches)
         if result.three_prime_mismatches > 0:
             summary.three_prime += 1

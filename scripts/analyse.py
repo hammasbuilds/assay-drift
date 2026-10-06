@@ -19,6 +19,7 @@ is responsible, and those call for opposite actions.
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import sys
 from collections import defaultdict
@@ -30,6 +31,11 @@ from assaydrift import primers  # noqa: E402
 from assaydrift.analyze import evaluate, summarise, trend  # noqa: E402
 from assaydrift.mutations import observe, places, rank  # noqa: E402
 from assaydrift.ncbi import Record  # noqa: E402
+
+try:
+    from importlib.metadata import version
+except ImportError:  # pragma: no cover - 3.8 and older
+    version = None
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -57,6 +63,20 @@ def baseline_for(assay) -> int:
     broken for every sequence ever collected, including the reference itself.
     """
     return sum(primers.expected_reference_mismatches(o.name) for o in assay.oligos)
+
+
+def _tool_version() -> str | None:
+    """The installed version, or None when running from source.
+
+    The README states that the demo and the tests need no install step, so this must not
+    raise when the distribution metadata is absent.
+    """
+    if version is None:
+        return None
+    try:
+        return version("assay-drift")
+    except Exception:  # noqa: BLE001 - absence is the normal case here
+        return None
 
 
 def main() -> int:
@@ -109,13 +129,14 @@ def main() -> int:
             label += f"   [baseline {base} mismatch vs reference]"
         print(label)
         print(
-            f"  {'period':<9}{'n':>6}{'usable':>8}{'perfect':>9}"
+            f"  {'period':<9}{'n':>6}{'usable':>8}{'eff n':>7}{'perfect':>9}"
             f"{'failing':>9}{'excl%':>8}{'3prime':>8}{'lost':>6}"
         )
         for summary in summaries.values():
             pr, fr = summary.perfect_rate, summary.failing_rate
             print(
                 f"  {summary.period:<9}{summary.total:>6}{summary.usable:>8}"
+                f"{('    n/a' if summary.effective_n is None else f'{summary.effective_n:>7.1f}')}"
                 f"{('      n/a' if pr is None else f'{pr:>8.1%}')}"
                 f"{('      n/a' if fr is None else f'{fr:>8.1%}')}"
                 f"{summary.excluded_rate:>8.1%}{summary.three_prime:>8}"
@@ -152,6 +173,14 @@ def main() -> int:
                 p: {
                     "total": s.total,
                     "usable": s.usable,
+                    # How many INDEPENDENT observations the rates below rest on. `usable`
+                    # counts sequences; consecutive GenBank accessions come from one
+                    # submission, so a quarter can be 97% a single batch. See
+                    # PeriodSummary.effective_n.
+                    "clusters": s.clusters,
+                    "effective_n": (
+                        None if s.effective_n is None else round(s.effective_n, 2)
+                    ),
                     "perfect": s.perfect,
                     "failing": s.failing,
                     "perfect_rate": s.perfect_rate,
@@ -165,6 +194,39 @@ def main() -> int:
                 for p, s in summaries.items()
             },
         }
+
+    # Which corpus produced these numbers. Without it the file is a set of rates with no
+    # way to tell what they are rates over, and the corpus is gitignored.
+    manifest = ROOT / "data" / "accessions.tsv"
+    identity = ""
+    manifest_records = 0
+    if manifest.is_file():
+        for line in manifest.read_text(encoding="utf-8").splitlines():
+            if line.startswith("# identity sha256:"):
+                identity = line.split(":", 1)[1].strip()
+            elif line.startswith("# records:"):
+                manifest_records = int(line.split(":", 1)[1].strip() or 0)
+    payload["_run"] = {
+        "generated": datetime.datetime.now(datetime.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat(),
+        "granularity": args.granularity,
+        "sequences_read": len(records),
+        "manifest": manifest.relative_to(ROOT).as_posix() if manifest.is_file() else None,
+        "manifest_records": manifest_records or None,
+        "corpus_identity_sha256": identity or None,
+        "tool_version": _tool_version(),
+        "reproduce": (
+            "python scripts/fetch.py --from-manifest && python scripts/analyse.py"
+        ),
+        "note": (
+            "Period rates carry `clusters` and `effective_n` as well as `total` and "
+            "`usable`. The first two count independent submitter groups; the last two "
+            "count sequences, and consecutive GenBank accessions come from one "
+            "submission. A period can pass the 25-sequence floor on an effective n near "
+            "1, so read effective_n before any rate."
+        ),
+    }
 
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(payload, indent=1), encoding="utf-8")

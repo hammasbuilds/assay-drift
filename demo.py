@@ -83,7 +83,11 @@ def show_drift() -> None:
     print("never counted as failures - see match.py.\n")
 
     print(f"  {'assay':<18}{'exact match':>26}{'likely failing':>22}")
+    # `_run` holds the provenance of the run - when, which corpus, which manifest -
+    # and is not an assay. Underscore keys are metadata by convention here.
     for name, data in payload.items():
+        if name.startswith("_"):
+            continue
         movement = data["trend"]
         label = name
         if data["retired"]:
@@ -120,6 +124,21 @@ def show_drift() -> None:
     print("2026-Q1 sequences. Read that quarter's rate with the sampling caveat")
     print("in the README - the hits are clustered by submitting laboratory, and")
     print("the same mutation is 5.1% of 2026-Q3.\n")
+    run = payload.get("_run") or {}
+    if run.get("corpus_identity_sha256"):
+        # Which corpus these numbers are over. The corpus is gitignored, so without this
+        # the figures cannot be tied to anything a reader can check.
+        print(
+            f"Computed {run.get('generated', '?')} over "
+            f"{run.get('sequences_read', 0):,} genomes listed in "
+            f"{run.get('manifest', '?')}"
+        )
+        print(f"Corpus identity: {run['corpus_identity_sha256'][:16]}...")
+        print(f"Rebuild with: {run.get('reproduce', '')}")
+        print(
+            "Read `effective_n` beside any rate: a quarter can pass the 25-sequence "
+            "floor on one independent submission.\n"
+        )
     print("Full per-quarter tables: results/drift.json, or run scripts/analyse.py")
 
 
