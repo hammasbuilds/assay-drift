@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Do published PCR diagnostic assays still match what is circulating? Measured against GenBank."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+# PEP 639, as the sibling repositories use. The deprecated table form plus a
+# "License ::" classifier is what setuptools and hatchling now warn about, and what
+# newer PyPI metadata rejects.
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = [
     "bioinformatics", "pcr", "diagnostics", "primers", "genbank",
     "sars-cov-2", "sequence-analysis", "public-health",
@@ -12,7 +16,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",

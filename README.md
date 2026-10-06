@@ -36,7 +36,7 @@ This measures that from public data: 2,765 dated SARS-CoV-2 genomes from GenBank
 Share of sequences collected in each **quarter** that each assay matched **exactly**, and the
 share it would plausibly **no longer detect**. Those are very different questions and the gap
 between them is the whole story. Quarters are the granularity the committed run uses; every
-number below comes from [`results/drift.json`](results/drift.json) and is reprinted by
+number below comes from [`results/drift.json`](https://github.com/hammasbuilds/assay-drift/blob/main/results/drift.json) and is reprinted by
 `python demo.py`. First and last are the first and last quarters with at least 25 usable
 sequences — `scripts/analyse.py --granularity year` regroups the same data by year.
 
@@ -183,7 +183,7 @@ stop the reaction. An assay can look healthy on a mismatch count and carry the o
 mutation that does. Only the position tells you which — and this is a prediction from
 sequence complementarity, not a measured failure: no PCR was run here.
 
-📊 **Full per-quarter tables: [`results/drift.json`](results/drift.json)**
+📊 **Full per-quarter tables: [`results/drift.json`](https://github.com/hammasbuilds/assay-drift/blob/main/results/drift.json)**
 
 ---
 
@@ -328,7 +328,7 @@ positions, mismatch counts and unknown-base counts.
 ## Input
 
 Five published assays, as the oligonucleotides clinical laboratories ran. Sources in
-[`src/assaydrift/primers.py`](src/assaydrift/primers.py) — CDC-006-00019 rev.06 and
+[`src/assaydrift/primers.py`](https://github.com/hammasbuilds/assay-drift/blob/main/src/assaydrift/primers.py) — CDC-006-00019 rev.06 and
 Corman et al. 2020, *Euro Surveill* 25(3).
 
 ## Output
@@ -411,6 +411,29 @@ tests/                      134 tests, none touching the network
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256
 pinned, so the suite never depends on NCBI being reachable.
 
+## Prior art, and what this does differently
+
+Checking published primers against a growing sequence database is not a new idea. Anyone
+evaluating this should know what already exists:
+
+| | |
+|---|---|
+| [**Primer Monitor**](https://primer-monitor.neb.com/) (NEB / ARTIC) | A continuously updated service that flags primer-site mutations in SARS-CoV-2 against GISAID and public data. Far more current than this, and the right tool if you want a live dashboard. |
+| [**PCR_strainer**](https://github.com/KevinKuchinski/PCR_strainer) | Screens primer and probe sets against large genome collections and reports mismatch prevalence. The closest comparison to what `drift` does. |
+| [**CoV-Spectrum**](https://cov-spectrum.org/) | Interactive variant and mutation prevalence over public sequence data, including primer-region queries. |
+| **Nextclade** | Reports mutations per sequence, including in primer regions when given a primer set. |
+
+**What this does that those do not, and what it does worse.** It is one directory of
+standard-library Python with zero runtime dependencies, so it runs anywhere and can be read
+end to end — which is the point of it as a portfolio piece, not a claim to be better. Two
+substantive differences: an `N` under an oligo is treated as *missing data* and excluded
+from the rates rather than counted as a mismatch, which stops a change in sequencing
+quality from manufacturing a time trend; and a mismatch in the 3′ window is treated as
+special **only on a primer**, because a hydrolysis probe is chemically blocked at that end
+and is never extended. Against that: no thermodynamics (no Tm, no ΔG — the most valuable
+thing missing), no live data feed, a 2,765-genome sample rather than millions, and no wet
+lab anywhere near it.
+
 ## Also worth reading
 
 | | |
@@ -427,5 +450,5 @@ variant surveillance &middot; oligonucleotide &middot; IUPAC
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE). The assay sequences are published in the cited sources; the
+MIT — see [LICENSE](https://github.com/hammasbuilds/assay-drift/blob/main/LICENSE). The assay sequences are published in the cited sources; the
 genomes are GenBank's.
