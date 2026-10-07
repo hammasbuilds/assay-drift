@@ -9,25 +9,25 @@
    "bases_from_3_prime_end": 21,
    "in_three_prime_window": false,
    "genome_position": 28311,
-   "overall_rate": 0.7661909989023051,
-   "total": 2094,
+   "overall_rate": 0.7649871276204487,
+   "total": 2080,
    "by_period": {
     "2020-Q2": 1,
     "2021-Q1": 1,
     "2021-Q4": 183,
     "2022-Q2": 3,
     "2022-Q3": 13,
-    "2022-Q4": 421,
+    "2022-Q4": 420,
     "2023-Q1": 2,
     "2023-Q2": 5,
     "2023-Q3": 11,
-    "2023-Q4": 422,
+    "2023-Q4": 420,
     "2024-Q1": 159,
-    "2024-Q4": 142,
+    "2024-Q4": 132,
     "2025-Q1": 13,
     "2025-Q2": 1,
     "2025-Q3": 65,
-    "2025-Q4": 325,
+    "2025-Q4": 324,
     "2026-Q1": 106,
     "2026-Q2": 29,
     "2026-Q3": 192
@@ -35,8 +35,8 @@
    "top_places": [
     {
      "place": "USA: New York",
-     "carrying": 252,
-     "sequenced": 252,
+     "carrying": 251,
+     "sequenced": 251,
      "rate": 1.0
     },
     {
@@ -52,16 +52,16 @@
      "rate": 1.0
     },
     {
-     "place": "USA: New Jersey",
-     "carrying": 137,
-     "sequenced": 222,
-     "rate": 0.6171171171171171
+     "place": "USA",
+     "carrying": 134,
+     "sequenced": 169,
+     "rate": 0.7928994082840237
     },
     {
-     "place": "USA",
-     "carrying": 135,
-     "sequenced": 170,
-     "rate": 0.7941176470588235
+     "place": "USA: New Jersey",
+     "carrying": 132,
+     "sequenced": 217,
+     "rate": 0.6082949308755761
     }
    ]
   },
@@ -74,14 +74,14 @@
    "bases_from_3_prime_end": 9,
    "in_three_prime_window": false,
    "genome_position": 28297,
-   "overall_rate": 0.24002927186242223,
-   "total": 656,
+   "overall_rate": 0.240529606472968,
+   "total": 654,
    "by_period": {
-    "2023-Q4": 3,
+    "2023-Q4": 2,
     "2024-Q1": 1,
     "2024-Q4": 2,
     "2025-Q3": 61,
-    "2025-Q4": 304,
+    "2025-Q4": 303,
     "2026-Q1": 88,
     "2026-Q2": 26,
     "2026-Q3": 171
@@ -95,9 +95,9 @@
     },
     {
      "place": "USA",
-     "carrying": 57,
-     "sequenced": 170,
-     "rate": 0.3352941176470588
+     "carrying": 56,
+     "sequenced": 169,
+     "rate": 0.33136094674556216
     },
     {
      "place": "United Kingdom:England",
@@ -128,7 +128,7 @@
    "bases_from_3_prime_end": 2,
    "in_three_prime_window": false,
    "genome_position": 28330,
-   "overall_rate": 0.08708379070618368,
+   "overall_rate": 0.08753218094887827,
    "total": 238,
    "by_period": {
     "2022-Q3": 3,
@@ -145,14 +145,14 @@
     {
      "place": "USA: North Carolina",
      "carrying": 16,
-     "sequenced": 60,
-     "rate": 0.26666666666666666
+     "sequenced": 59,
+     "rate": 0.2711864406779661
     },
     {
      "place": "USA: Illinois",
      "carrying": 14,
-     "sequenced": 63,
-     "rate": 0.2222222222222222
+     "sequenced": 62,
+     "rate": 0.22580645161290322
     },
     {
      "place": "USA: Arizona",
@@ -177,7 +177,7 @@
    "bases_from_3_prime_end": 15,
    "in_three_prime_window": false,
    "genome_position": 28291,
-   "overall_rate": 0.04244420051225759,
+   "overall_rate": 0.04266274365575579,
    "total": 116,
    "by_period": {
     "2024-Q4": 72,
@@ -197,8 +197,8 @@
     {
      "place": "USA: New Jersey",
      "carrying": 11,
-     "sequenced": 222,
-     "rate": 0.04954954954954955
+     "sequenced": 217,
+     "rate": 0.05069124423963134
     },
     {
      "place": "United Kingdom:Northern_Ireland",
@@ -229,7 +229,7 @@
    "bases_from_3_prime_end": 20,
    "in_three_prime_window": false,
    "genome_position": 28312,
-   "overall_rate": 0.018660812294182216,
+   "overall_rate": 0.01875689591761677,
    "total": 51,
    "by_period": {
     "2022-Q3": 1,
@@ -243,8 +243,8 @@
     {
      "place": "USA",
      "carrying": 15,
-     "sequenced": 170,
-     "rate": 0.08823529411764706
+     "sequenced": 169,
+     "rate": 0.08875739644970414
     },
     {
      "place": "USA: California",
@@ -255,8 +255,8 @@
     {
      "place": "USA: New Jersey",
      "carrying": 4,
-     "sequenced": 222,
-     "rate": 0.018018018018018018
+     "sequenced": 217,
+     "rate": 0.018433179723502304
     },
     {
      "place": "USA: Arizona",
@@ -283,7 +283,7 @@
    "bases_from_3_prime_end": 19,
    "in_three_prime_window": false,
    "genome_position": 29164,
-   "overall_rate": 0.03322380430814166,
+   "overall_rate": 0.03333333333333333,
    "total": 91,
    "by_period": {
     "2025-Q3": 7,
@@ -308,8 +308,8 @@
     {
      "place": "United Kingdom",
      "carrying": 8,
-     "sequenced": 73,
-     "rate": 0.1095890410958904
+     "sequenced": 72,
+     "rate": 0.1111111111111111
     },
     {
      "place": "USA",
@@ -334,14 +334,14 @@
    "bases_from_3_prime_end": 2,
    "in_three_prime_window": true,
    "genome_position": 29215,
-   "overall_rate": 0.024096385542168676,
-   "total": 66,
+   "overall_rate": 0.023443223443223443,
+   "total": 64,
    "by_period": {
     "2025-Q3": 1,
     "2025-Q4": 12,
     "2026-Q1": 33,
     "2026-Q2": 10,
-    "2026-Q3": 10
+    "2026-Q3": 8
    },
    "top_places": [
     {
@@ -363,16 +363,16 @@
      "rate": 0.25925925925925924
     },
     {
-     "place": "USA: Missouri",
-     "carrying": 4,
-     "sequenced": 26,
-     "rate": 0.15384615384615385
-    },
-    {
      "place": "USA: Washington",
      "carrying": 4,
      "sequenced": 163,
      "rate": 0.024539877300613498
+    },
+    {
+     "place": "USA",
+     "carrying": 3,
+     "sequenced": 170,
+     "rate": 0.01764705882352941
     }
    ]
   },
@@ -385,7 +385,7 @@
    "bases_from_3_prime_end": 8,
    "in_three_prime_window": false,
    "genome_position": 29221,
-   "overall_rate": 0.0036509675063891934,
+   "overall_rate": 0.003663003663003663,
    "total": 10,
    "by_period": {
     "2022-Q4": 1,
@@ -396,8 +396,8 @@
     {
      "place": "United Kingdom",
      "carrying": 7,
-     "sequenced": 73,
-     "rate": 0.0958904109589041
+     "sequenced": 72,
+     "rate": 0.09722222222222222
     },
     {
      "place": "USA: Utah",
@@ -428,7 +428,7 @@
    "bases_from_3_prime_end": 10,
    "in_three_prime_window": false,
    "genome_position": 29200,
-   "overall_rate": 0.0032858707557502738,
+   "overall_rate": 0.0032967032967032967,
    "total": 9,
    "by_period": {
     "2020-Q2": 1,
@@ -468,39 +468,45 @@
     {
      "place": "USA: New Mexico",
      "carrying": 1,
-     "sequenced": 65,
-     "rate": 0.015384615384615385
+     "sequenced": 60,
+     "rate": 0.016666666666666666
     }
    ]
   },
   {
-   "name": "T29164A",
-   "oligo": "N2-F",
-   "role": "forward",
-   "base_in_oligo": 1,
-   "oligo_length": 20,
-   "bases_from_3_prime_end": 19,
+   "name": "C29197T",
+   "oligo": "N2-P",
+   "role": "probe",
+   "base_in_oligo": 10,
+   "oligo_length": 23,
+   "bases_from_3_prime_end": 13,
    "in_three_prime_window": false,
-   "genome_position": 29164,
-   "overall_rate": 0.002190580503833516,
-   "total": 6,
+   "genome_position": 29197,
+   "overall_rate": 0.0018315018315018315,
+   "total": 5,
    "by_period": {
-    "2025-Q3": 3,
-    "2025-Q4": 2,
-    "2026-Q3": 1
+    "2021-Q1": 3,
+    "2021-Q2": 1,
+    "2025-Q3": 1
    },
    "top_places": [
     {
-     "place": "USA: New Mexico",
-     "carrying": 5,
-     "sequenced": 65,
-     "rate": 0.07692307692307693
+     "place": "USA: Tennessee",
+     "carrying": 3,
+     "sequenced": 64,
+     "rate": 0.046875
     },
     {
-     "place": "United Kingdom",
+     "place": "USA: New Mexico",
      "carrying": 1,
-     "sequenced": 73,
-     "rate": 0.0136986301369863
+     "sequenced": 60,
+     "rate": 0.016666666666666666
+    },
+    {
+     "place": "USA: North Carolina",
+     "carrying": 1,
+     "sequenced": 60,
+     "rate": 0.016666666666666666
     }
    ]
   }
@@ -515,7 +521,7 @@
    "bases_from_3_prime_end": 21,
    "in_three_prime_window": false,
    "genome_position": 28681,
-   "overall_rate": 0.021715526601520086,
+   "overall_rate": 0.02173125679101775,
    "total": 60,
    "by_period": {
     "2022-Q3": 1,
@@ -565,7 +571,7 @@
    "bases_from_3_prime_end": 3,
    "in_three_prime_window": false,
    "genome_position": 28724,
-   "overall_rate": 0.01737242128121607,
+   "overall_rate": 0.017385005432814196,
    "total": 48,
    "by_period": {
     "2022-Q4": 47,
@@ -613,7 +619,7 @@
    "bases_from_3_prime_end": 19,
    "in_three_prime_window": false,
    "genome_position": 28708,
-   "overall_rate": 0.005066956207021353,
+   "overall_rate": 0.0050706265845708075,
    "total": 14,
    "by_period": {
     "2021-Q1": 2,
@@ -656,7 +662,7 @@
    "bases_from_3_prime_end": 0,
    "in_three_prime_window": false,
    "genome_position": 28727,
-   "overall_rate": 0.005066956207021353,
+   "overall_rate": 0.0050706265845708075,
    "total": 14,
    "by_period": {
     "2025-Q4": 2,
@@ -704,7 +710,7 @@
    "bases_from_3_prime_end": 12,
    "in_three_prime_window": false,
    "genome_position": 28715,
-   "overall_rate": 0.004343105320304018,
+   "overall_rate": 0.004346251358203549,
    "total": 12,
    "by_period": {
     "2023-Q4": 1,
@@ -754,8 +760,8 @@
    "bases_from_3_prime_end": 24,
    "in_three_prime_window": false,
    "genome_position": 26270,
-   "overall_rate": 0.7669090909090909,
-   "total": 2109,
+   "overall_rate": 0.766654532216964,
+   "total": 2106,
    "by_period": {
     "2020-Q1": 1,
     "2020-Q3": 2,
@@ -766,7 +772,7 @@
     "2023-Q1": 2,
     "2023-Q2": 5,
     "2023-Q3": 11,
-    "2023-Q4": 422,
+    "2023-Q4": 420,
     "2024-Q1": 159,
     "2024-Q4": 149,
     "2025-Q1": 13,
@@ -775,7 +781,7 @@
     "2025-Q4": 325,
     "2026-Q1": 113,
     "2026-Q2": 29,
-    "2026-Q3": 195
+    "2026-Q3": 194
    },
    "top_places": [
     {
@@ -819,7 +825,7 @@
    "bases_from_3_prime_end": 19,
    "in_three_prime_window": false,
    "genome_position": 26275,
-   "overall_rate": 0.021454545454545455,
+   "overall_rate": 0.021477975973789587,
    "total": 59,
    "by_period": {
     "2022-Q4": 7,
@@ -839,8 +845,8 @@
     {
      "place": "United Kingdom",
      "carrying": 15,
-     "sequenced": 74,
-     "rate": 0.20270270270270271
+     "sequenced": 73,
+     "rate": 0.2054794520547945
     },
     {
      "place": "USA: California",
@@ -863,20 +869,19 @@
    ]
   },
   {
-   "name": "A26290G",
+   "name": "C26292T",
    "oligo": "E-F",
    "role": "forward",
-   "base_in_oligo": 22,
+   "base_in_oligo": 24,
    "oligo_length": 26,
-   "bases_from_3_prime_end": 4,
+   "bases_from_3_prime_end": 2,
    "in_three_prime_window": true,
-   "genome_position": 26290,
-   "overall_rate": 0.0014545454545454545,
-   "total": 4,
+   "genome_position": 26292,
+   "overall_rate": 0.0010921004732435385,
+   "total": 3,
    "by_period": {
-    "2022-Q4": 1,
-    "2023-Q4": 2,
-    "2026-Q3": 1
+    "2025-Q4": 1,
+    "2026-Q1": 2
    },
    "top_places": [
     {
@@ -886,94 +891,62 @@
      "rate": 0.0058823529411764705
     },
     {
-     "place": "USA: North Carolina",
+     "place": "USA: Michigan",
      "carrying": 1,
-     "sequenced": 60,
-     "rate": 0.016666666666666666
+     "sequenced": 27,
+     "rate": 0.037037037037037035
     },
     {
-     "place": "USA: Ohio",
+     "place": "USA: Missouri",
      "carrying": 1,
-     "sequenced": 14,
-     "rate": 0.07142857142857142
-    },
-    {
-     "place": "United Kingdom",
-     "carrying": 1,
-     "sequenced": 74,
-     "rate": 0.013513513513513514
+     "sequenced": 26,
+     "rate": 0.038461538461538464
     }
    ]
   },
   {
-   "name": "A26275C",
+   "name": "G26272T",
    "oligo": "E-F",
    "role": "forward",
-   "base_in_oligo": 7,
+   "base_in_oligo": 4,
    "oligo_length": 26,
-   "bases_from_3_prime_end": 19,
+   "bases_from_3_prime_end": 22,
    "in_three_prime_window": false,
-   "genome_position": 26275,
-   "overall_rate": 0.001090909090909091,
-   "total": 3,
+   "genome_position": 26272,
+   "overall_rate": 0.00036403349108117945,
+   "total": 1,
    "by_period": {
-    "2023-Q4": 2,
-    "2026-Q3": 1
+    "2021-Q1": 1
    },
    "top_places": [
     {
-     "place": "USA: North Carolina",
+     "place": "USA: Tennessee",
      "carrying": 1,
-     "sequenced": 60,
-     "rate": 0.016666666666666666
-    },
-    {
-     "place": "USA: Ohio",
-     "carrying": 1,
-     "sequenced": 14,
-     "rate": 0.07142857142857142
-    },
-    {
-     "place": "United Kingdom",
-     "carrying": 1,
-     "sequenced": 74,
-     "rate": 0.013513513513513514
+     "sequenced": 64,
+     "rate": 0.015625
     }
    ]
   },
   {
-   "name": "C26276G",
+   "name": "A26281G",
    "oligo": "E-F",
    "role": "forward",
-   "base_in_oligo": 8,
+   "base_in_oligo": 13,
    "oligo_length": 26,
-   "bases_from_3_prime_end": 18,
+   "bases_from_3_prime_end": 13,
    "in_three_prime_window": false,
-   "genome_position": 26276,
-   "overall_rate": 0.001090909090909091,
-   "total": 3,
+   "genome_position": 26281,
+   "overall_rate": 0.00036403349108117945,
+   "total": 1,
    "by_period": {
-    "2023-Q4": 2,
-    "2026-Q3": 1
+    "2024-Q4": 1
    },
    "top_places": [
     {
-     "place": "USA: North Carolina",
+     "place": "USA: Pennsylvania",
      "carrying": 1,
-     "sequenced": 60,
-     "rate": 0.016666666666666666
-    },
-    {
-     "place": "USA: Ohio",
-     "carrying": 1,
-     "sequenced": 14,
-     "rate": 0.07142857142857142
-    },
-    {
-     "place": "United Kingdom",
-     "carrying": 1,
-     "sequenced": 74,
-     "rate": 0.013513513513513514
+     "sequenced": 41,
+     "rate": 0.024390243902439025
     }
    ]
   }
@@ -988,7 +961,7 @@
    "bases_from_3_prime_end": 1,
    "in_three_prime_window": true,
    "genome_position": 15451,
-   "overall_rate": 0.11070911722141824,
+   "overall_rate": 0.11090974990938746,
    "total": 306,
    "by_period": {
     "2020-Q4": 1,
@@ -1022,8 +995,8 @@
     {
      "place": "USA: North Carolina",
      "carrying": 17,
-     "sequenced": 60,
-     "rate": 0.2833333333333333
+     "sequenced": 59,
+     "rate": 0.288135593220339
     },
     {
      "place": "United Kingdom:England",
@@ -1048,7 +1021,7 @@
    "bases_from_3_prime_end": 14,
    "in_three_prime_window": false,
    "genome_position": 15480,
-   "overall_rate": 0.002532561505065123,
+   "overall_rate": 0.0025371511417180137,
    "total": 7,
    "by_period": {
     "2020-Q1": 1,
@@ -1070,47 +1043,6 @@
    ]
   },
   {
-   "name": "G15452T",
-   "oligo": "RdRp-F",
-   "role": "forward",
-   "base_in_oligo": 22,
-   "oligo_length": 22,
-   "bases_from_3_prime_end": 0,
-   "in_three_prime_window": true,
-   "genome_position": 15452,
-   "overall_rate": 0.001808972503617945,
-   "total": 5,
-   "by_period": {
-    "2023-Q4": 5
-   },
-   "top_places": [
-    {
-     "place": "USA: Florida",
-     "carrying": 2,
-     "sequenced": 50,
-     "rate": 0.04
-    },
-    {
-     "place": "Japan: Tokyo",
-     "carrying": 1,
-     "sequenced": 12,
-     "rate": 0.08333333333333333
-    },
-    {
-     "place": "USA: North Carolina",
-     "carrying": 1,
-     "sequenced": 60,
-     "rate": 0.016666666666666666
-    },
-    {
-     "place": "USA: Ohio",
-     "carrying": 1,
-     "sequenced": 14,
-     "rate": 0.07142857142857142
-    }
-   ]
-  },
-  {
    "name": "A15477T",
    "oligo": "RdRp-P",
    "role": "probe",
@@ -1119,7 +1051,7 @@
    "bases_from_3_prime_end": 17,
    "in_three_prime_window": false,
    "genome_position": 15477,
-   "overall_rate": 0.001447178002894356,
+   "overall_rate": 0.0014498006524102935,
    "total": 4,
    "by_period": {
     "2020-Q3": 4
@@ -1142,7 +1074,7 @@
    "bases_from_3_prime_end": 2,
    "in_three_prime_window": true,
    "genome_position": 15450,
-   "overall_rate": 0.000723589001447178,
+   "overall_rate": 0.0007249003262051468,
    "total": 2,
    "by_period": {
     "2022-Q4": 1,
@@ -1160,6 +1092,29 @@
      "carrying": 1,
      "sequenced": 26,
      "rate": 0.038461538461538464
+    }
+   ]
+  },
+  {
+   "name": "T15432C",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "base_in_oligo": 2,
+   "oligo_length": 22,
+   "bases_from_3_prime_end": 20,
+   "in_three_prime_window": false,
+   "genome_position": 15432,
+   "overall_rate": 0.0003624501631025734,
+   "total": 1,
+   "by_period": {
+    "2021-Q4": 1
+   },
+   "top_places": [
+    {
+     "place": "USA: District of Columbia",
+     "carrying": 1,
+     "sequenced": 89,
+     "rate": 0.011235955056179775
     }
    ]
   }

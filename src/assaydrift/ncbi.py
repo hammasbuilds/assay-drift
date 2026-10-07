@@ -219,6 +219,10 @@ def search(term: str, limit: int = 500) -> list[str]:
     return ids[:limit]
 
 
+# Every IUPAC nucleotide code. A letter outside this set is stored as N rather than
+# dropped, because dropping one renumbers the rest of the genome.
+IUPAC_CODES = frozenset("ACGTRYSWKMBDHVN")
+
 _ORGANISM = re.compile(r"^\s{2}ORGANISM\s+(.+)$", re.M)
 _COLLECTED = re.compile(r'/collection_date="([^"]+)"')
 _COUNTRY = re.compile(r'/(?:country|geo_loc_name)="([^"]+)"')
@@ -231,7 +235,21 @@ def _one_record(block: str) -> Record | None:
     origin = _ORIGIN.search(block)
     if not accession or not origin:
         return None
-    sequence = re.sub(r"[^acgtnACGTN]", "", origin.group(1)).upper()
+    # ORIGIN lines are "   61 acgtacgt acgtacgt ...": strip the numbering and the
+    # spacing, keep every letter.
+    #
+    # This used to be `re.sub(r"[^acgtnACGTN]", "", ...)`, which DELETED any other IUPAC
+    # code instead of keeping it - and deleting a base shifts every base after it. 339
+    # of the 2,781 records in the cache behind the published result carry one (1,262
+    # bases in all: Y 541, R 403, K 103, M 89, W 45, H 38, S 31, V 9, B 2, D 1), so 12%
+    # of the corpus was stored a base or more short, with every coordinate past the
+    # first ambiguous position off by one. An oligo's reported position, the base index
+    # inside it, and the mutation calls downstream all read off those coordinates.
+    #
+    # Anything that is a letter but not a nucleotide code becomes N: unknown, counted,
+    # never guessed - and, above all, still occupying its position.
+    letters = re.sub(r"[^A-Za-z]", "", origin.group(1)).upper()
+    sequence = "".join(c if c in IUPAC_CODES else "N" for c in letters)
     if not sequence:
         return None
     organism = _ORGANISM.search(block)

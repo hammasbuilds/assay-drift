@@ -202,3 +202,70 @@ def test_demo_runs_against_the_committed_results() -> None:
     assert "Corpus identity:" in output, "demo.py does not state the corpus provenance"
     for assay in ("CDC N1", "CDC N2", "Charite RdRp"):
         assert assay in output, f"{assay} missing from demo output"
+
+
+def test_the_c29215t_quarter_table_matches_the_results():
+    """The per-quarter carriage table, which no test covered.
+
+    Its 2026-Q1 row read 30.6% over n=108 while a paragraph twenty lines above said
+    28.7% over n=115 for the same quarter - the README disagreeing with itself, because
+    one figure was updated after a re-run and the other was not. Both now come from
+    `results/`, so neither can move without this failing.
+    """
+    drift = json.loads(DRIFT.read_text(encoding="utf-8"))
+    mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+    row = next(
+        r for r in mutations["CDC N2"]
+        if (r.get("mutation") or r.get("name")) == "C29215T"
+    )
+    periods = drift["CDC N2"]["periods"]
+    readme = README.read_text(encoding="utf-8")
+    for quarter, carrying in row["by_period"].items():
+        usable = periods[quarter]["usable"]
+        rate = 100 * carrying / usable
+        line = f"| {quarter} | {rate:.1f}% | {usable} |"
+        assert line in readme, (
+            f"the README's {quarter} row is not {line!r} - results say {carrying} of "
+            f"{usable} readable sequences carry C29215T"
+        )
+
+
+def test_the_pooled_2026_carriage_figure_matches_the_results():
+    """"51 of 333 readable sequences (15.3%)" has to be those two numbers.
+
+    An earlier version of this sentence said 53/333 and 15.9%, and also quoted a
+    Wisconsin-versus-UK split for 2026 alone that nothing in `results/` emits - so
+    there was no way to check it and it was simply carried forward. The figures quoted
+    now are ones the pipeline writes down.
+    """
+    drift = json.loads(DRIFT.read_text(encoding="utf-8"))
+    mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+    row = next(
+        r for r in mutations["CDC N2"]
+        if (r.get("mutation") or r.get("name")) == "C29215T"
+    )
+    periods = drift["CDC N2"]["periods"]
+    carrying = sum(n for q, n in row["by_period"].items() if q.startswith("2026"))
+    usable = sum(p["usable"] for q, p in periods.items() if q.startswith("2026"))
+    readme = README.read_text(encoding="utf-8")
+    assert f"{carrying} of {usable} readable" in readme, (
+        f"the README does not say {carrying} of {usable} readable sequences"
+    )
+    assert f"({100 * carrying / usable:.1f}%)" in readme
+
+
+def test_the_top_places_quoted_are_the_ones_the_pipeline_stored():
+    """The clustering argument rests on this list, so it has to be the stored one.
+
+    It quoted `USA: Missouri 4/26`, which the pipeline no longer reports at all - the
+    place list changed when the corpus was corrected and the prose did not.
+    """
+    mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+    row = next(
+        r for r in mutations["CDC N2"]
+        if (r.get("mutation") or r.get("name")) == "C29215T"
+    )
+    readme = README.read_text(encoding="utf-8")
+    for place in row["top_places"]:
+        quoted = f"{place['place']} {place['carrying']}/{place['sequenced']}"
+        assert quoted in readme, f"the README does not quote {quoted!r}"

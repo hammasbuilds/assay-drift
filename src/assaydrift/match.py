@@ -50,6 +50,42 @@ IUPAC: dict[str, str] = {
 
 COMPLEMENT = str.maketrans("ACGTRYSWKMBDHVN", "TGCAYRSWMKVHDBN")
 
+# A subject base can be ambiguous too, not only `N`.
+#
+# The comparison used to read `actual in IUPAC[base]`, which expands the PRIMER's code
+# and treats the subject's as literal unless it is exactly "N". A consensus sequence
+# carrying `R` (A or G) where a primer wants `A` would then be counted as a definite
+# mismatch, when R *could be* A - and a definite mismatch is what moves an assay towards
+# a drift verdict. Overstating drift is the error this repository has had to correct
+# before.
+#
+# The rule compares the two sets of possibilities:
+#
+#   subset of what the primer accepts   -> match      (primer R, subject A)
+#   overlapping but not a subset        -> ambiguous  (primer A, subject R)
+#   disjoint                            -> mismatch   (primer A, subject Y)
+#
+# `N` is no longer a special case: its possibilities are ACGT, which overlap everything,
+# so it falls out of the same rule as ambiguous.
+#
+# This changes nothing in the published result, which is measured rather than assumed:
+# the 2,765 sequences in data/accessions.tsv contain only A, C, G, T and N - no other
+# ambiguity code appears once - and no primer in ASSAYS contains an N. It is here for
+# the data this tool will meet elsewhere; GISAID consensus sequences do carry R and Y.
+MATCH, AMBIGUOUS, MISMATCH = "match", "ambiguous", "mismatch"
+
+
+def compare_base(base: str, actual: str) -> str:
+    """MATCH, AMBIGUOUS or MISMATCH for one primer base against one subject base."""
+    allowed = IUPAC.get(base.upper())
+    possible = IUPAC.get(actual.upper())
+    if allowed is None or possible is None:
+        # Not a nucleotide code at all - a gap character, or junk in the record.
+        return MISMATCH
+    if set(possible) <= set(allowed):
+        return MATCH
+    return AMBIGUOUS if set(possible) & set(allowed) else MISMATCH
+
 # How many bases at the 3' end count as "the business end" of a primer.
 # Five is the usual rule of thumb in primer design: a mismatch inside this
 # window is the kind that stops extension rather than merely slowing it.
@@ -112,7 +148,17 @@ class Hit:
 
     position: int
     mismatches: int  # definite: target base is known and disagrees
-    ambiguous: int  # target base is N - unknown, counted, never guessed
+    ambiguous: int
+    """Target base could be the one the primer wants, but is not known to be.
+
+    Any IUPAC code whose possibilities overlap what the primer accepts without being
+    contained in them: N against anything, and R where the primer wants A. Counted,
+    never guessed, and `usable` is False while any are present - an alignment with
+    unknown bases under it is not evidence either way.
+
+    This said "target base is N" while the comparison treated only an exact N as
+    ambiguous, so an R where the primer wanted A was counted as a definite mismatch.
+    """
     three_prime_mismatches: int
     found: bool = True
     role: str = ""
@@ -228,10 +274,11 @@ def score_at(
     mismatches = ambiguous = three_prime = 0
     last = len(oligo) - 1
     for index, (base, actual) in enumerate(zip(oligo.upper(), window.upper(), strict=True)):
-        if actual == "N":
+        verdict = compare_base(base, actual)
+        if verdict == AMBIGUOUS:
             ambiguous += 1
             continue
-        if actual in IUPAC[base]:
+        if verdict == MATCH:
             continue
         mismatches += 1
         distance_from_3_prime = index if three_prime_at_start else last - index
@@ -296,7 +343,7 @@ def _align_gapped(
         base = oligo[i - 1]
         for j in range(1, m + 1):
             actual = window[j - 1]
-            step = 0.0 if (actual == "N" or actual in IUPAC[base]) else 1.0
+            step = 0.0 if compare_base(base, actual) != MISMATCH else 1.0
             M[i][j] = min(M[i - 1][j - 1], D[i - 1][j - 1], I[i - 1][j - 1]) + step
             D[i][j] = min(D[i - 1][j] + GAP_EXTEND, M[i - 1][j] + GAP_OPEN,
                           I[i - 1][j] + GAP_OPEN)
@@ -320,16 +367,17 @@ def _align_gapped(
                 state = "D" if j == 0 else "I"
                 continue
             base, actual = oligo[i - 1], window[j - 1]
-            if actual == "N":
+            verdict = compare_base(base, actual)
+            if verdict == AMBIGUOUS:
                 ambiguous += 1
-            elif actual not in IUPAC[base]:
+            elif verdict == MISMATCH:
                 mismatches += 1
                 # Measured on the OLIGO index, which the alignment preserves - that is
                 # the whole reason for aligning before counting 3' mismatches.
                 distance = (i - 1) if three_prime_at_start else (n - i)
                 if distance < THREE_PRIME_WINDOW:
                     three_prime += 1
-            step = 0.0 if (actual == "N" or actual in IUPAC[base]) else 1.0
+            step = 0.0 if verdict != MISMATCH else 1.0
             previous = M[i][j] - step
             i, j = i - 1, j - 1
             state = min(("M", M[i][j]), ("D", D[i][j]), ("I", I[i][j]),

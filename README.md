@@ -51,7 +51,7 @@ quarter in `results/drift.json` as `clusters` and `effective_n` — gives:
 | 2020-Q1 — the baseline of every row below | 153 | 11 | **2.4** |
 | 2021-Q4 — Charité RdRp's worst quarter | 330 | 20 | 5.2 |
 | 2024-Q1 | 159 | **4** | **1.1** |
-| 2026-Q3 — the endpoint of every row below | 196 | 33 | 4.5 |
+| 2026-Q3 — the endpoint of every row below | 196 | 33 | 4.4 |
 
 The median across the quarters that pass the floor is about 4. So **−99.3** compares a quarter
 worth roughly two independent observations against one worth roughly five, and 2024-Q1 passes
@@ -70,7 +70,7 @@ instead.
 | **Charité E** | 99.3% | **0.0%** | **−99.3** | 1.8% (2026-Q1) |
 | **Charité RdRp** | 99.3% | 90.8% | −8.6 | **44.5% (2021-Q4)** |
 | CDC N3 *(retired)* | 98.7% | 86.7% | −12.0 | 3.4% (2021-Q1) |
-| **CDC N2** | 98.7% | 85.9% | −12.8 | **34.5% (2026-Q2)** |
+| **CDC N2** | 98.7% | 87.3% | −11.4 | **34.5% (2026-Q2)** |
 
 **CDC N2 was the quiet one, and stopped being quiet in 2026.** It holds above 97% exact match
 through 2024-Q4 while N1 — an assay targeting the *same gene*, 900 bases away — goes to zero,
@@ -104,11 +104,11 @@ is readable:
 | Quarter | carrying C29215T | n |
 |---|---:|---:|
 | 2020-Q1 … 2024-Q4 | 0.0% | 153–420 per quarter |
-| 2025-Q3 | 1.6% | 64 |
-| 2025-Q4 | 3.8% | 319 |
-| 2026-Q1 | 30.6% | 108 |
+| 2025-Q3 | 1.6% | 62 |
+| 2025-Q4 | 3.8% | 316 |
+| 2026-Q1 | 28.7% | 115 |
 | 2026-Q2 | 34.5% | 29 |
-| 2026-Q3 | 5.1% | 196 |
+| 2026-Q3 | 4.2% | 189 |
 
 Three things are true at once, and reporting only the first would overstate it:
 
@@ -119,10 +119,11 @@ Three things are true at once, and reporting only the first would overstate it:
 - **The 2026-Q1/Q2 magnitude is a sampling artefact.** The hits are geographically clustered
   and arrive in consecutive accession blocks — single-submitter batches. `scripts/analyse.py`
   prints and stores where every 3′-window mutation was collected, over all years pooled:
-  `USA: Wisconsin 24/74, USA: California 10/186, USA: Michigan 7/27, USA: Missouri 4/26,
-  USA: Washington 4/163`. Within 2026 alone it is 53/333 sequences (15.9%) overall, 24/59 in
-  Wisconsin and 0/69 in the UK. 2026-Q1 is Wisconsin-heavy and 2026-Q3 is California- and
-  UK-heavy, which is most of the difference between 30.6% and 5.1%. GenBank is not a random
+  `USA: Wisconsin 24/74, USA: California 10/186, USA: Michigan 7/27, USA: Washington 4/163,
+  USA 3/170`. Wisconsin is a third of its own sequences and California a twentieth of five
+  times as many, pooled over every year. Within 2026 the mutation is 51 of 333 readable
+  sequences (15.3%), and 2026-Q1 is Wisconsin-heavy where 2026-Q3 is California- and
+  UK-heavy, which is most of the difference between 28.7% and 4.2%. GenBank is not a random
   sample of infections, and this is what that caveat looks like in practice.
 - **2026-Q2 has n=29.** It clears the 25-sequence reporting floor and nothing more. Its
   34.5% is the worst quarter in the table and it rests on 10 sequences.
@@ -132,6 +133,40 @@ So: N2 can no longer be described as the stable control, and the honest statemen
 2026 sequences overall, with per-quarter figures swinging between 5% and 35% on where the
 sequencing was done. Whether it costs real sensitivity is a laboratory question — see
 **Scope**: no PCR was run here.
+
+### A parsing bug that overstated drift, and what fixing it moved
+
+The GenBank reader filtered each ORIGIN block with `re.sub(r"[^acgtnACGTN]", "", ...)`.
+That keeps A, C, G, T and N and **deletes** every other IUPAC code - and deleting a base
+renumbers the rest of the genome. **339 of the 2,781 cached records carry at least one**
+(1,262 bases: Y 541, R 403, K 103, M 89, W 45, H 38, S 31, V 9, B 2, D 1), so 12% of the
+corpus was stored a base or more short, with every coordinate past the first ambiguous
+position off by one. An oligo's reported position, the base index inside it, and the
+mutation calls read off those coordinates were all affected - silently, and only for
+those records.
+
+Rebuilding the corpus from the same cached responses restored **1,261 bases across 338
+records**, up to 85 in one. The result moved in one direction:
+
+| | before | after |
+|---|---:|---:|
+| CDC N1, 2024-Q4, likely failing | 13 (9.2%) | **3 (2.3%)** |
+| CDC N1, 2024-Q4, excluded as unreadable | 10.1% | **16.5%** |
+| CDC N2, 2026-Q3, exact match | 85.9% | **87.3%** |
+| CDC N2, 2026-Q3, likely failing | 5.2% | **4.2%** |
+
+Ten of the thirteen sequences counted as likely failing in CDC N1's worst quarter of 2024
+were not failing; the ambiguity codes under the oligo had been deleted, so bases that
+should have been read as unknown were compared as if they were the next base along. They
+are now excluded, which is where a base that cannot be read belongs. Thirteen figures in
+this README moved, all of them in the direction of less drift, which is the error this
+repository keeps having to correct: the careless direction is always the alarming one.
+
+Two changes were needed, not one. The reader now keeps every IUPAC code and stores any
+other letter as `N` - unknown, counted, and still occupying its position. And the
+comparison had to stop treating a subject base as literal, because preserved ambiguity
+codes are only useful if `R` where a primer wants `A` reads as ambiguous rather than as
+a mismatch; see the note on possibilities under "How it works".
 
 ### Four mutations, found from raw sequence and named
 
@@ -143,10 +178,10 @@ writes every oligo's top 5.
 
 | Assay | Position in oligo | Genome coordinate | Change | Share of all sequences |
 |---|---|---|---|---:|
-| CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | C→T | 76.6% |
+| CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | C→T | 76.5% |
 | Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | C→T | 76.7% |
 | Charité RdRp forward | **1 base from the 3′ end** | **G15451A** | G→A | 11.1% |
-| CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | C→T | 2.4% |
+| CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | C→T | 2.3% |
 
 The first two are Omicron substitutions and the third is Delta's NSP12 G671S; the fourth is
 the 2026 N2 signal above. The share column is over every sequence where the site is readable,
@@ -235,10 +270,23 @@ read the year table first.
 
 **An `N` in the target is missing data, not a mismatch.** This is the load-bearing decision.
 Sequencing quality changed enormously over the pandemic — in this run the exclusion rate runs from
-0.0% of sequences in 2020-2022 and 0.1% in 2023 to 2.5% in 2024, and 10.1% for one assay in a
+0.0% of sequences in 2020-2022 and 0.1% in 2023 to 2.5% in 2024, and 16.5% for one assay in a
 single quarter (CDC N1, 2024-Q4) — so counting unknown bases as mismatches would
 manufacture a *time trend* out of laboratory practice and present it as viral drift. Oligos
 with an unknown base under them are excluded from the rates and reported separately.
+
+`N` is not the only ambiguity code, and the rule is now about possibilities rather than
+about that one letter. A base is compared as the *set* of what it could be: a subject code
+contained in what the primer accepts is a match (primer `R`, subject `A`), one that
+overlaps without being contained is ambiguous (primer `A`, subject `R` — it might be the
+`A`), and one that is disjoint is a real mismatch (primer `A`, subject `Y`). The comparison
+used to expand only the primer's code and treat the subject's as literal unless it was
+exactly `N`, so an `R` where a primer wanted `A` counted as a definite mismatch — the error
+running in the direction of overstating drift, which is the mistake this repository has had
+to correct twice already. Nothing in the result above moves: the 2,765 sequences behind it
+contain only `A`, `C`, `G`, `T` and `N`, and no oligo in the catalogue contains an `N`, so
+re-running `scripts/analyse.py` after the change gave a byte-identical `drift.json`. It
+matters for GISAID consensus sequences, which do carry `R` and `Y`.
 
 **A site has to be similar enough to be the site at all.** An 18-mer scored against every
 offset of a 29,903-base genome will always find somewhere that matches to within 5 bases by
@@ -358,9 +406,9 @@ base would read as drift that is not there:
 ```
   assay                            exact match        likely failing
   CDC N1            2020-Q1  99.3%  ->  2026-Q3   0.0%       10.9%   worst 10.9% (2026-Q3)
-  CDC N2            2020-Q1  98.7%  ->  2026-Q3  85.9%        5.2%   worst 34.5% (2026-Q2)
+  CDC N2            2020-Q1  98.7%  ->  2026-Q3  87.3%        4.2%   worst 34.5% (2026-Q2)
   CDC N3 (retired)  2020-Q1  98.7%  ->  2026-Q3  86.7%        0.5%   worst 3.4% (2021-Q1)
-  Charite E         2020-Q1  99.3%  ->  2026-Q3   0.0%        0.5%   worst 1.8% (2026-Q1)
+  Charite E         2020-Q1  99.3%  ->  2026-Q3   0.0%        0.0%   worst 1.8% (2026-Q1)
   Charite RdRp *    2020-Q1  99.3%  ->  2026-Q3  90.8%        9.2%   worst 44.5% (2021-Q4)
 ```
 
@@ -399,7 +447,7 @@ a two-point difference.
 ```
 src/assaydrift/ncbi.py      GenBank via E-utilities, rate-limited and cached
 src/assaydrift/primers.py   five published assays, with sources
-src/assaydrift/match.py     oligo alignment: IUPAC, unknown bases, strand, 3' end
+src/assaydrift/match.py     oligo alignment: IUPAC both ways, ambiguity, strand, 3' end
 src/assaydrift/analyze.py   grouping by collection date, rates, trend
 src/assaydrift/cli.py       assay-drift check: your own primers against your own FASTA
 scripts/fetch.py            deposit-year-stratified download; --from-manifest rebuilds exactly
