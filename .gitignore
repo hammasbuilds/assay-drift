@@ -17,3 +17,10 @@ data/partial.json
 
 # Scratch launcher for the background fetch, not part of the project.
 run_fetch.bat
+
+# Coverage artefacts. A 52 KB SQLite file holding absolute local paths; it was
+# committed into four of these repositories the day coverage was first measured.
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
