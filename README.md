@@ -453,11 +453,32 @@ src/assaydrift/cli.py       assay-drift check: your own primers against your own
 scripts/fetch.py            deposit-year-stratified download; --from-manifest rebuilds exactly
 scripts/analyse.py          the report
 examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      134 tests, none touching the network
+tests/                      223 tests, none touching the network
 ```
 
 The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256
 pinned, so the suite never depends on NCBI being reachable.
+
+**What the suite would not have noticed.** Mutation-tested with
+[suite-auditor](https://github.com/hammasbuilds/suite-auditor): 152 mutants scored, a
+79.6% kill rate, **7 proven gaps** and 12 functions no test reached at all - including
+`PeriodSummary.effective_n`, which this README quotes beside every rate. Each gap came
+with the call that proves it, all seven on inputs the tests already use:
+
+| function | the call | original | mutant |
+|---|---|---|---|
+| `submitter_block` | `("X", "")` | `'?\|X'` | `None`, and `'?\|?'` |
+| `period_of` | `("14-Mar-2021", "month")` | `'2021-03'` | `'2021-01'` |
+| `_seed_length` | `(20)` | `6` | `7`, `5`, `8` |
+| `_seeds` | `("ACGTACGT…", None)` | 6-base seeds | 5-base seeds |
+
+`period_of` is the one that would have shown: a one-month shift moves sequences across a
+quarter boundary, and the quarters are the trend. `_seed_length` is the formula that makes
+the seed search undefeatable by two mismatches, which is the defect the search was
+rewritten for. After closing them and covering the uncovered surface: **172 mutants, 86.6%
+killed, 0 proven gaps, 4 functions unreached** (`_cache_dir`, `_slot`, `_get`, `fetch` -
+all of them the network itself), and the share of the whole package whose mutants this
+suite would notice rose from 64.7% to 81.2%.
 
 ## Prior art, and what this does differently
 
