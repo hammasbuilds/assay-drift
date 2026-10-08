@@ -185,10 +185,8 @@ def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:
     no --version flag at all and __version__ is otherwise unread - which is exactly
     how it would drift unnoticed.
     """
-    import tomllib
-
-    declared = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    assert declared["project"]["version"] == assaydrift.__version__
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert _declared_version(text) == assaydrift.__version__
 
     # This suite runs against src/ on sys.path, so the distribution is installed only
     # sometimes - CI does `pip install -e .`, a bare source checkout does not. Checked
@@ -201,3 +199,21 @@ def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:
         installed = None
     if installed is not None:
         assert installed == assaydrift.__version__
+
+
+def _declared_version(pyproject_text: str) -> str:
+    """The version from pyproject.toml, without needing tomllib.
+
+    tomllib arrived in 3.11 and both of these packages support 3.10, so importing it
+    unconditionally fails on the oldest Python in their own CI matrix. Neither package
+    has any runtime dependency, and adding tomli for one assertion is not worth it.
+    """
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python 3.10
+        import re
+
+        match = re.search(r'^version = "([^"]+)"', pyproject_text, re.M)
+        assert match, "no version line found in pyproject.toml"
+        return match.group(1)
+    return tomllib.loads(pyproject_text)["project"]["version"]
