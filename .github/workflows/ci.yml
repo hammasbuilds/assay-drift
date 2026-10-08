@@ -19,7 +19,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: pip install pytest ruff
+      # Pinned: an unpinned ruff turns CI red on untouched code the day the
+      # formatter changes its mind. The sibling packages all pin it.
+      - run: pip install "pytest>=8" "ruff>=0.16,<0.17"
       - run: ruff check src tests scripts demo.py
       - run: ruff format --check src tests scripts demo.py
       # The suite never touches NCBI: the reference genome is vendored at

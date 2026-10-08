@@ -214,10 +214,7 @@ def test_the_c29215t_quarter_table_matches_the_results():
     """
     drift = json.loads(DRIFT.read_text(encoding="utf-8"))
     mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
-    row = next(
-        r for r in mutations["CDC N2"]
-        if (r.get("mutation") or r.get("name")) == "C29215T"
-    )
+    row = next(r for r in mutations["CDC N2"] if (r.get("mutation") or r.get("name")) == "C29215T")
     periods = drift["CDC N2"]["periods"]
     readme = README.read_text(encoding="utf-8")
     for quarter, carrying in row["by_period"].items():
@@ -231,7 +228,7 @@ def test_the_c29215t_quarter_table_matches_the_results():
 
 
 def test_the_pooled_2026_carriage_figure_matches_the_results():
-    """"51 of 333 readable sequences (15.3%)" has to be those two numbers.
+    """ "51 of 333 readable sequences (15.3%)" has to be those two numbers.
 
     An earlier version of this sentence said 53/333 and 15.9%, and also quoted a
     Wisconsin-versus-UK split for 2026 alone that nothing in `results/` emits - so
@@ -240,10 +237,7 @@ def test_the_pooled_2026_carriage_figure_matches_the_results():
     """
     drift = json.loads(DRIFT.read_text(encoding="utf-8"))
     mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
-    row = next(
-        r for r in mutations["CDC N2"]
-        if (r.get("mutation") or r.get("name")) == "C29215T"
-    )
+    row = next(r for r in mutations["CDC N2"] if (r.get("mutation") or r.get("name")) == "C29215T")
     periods = drift["CDC N2"]["periods"]
     carrying = sum(n for q, n in row["by_period"].items() if q.startswith("2026"))
     usable = sum(p["usable"] for q, p in periods.items() if q.startswith("2026"))
@@ -261,10 +255,7 @@ def test_the_top_places_quoted_are_the_ones_the_pipeline_stored():
     place list changed when the corpus was corrected and the prose did not.
     """
     mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
-    row = next(
-        r for r in mutations["CDC N2"]
-        if (r.get("mutation") or r.get("name")) == "C29215T"
-    )
+    row = next(r for r in mutations["CDC N2"] if (r.get("mutation") or r.get("name")) == "C29215T")
     readme = README.read_text(encoding="utf-8")
     for place in row["top_places"]:
         quoted = f"{place['place']} {place['carrying']}/{place['sequenced']}"

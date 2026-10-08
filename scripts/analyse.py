@@ -178,9 +178,7 @@ def main() -> int:
                     # submission, so a quarter can be 97% a single batch. See
                     # PeriodSummary.effective_n.
                     "clusters": s.clusters,
-                    "effective_n": (
-                        None if s.effective_n is None else round(s.effective_n, 2)
-                    ),
+                    "effective_n": (None if s.effective_n is None else round(s.effective_n, 2)),
                     "perfect": s.perfect,
                     "failing": s.failing,
                     "perfect_rate": s.perfect_rate,
@@ -216,9 +214,7 @@ def main() -> int:
         "manifest_records": manifest_records or None,
         "corpus_identity_sha256": identity or None,
         "tool_version": _tool_version(),
-        "reproduce": (
-            "python scripts/fetch.py --from-manifest && python scripts/analyse.py"
-        ),
+        "reproduce": ("python scripts/fetch.py --from-manifest && python scripts/analyse.py"),
         "note": (
             "Period rates carry `clusters` and `effective_n` as well as `total` and "
             "`usable`. The first two count independent submitter groups; the last two "

@@ -86,6 +86,7 @@ def compare_base(base: str, actual: str) -> str:
         return MATCH
     return AMBIGUOUS if set(possible) & set(allowed) else MISMATCH
 
+
 # How many bases at the 3' end count as "the business end" of a primer.
 # Five is the usual rule of thumb in primer design: a mismatch inside this
 # window is the kind that stops extension rather than merely slowing it.
@@ -345,13 +346,13 @@ def _align_gapped(
             actual = window[j - 1]
             step = 0.0 if compare_base(base, actual) != MISMATCH else 1.0
             M[i][j] = min(M[i - 1][j - 1], D[i - 1][j - 1], I[i - 1][j - 1]) + step
-            D[i][j] = min(D[i - 1][j] + GAP_EXTEND, M[i - 1][j] + GAP_OPEN,
-                          I[i - 1][j] + GAP_OPEN)
-            I[i][j] = min(I[i][j - 1] + GAP_EXTEND, M[i][j - 1] + GAP_OPEN,
-                          D[i][j - 1] + GAP_OPEN)
+            D[i][j] = min(D[i - 1][j] + GAP_EXTEND, M[i - 1][j] + GAP_OPEN, I[i - 1][j] + GAP_OPEN)
+            I[i][j] = min(I[i][j - 1] + GAP_EXTEND, M[i][j - 1] + GAP_OPEN, D[i][j - 1] + GAP_OPEN)
 
-    ends = [(min(M[n][j], D[n][j], I[n][j]), abs(j - n), j)
-            for j in range(max(0, n - max_gaps), min(m, n + max_gaps) + 1)]
+    ends = [
+        (min(M[n][j], D[n][j], I[n][j]), abs(j - n), j)
+        for j in range(max(0, n - max_gaps), min(m, n + max_gaps) + 1)
+    ]
     ends = [e for e in ends if e[0] < big]
     if not ends:
         return None
@@ -380,8 +381,9 @@ def _align_gapped(
             step = 0.0 if verdict != MISMATCH else 1.0
             previous = M[i][j] - step
             i, j = i - 1, j - 1
-            state = min(("M", M[i][j]), ("D", D[i][j]), ("I", I[i][j]),
-                        key=lambda kv: abs(kv[1] - previous))[0]
+            state = min(
+                ("M", M[i][j]), ("D", D[i][j]), ("I", I[i][j]), key=lambda kv: abs(kv[1] - previous)
+            )[0]
         elif state == "D":
             gaps += 1
             came_from_extend = i > 1 and abs(D[i][j] - (D[i - 1][j] + GAP_EXTEND)) < 1e-9
@@ -540,9 +542,7 @@ def find(oligo: str, target: str, three_prime_at_start: bool = False) -> Hit:
             score, _, start, gapped = min(candidates, key=lambda c: (c[0], c[1]))
             # Against the ungapped alternative, or against the cap when there was no
             # usable ungapped alignment at all.
-            ceiling = (
-                best.mismatches + best.ambiguous if best is not None else cap + 1
-            )
+            ceiling = best.mismatches + best.ambiguous if best is not None else cap + 1
             if score < ceiling:
                 return replace(gapped, position=start)
     if best is None:

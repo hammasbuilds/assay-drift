@@ -83,9 +83,7 @@ def main() -> int:
         f"# identity sha256: {digest.hexdigest()}\n"
         "accession\tcollected\tcountry\tlength\n"
     )
-    args.out.write_text(
-        header + "\n".join("\t".join(r) for r in rows) + "\n", encoding="utf-8"
-    )
+    args.out.write_text(header + "\n".join("\t".join(r) for r in rows) + "\n", encoding="utf-8")
 
     periods: dict[str, set[str]] = {}
     counts: dict[str, int] = {}

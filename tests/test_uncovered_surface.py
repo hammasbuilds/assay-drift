@@ -133,9 +133,7 @@ class TestReadJsonl:
 
     def test_on_bad_line_keeps_the_good_records(self, tmp_path: Path) -> None:
         """A single truncated line must not cost the other two thousand."""
-        path = self._write(
-            tmp_path, self._good(), "{not json", self._good(accession="MW3")
-        )
+        path = self._write(tmp_path, self._good(), "{not json", self._good(accession="MW3"))
         seen: list[str] = []
         got = list(read_jsonl(path, on_bad_line=seen.append))
         assert [r.accession for r in got] == ["MW1", "MW3"]

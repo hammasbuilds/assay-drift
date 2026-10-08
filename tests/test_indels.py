@@ -25,8 +25,7 @@ def genome(middle: str) -> str:
         ("2-base deletion", PRIMER[:10] + PRIMER[12:], 2, 0),
         ("3-base deletion", PRIMER[:9] + PRIMER[12:], 3, 0),
         ("3-base insertion", PRIMER[:10] + "GGG" + PRIMER[10:], 3, 0),
-        ("deletion plus a substitution",
-         PRIMER[:10] + PRIMER[11:15] + "T" + PRIMER[16:], 1, 1),
+        ("deletion plus a substitution", PRIMER[:10] + PRIMER[11:15] + "T" + PRIMER[16:], 1, 1),
     ],
 )
 def test_an_indel_is_reported_as_an_indel(

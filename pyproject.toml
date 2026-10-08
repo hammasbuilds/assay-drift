@@ -31,7 +31,7 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.8"]
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
 
 [project.scripts]
 assay-drift = "assaydrift.cli:main"
@@ -41,7 +41,7 @@ Homepage = "https://github.com/hammasbuilds/assay-drift"
 Issues = "https://github.com/hammasbuilds/assay-drift/issues"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.8"]
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
 
 [build-system]
 requires = ["hatchling"]
