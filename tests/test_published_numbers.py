@@ -184,8 +184,19 @@ def test_demo_runs_against_the_committed_results() -> None:
     demo.py reprints the published numbers, so a consumer that dies on a new metadata key
     is a broken promise - and nothing was checking it.
     """
+    import os
     import subprocess
     import sys
+
+    # An empty PATH is the point: demo.py must not reach for anything on it. But a
+    # wholly stripped environment does not start CPython on Windows at all - it needs
+    # SystemRoot to seed hash randomisation, and without it 3.10 dies with
+    # "_Py_HashRandomization_Init: failed to get random numbers" before running a line.
+    # So the interpreter's own variables are passed through and nothing else.
+    env = {"PYTHONIOENCODING": "utf-8", "PATH": ""}
+    for needed in ("SystemRoot", "SYSTEMROOT", "windir", "TEMP", "TMP"):
+        if needed in os.environ:
+            env[needed] = os.environ[needed]
 
     done = subprocess.run(
         [sys.executable, str(ROOT / "demo.py")],
@@ -193,7 +204,7 @@ def test_demo_runs_against_the_committed_results() -> None:
         cwd=ROOT,
         timeout=600,
         check=False,
-        env={"PYTHONIOENCODING": "utf-8", "PATH": ""},
+        env=env,
     )
     output = done.stdout.decode("utf-8", "replace")
     assert done.returncode == 0, done.stderr.decode("utf-8", "replace")[-800:]
