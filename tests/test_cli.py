@@ -12,6 +12,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
+import assaydrift  # noqa: E402
 from assaydrift.cli import InputError, main, read_fasta, read_primers  # noqa: E402
 from assaydrift.match import reverse_complement  # noqa: E402
 
@@ -172,3 +173,31 @@ class TestARecordTooShortToJudge:
 
         rows = check(by_name("CDC N2"), [("ref", genome())])
         assert rows[0]["verdict"] == "perfect"
+
+
+def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:
+    """__version__, pyproject.toml and the installed metadata must agree.
+
+    The version is written twice - in __init__.py and in pyproject.toml - and nothing
+    compared them. Bump pyproject alone and the wheel says 0.2.0 while the package
+    reports 0.1.0; release.yml compares the tag to pyproject, so nothing catches it.
+    Here the stakes are lower than for the published packages, because this CLI has
+    no --version flag at all and __version__ is otherwise unread - which is exactly
+    how it would drift unnoticed.
+    """
+    import tomllib
+
+    declared = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert declared["project"]["version"] == assaydrift.__version__
+
+    # This suite runs against src/ on sys.path, so the distribution is installed only
+    # sometimes - CI does `pip install -e .`, a bare source checkout does not. Checked
+    # when it is there, and said plainly when it is not, rather than skipped in silence.
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        installed = version("assay-drift")
+    except (PackageNotFoundError, StopIteration):
+        installed = None
+    if installed is not None:
+        assert installed == assaydrift.__version__
