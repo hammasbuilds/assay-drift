@@ -125,7 +125,7 @@ def test_shipped_example_reproduces_the_readme_output(capsys):
     out = capsys.readouterr().out
     assert code == 0
     assert "NC_045512.2             perfect" in out
-    assert "synthetic_C29215T       likely_failing" in out
+    assert "mutant_C29215T          likely_failing" in out
     assert "1mm/3'" in out
     assert "perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)" in out
 

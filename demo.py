@@ -63,6 +63,19 @@ def show_reference_check() -> None:
     print("  than at the 3' end, which is why the assay worked anyway.\n")
 
 
+def _carriage(mutation: str, assay: str, drift: dict, period: str) -> float | None:
+    """Share of readable sequences in `period` that carry `mutation`, from results/."""
+    path = ROOT / "results" / "mutations.json"
+    if not path.exists():
+        return None
+    rows = json.loads(path.read_text(encoding="utf-8")).get(assay) or []
+    row = next((r for r in rows if (r.get("mutation") or r.get("name")) == mutation), None)
+    usable = ((drift.get(assay) or {}).get("periods") or {}).get(period, {}).get("usable")
+    if row is None or not usable:
+        return None
+    return row.get("by_period", {}).get(period, 0) / usable
+
+
 def show_drift() -> None:
     if not RESULTS.exists():
         print("No results yet. Build them with:")
@@ -119,11 +132,16 @@ def show_drift() -> None:
     print("while Delta circulated - G15451A sits one base from its forward")
     print("primer's 3' end, where polymerase starts. That is a prediction from")
     print("sequence, not a measured failure.\n")
-    print("CDC N2 was the quiet one until 2025: C29215T, two bases from its")
-    print("reverse primer's 3' end, is absent before 2025 and reaches 30.6% of")
-    print("2026-Q1 sequences. Read that quarter's rate with the sampling caveat")
-    print("in the README - the hits are clustered by submitting laboratory, and")
-    print("the same mutation is 5.1% of 2026-Q3.\n")
+    # Read from results/, not typed: this sentence once said 30.6% and 5.1% after a
+    # re-run had moved both figures to 28.7% and 4.2%.
+    q1 = _carriage("C29215T", "CDC N2", payload, "2026-Q1")
+    q3 = _carriage("C29215T", "CDC N2", payload, "2026-Q3")
+    if q1 is not None and q3 is not None:
+        print("CDC N2 was the quiet one until 2025: C29215T, two bases from its")
+        print(f"reverse primer's 3' end, is absent before 2025 and reaches {q1:.1%} of")
+        print("2026-Q1 sequences. Read that quarter's rate with the sampling caveat")
+        print("in the README - the hits are clustered by submitting laboratory, and")
+        print(f"the same mutation is {q3:.1%} of 2026-Q3.\n")
     run = payload.get("_run") or {}
     if run.get("corpus_identity_sha256"):
         # Which corpus these numbers are over. The corpus is gitignored, so without this

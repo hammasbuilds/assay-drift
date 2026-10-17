@@ -1,68 +1,87 @@
-<h1 align="center">assay-drift (Python · GenBank · sequence analysis)</h1>
-<p align="center"><i>Does this PCR test still match what is circulating?</i></p>
+# assay-drift
 
-<p align="center">
-  <a href="#results">Results</a> &middot;
-  <a href="#what-a-pcr-test-actually-is">What a PCR test is</a> &middot;
-  <a href="#how-it-works">How it works</a> &middot;
-  <a href="#run-it">Run it</a> &middot;
-  <a href="#scope">Scope</a> 
-</p>
+A tool that checks whether published PCR diagnostic assays still match the virus that is circulating. We built it
+for diagnostic labs, public-health analysts and assay designers: a PCR test fails silently when the target mutates
+under a primer, because a failed amplification looks exactly like a negative sample. assay-drift aligns every oligo
+of an assay against dated GenBank genomes, separates "no longer an exact match" from "would plausibly no longer
+amplify", and names the mutation responsible. The committed run covers 2,765 SARS-CoV-2 genomes from 2020 to 2026
+against five assays clinical laboratories ran. Standard-library Python, zero dependencies.
 
-<p align="center">
-  <a href="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/assay-drift/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python">
-  <img src="https://img.shields.io/badge/runtime%20deps-zero-success" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/tests-134-brightgreen" alt="tests">
-  <img src="https://img.shields.io/badge/genomes%20analysed-2%2C765-blue" alt="genomes">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
-</p>
+**Headline:** two of five published assays lost their exact match entirely (99.3% to 0.0%) and neither mutation is
+at a position that stops the reaction; Charité RdRp never lost its exact match, yet in 2021-Q4 44.5% of sequences
+carried a mutation one base from its primer's 3′ end. Where the mutation lands matters more than how much of it
+there is.
 
----
+## What it does
 
-> ### Two of five published assays stopped matching their target entirely — 99.3% to 0.0% — and neither mutation is at a position that stops the reaction. A third never lost its exact match, and in 2021-Q4 44.5% of sequences carried a mutation one base from its primer's 3′ end. The difference is *where* the mutation landed, not how much of it there is.
+- **Downloads dated genomes from GenBank** through NCBI E-utilities, rate-limited and cached, stratified by deposit
+  year. A record with no usable collection date is dropped and counted (35 of 2,800), never defaulted to today.
+  `--from-manifest` rebuilds the exact corpus from the committed accession list.
+- **Aligns each oligo** with IUPAC codes read as sets on both sides: primer `R` matches `A` and `G`; a subject `R`
+  where the primer wants `A` is ambiguous, not a mismatch. A site must be within a fifth of the oligo's length in
+  mismatches to count as the binding site at all, and the seed search is sized so two substitutions anywhere cannot
+  hide a site.
+- **Treats an unknown base (`N`) under an oligo as missing data**, excluded from the rates and reported, so a change
+  in sequencing quality does not show up as viral drift.
+- **Scores each sequence** as `perfect`, `drifted` (mismatched but expected to amplify), `likely_failing` (an oligo
+  lost, a mismatch in a primer's last five bases, or three or more mismatches across the assay) or `unknown`. The 3′
+  window counts only on primers: a hydrolysis probe is blocked at its 3′ end and never extended.
+- **Groups by collection quarter or year** and publishes, beside every rate, the number of submitter groups and the
+  Kish effective sample size, because sequences from one deposit batch are not independent.
+- **Names the mutations** behind each change from raw sequence, with genome coordinate, position in the oligo and
+  the places they were collected.
+- **Checks your own primers against your own FASTA** with `assay-drift check`, offline.
 
-A PCR diagnostic fails **silently**. When the target mutates under the primer binding site,
-amplification stops, and a failed amplification looks exactly like a negative sample. There
-is no error, no flag, nothing to notice.
+`likely_failing` is a prediction from sequence complementarity: no PCR was run, and there is no melting-temperature
+model (the design side, with nearest-neighbour thermodynamics, is
+[primer-designer](https://github.com/hammasbuilds/primer-designer)).
 
-This measures that from public data: 2,765 dated SARS-CoV-2 genomes from GenBank, spanning
-2020 to 2026, against five published assays that clinical laboratories actually ran.
+## Sample input / output
 
----
+`assay-drift check` on the shipped example: the CDC N2 primers and two genomes, the 2019 reference and the same
+genome carrying C29215T.
+
+```
+$ assay-drift check --primers examples/cdc_n2.tsv --sequences examples/two_genomes.fasta
+sequence                verdict                 N2-F        N2-R        N2-P
+NC_045512.2             perfect                  0mm         0mm         0mm
+mutant_C29215T          likely_failing           0mm      1mm/3'         0mm
+
+perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)
+```
+
+`python demo.py` first checks every published oligo against the 2019 reference (a mistyped base would read as drift
+that is not there), then reprints the finding from `results/drift.json` (trimmed):
+
+```
+  oligo     role      len  position  mismatch   note
+  N1-F      forward    20     28286         0
+  N1-R      reverse    24     28334         0
+  N1-P      probe      24     28308         0
+  N2-F      forward    20     29163         0
+  N2-R      reverse    18     29212         0
+  ...
+  RdRp-R    reverse    26     15504         1   known: S vs T, 14 bases from the 3' end
+  RdRp-P    probe      25     15469         0
+
+  14 of 15 match perfectly.
+
+  assay                            exact match        likely failing
+  CDC N1            2020-Q1  99.3%  ->  2026-Q3   0.0%       10.9%   worst 10.9% (2026-Q3)
+  CDC N2            2020-Q1  98.7%  ->  2026-Q3  87.3%        4.2%   worst 34.5% (2026-Q2)
+  CDC N3 (retired)  2020-Q1  98.7%  ->  2026-Q3  86.7%        0.5%   worst 3.4% (2021-Q1)
+  Charite E         2020-Q1  99.3%  ->  2026-Q3   0.0%        0.0%   worst 1.8% (2026-Q1)
+  Charite RdRp *    2020-Q1  99.3%  ->  2026-Q3  90.8%        9.2%   worst 44.5% (2021-Q4)
+```
 
 ## Results
 
-Share of sequences collected in each **quarter** that each assay matched **exactly**, and the
-share it would plausibly **no longer detect**. Those are very different questions and the gap
-between them is the whole story. Quarters are the granularity the committed run uses; every
-number below comes from [`results/drift.json`](https://github.com/hammasbuilds/assay-drift/blob/main/results/drift.json) and is reprinted by
-`python demo.py`. First and last are the first and last quarters with at least 25 usable
-sequences — `scripts/analyse.py --granularity year` regroups the same data by year.
+Every number below comes from [`results/drift.json`](results/drift.json) and
+[`results/mutations.json`](results/mutations.json), and `tests/test_published_numbers.py` checks each one against
+them. Assays: CDC-006-00019 rev.06 (N1, N2, N3) and Corman et al. 2020, *Euro Surveill* 25(3) (Charité E, RdRp).
 
-**Read these as a handful of observations each, not hundreds.** The floor counts *sequences*,
-and sequences are not independent: GenBank hands out consecutive accessions to a single
-submission, and this corpus is drawn from whole deposit batches. Grouping each quarter by
-(country, accession block) and taking the Kish effective sample size — both published per
-quarter in `results/drift.json` as `clusters` and `effective_n` — gives:
-
-| quarter | sequences | submitter groups | effective n |
-|---|---:|---:|---:|
-| 2020-Q1 — the baseline of every row below | 153 | 11 | **2.4** |
-| 2021-Q4 — Charité RdRp's worst quarter | 330 | 20 | 5.2 |
-| 2024-Q1 | 159 | **4** | **1.1** |
-| 2026-Q3 — the endpoint of every row below | 196 | 33 | 4.4 |
-
-The median across the quarters that pass the floor is about 4. So **−99.3** compares a quarter
-worth roughly two independent observations against one worth roughly five, and 2024-Q1 passes
-a 25-sequence floor on an effective n of 1.1. The 0.0% endpoints are a large enough effect to
-survive that; the quarter-to-quarter *shape*, and every worst-quarter figure, are not. No
-confidence interval here would be honest without accounting for the clustering, and none is
-quoted.
-
-Gating the floor on effective n instead would leave two of twenty-four quarters, which would
-delete the series rather than qualify it. The figures are published beside every rate
-instead.
+**Exact match and likely failing, by collection quarter** (first and last quarters with at least 25 usable
+sequences):
 
 | Assay | Exact match 2020-Q1 | Exact match 2026-Q3 | Change | Likely failing, worst quarter |
 |---|---:|---:|---:|---|
@@ -72,19 +91,24 @@ instead.
 | CDC N3 *(retired)* | 98.7% | 86.7% | −12.0 | 3.4% (2021-Q1) |
 | **CDC N2** | 98.7% | 87.3% | −11.4 | **34.5% (2026-Q2)** |
 
-**CDC N2 was the quiet one, and stopped being quiet in 2026.** It holds above 97% exact match
-through 2024-Q4 while N1 — an assay targeting the *same gene*, 900 bases away — goes to zero,
-which is the contrast that makes the rest of the table worth reading: this pipeline does not
-simply report that everything drifts. But from 2025-Q4 onward N2's own likely-failing rate
-leaves zero, and in 2026-Q1 and 2026-Q2 it is 28.7% (n=115) and 34.5% (n=29). That is a real
-mutation, not an artefact, and the next section says exactly what it is and how much weight
-the per-quarter figure can carry.
+**How independent those quarters are.** Sequences from one submission are not independent observations, so each
+quarter is grouped by (country, accession block) and given a Kish effective sample size:
+
+| quarter | sequences | submitter groups | effective n |
+|---|---:|---:|---:|
+| 2020-Q1, the baseline of every row above | 153 | 11 | **2.4** |
+| 2021-Q4, Charité RdRp's worst quarter | 330 | 20 | 5.2 |
+| 2024-Q1 | 159 | **4** | **1.1** |
+| 2026-Q3, the endpoint of every row above | 196 | 33 | 4.4 |
+
+The median across quarters that pass the floor is about 4. The 0.0% endpoints are large enough to survive that;
+quarter-to-quarter shape and worst-quarter figures are not, and no confidence interval is quoted. Downloads are
+stratified by deposit year, so collection quarters are uneven (2022-Q1, 2024-Q2 and 2024-Q3 hold no sequences);
+the year view below is the steadier one.
 
 ### The same data by year
 
-Quarters are what the committed `results/drift.json` holds; `scripts/analyse.py --granularity
-year` regroups the same 2,765 sequences and is the better view when a quarter's sample is
-thin. Nothing in the story changes, and the N2 figure lands between its swinging quarters:
+`scripts/analyse.py --granularity year` regroups the same 2,765 sequences:
 
 | Assay | Exact match 2020 | Exact match 2026 | Likely failing 2026 | Likely failing, worst year |
 |---|---:|---:|---:|---|
@@ -94,11 +118,25 @@ thin. Nothing in the story changes, and the N2 figure lands between its swinging
 | CDC N3 *(retired)* | 99.3% | 90.3% | 0.9% | 2.0% (2023) |
 | **CDC N2** | 98.0% | 68.8% | **15.8%** | 15.8% (2026) |
 
-### What happened to CDC N2 in 2026
+### The mutation behind each change
 
-The hits are a single substitution, **C29215T**, two bases from the 3′ end of the N2 reverse
-primer — inside the window where a mismatch can stop extension, which is why one base moves
-an assay straight from "drifted" to "likely failing". Its share of sequences where the site
+| Assay | Position in oligo | Genome coordinate | Change | Share of all sequences |
+|---|---|---|---|---:|
+| CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | C→T | 76.5% |
+| Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | C→T | 76.7% |
+| Charité RdRp forward | **1 base from the 3′ end** | **G15451A** | G→A | 11.1% |
+| CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | C→T | 2.3% |
+
+The first two are Omicron substitutions, mid-oligo, which weaken binding without blocking extension: that is why
+CDC N1 and Charité E lost their exact match and are still not predicted to fail (N1's residual likely-failing rate
+comes from sequences with three or more mismatches across the assay). The third is Delta's NSP12 G671S, at the 3′
+terminus where polymerase extends: Charité RdRp's likely-failing rate hit 44.5% in 2021-Q4, fell to 3.1% in 2022-Q4
+when Omicron displaced Delta, and runs at 9-24% across the 2025-2026 quarters. The share column is pooled over all
+years, so a recent mutation looks small there and large in its own quarter.
+
+### CDC N2 in 2026
+
+The fourth mutation sits two bases from the 3′ end of the N2 reverse primer. Its share of sequences where the site
 is readable:
 
 | Quarter | carrying C29215T | n |
@@ -110,414 +148,52 @@ is readable:
 | 2026-Q2 | 34.5% | 29 |
 | 2026-Q3 | 4.2% | 189 |
 
-Three things are true at once, and reporting only the first would overstate it:
+It is absent from 2,000+ sequences before 2025 and the base is unambiguous in every sequence counted. Within 2026 the
+mutation is 51 of 333 readable sequences (15.3%). The per-quarter swing is mostly where the sequencing was done: the
+hits arrive in single-submitter batches, and the places stored for it, pooled over all years, are
+`USA: Wisconsin 24/74, USA: California 10/186, USA: Michigan 7/27, USA: Washington 4/163, USA 3/170`. 2026-Q2 rests
+on 29 sequences. GenBank is not a random sample of infections, so these rates describe deposited sequences.
 
-- **The mutation is real and it is new.** Zero in 2,000+ sequences before 2025, then a rise
-  that starts in 2025-Q3. It is not a single bad record, an alignment slip or an `N`: the
-  site is unambiguous in every sequence counted, and the base is `T` where the reference and
-  the primer both say `C`.
-- **The 2026-Q1/Q2 magnitude is a sampling artefact.** The hits are geographically clustered
-  and arrive in consecutive accession blocks — single-submitter batches. `scripts/analyse.py`
-  prints and stores where every 3′-window mutation was collected, over all years pooled:
-  `USA: Wisconsin 24/74, USA: California 10/186, USA: Michigan 7/27, USA: Washington 4/163,
-  USA 3/170`. Wisconsin is a third of its own sequences and California a twentieth of five
-  times as many, pooled over every year. Within 2026 the mutation is 51 of 333 readable
-  sequences (15.3%), and 2026-Q1 is Wisconsin-heavy where 2026-Q3 is California- and
-  UK-heavy, which is most of the difference between 28.7% and 4.2%. GenBank is not a random
-  sample of infections, and this is what that caveat looks like in practice.
-- **2026-Q2 has n=29.** It clears the 25-sequence reporting floor and nothing more. Its
-  34.5% is the worst quarter in the table and it rests on 10 sequences.
+CDC withdrew its EUA request for the 2019-nCoV Real-Time RT-PCR Diagnostic Panel (N1, N2) effective after
+[2021-12-31](https://www.aacc.org/cln/articles/2021/september/cdc-planning-to-withdraw-request-for-eua-of-sars-cov-2-pcr-test),
+because other tests had been authorised, not because it stopped detecting its target.
 
-So: N2 can no longer be described as the stable control, and the honest statement is that a
-3′-terminal mutation under its reverse primer appeared in 2025 and reached roughly 10–16% of
-2026 sequences overall, with per-quarter figures swinging between 5% and 35% on where the
-sequencing was done. Whether it costs real sensitivity is a laboratory question — see
-**Scope**: no PCR was run here.
+## Tech stack
 
-### A parsing bug that overstated drift, and what fixing it moved
-
-The GenBank reader filtered each ORIGIN block with `re.sub(r"[^acgtnACGTN]", "", ...)`.
-That keeps A, C, G, T and N and **deletes** every other IUPAC code - and deleting a base
-renumbers the rest of the genome. **339 of the 2,781 cached records carry at least one**
-(1,262 bases: Y 541, R 403, K 103, M 89, W 45, H 38, S 31, V 9, B 2, D 1), so 12% of the
-corpus was stored a base or more short, with every coordinate past the first ambiguous
-position off by one. An oligo's reported position, the base index inside it, and the
-mutation calls read off those coordinates were all affected - silently, and only for
-those records.
-
-Rebuilding the corpus from the same cached responses restored **1,261 bases across 338
-records**, up to 85 in one. The result moved in one direction:
-
-| | before | after |
-|---|---:|---:|
-| CDC N1, 2024-Q4, likely failing | 13 (9.2%) | **3 (2.3%)** |
-| CDC N1, 2024-Q4, excluded as unreadable | 10.1% | **16.5%** |
-| CDC N2, 2026-Q3, exact match | 85.9% | **87.3%** |
-| CDC N2, 2026-Q3, likely failing | 5.2% | **4.2%** |
-
-Ten of the thirteen sequences counted as likely failing in CDC N1's worst quarter of 2024
-were not failing; the ambiguity codes under the oligo had been deleted, so bases that
-should have been read as unknown were compared as if they were the next base along. They
-are now excluded, which is where a base that cannot be read belongs. Thirteen figures in
-this README moved, all of them in the direction of less drift, which is the error this
-repository keeps having to correct: the careless direction is always the alarming one.
-
-Two changes were needed, not one. The reader now keeps every IUPAC code and stores any
-other letter as `N` - unknown, counted, and still occupying its position. And the
-comparison had to stop treating a subject base as literal, because preserved ambiguity
-codes are only useful if `R` where a primer wants `A` reads as ambiguous rather than as
-a mismatch; see the note on possibilities under "How it works".
-
-### Four mutations, found from raw sequence and named
-
-The tool does not know about variants. It aligns oligos and counts, and names
-whatever disagrees with the 2019 reference — run `python scripts/analyse.py`
-and read `results/mutations.json`, or the per-assay tables it prints. Below
-are the top hit for the four assays this README discusses; the same command
-writes every oligo's top 5.
-
-| Assay | Position in oligo | Genome coordinate | Change | Share of all sequences |
-|---|---|---|---|---:|
-| CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | C→T | 76.5% |
-| Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | C→T | 76.7% |
-| Charité RdRp forward | **1 base from the 3′ end** | **G15451A** | G→A | 11.1% |
-| CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | C→T | 2.3% |
-
-The first two are Omicron substitutions and the third is Delta's NSP12 G671S; the fourth is
-the 2026 N2 signal above. The share column is over every sequence where the site is readable,
-all years pooled — a mutation that is recent will look small there and large in its own
-quarter, which is why the per-quarter tables exist.
-
-### Why two assays at 0% are fine and one at 90.8% is not
-
-**CDC N1 and Charité E lost their exact match completely, and kept working.** Their Omicron
-mutations sit at base 3 of a probe and base 2 of a 26-base primer. Both weaken binding
-slightly. Neither is at a position that stops the reaction.
-N1's residual likely-failing rate (10.9% in 2026-Q3) comes from sequences carrying three or
-more mismatches across the whole assay, not from a 3′-end hit.
-
-**On whether these assays stayed in use — the one thing here that is not sequence
-arithmetic.** CDC withdrew its EUA request for the 2019-nCoV Real-Time RT-PCR
-Diagnostic Panel, which N1 and N2 belong to, effective after
-[2021-12-31](https://www.aacc.org/cln/articles/2021/september/cdc-planning-to-withdraw-request-for-eua-of-sars-cov-2-pcr-test)
-— on the stated grounds that hundreds of other tests had been authorised and CDC's
-was no longer needed, **not** that it had stopped detecting its target. The N1 and N2
-oligo sets outlived the panel inside third-party assays, but this repository has no
-source for which ones or for how long, so it does not claim it. An earlier version of
-this README asserted that both assays "stayed in clinical use" throughout the window.
-That was unsourced and, for the CDC panel itself, wrong.
-
-**Charité RdRp is the one most likely to have failed, and worst while Delta circulated.** In
-2021-Q4, 44.5% of sequences carried G15451A — one base from the 3′ terminus of its forward
-primer. Polymerase extends from that terminus, so a mismatch there can stop amplification
-outright. Its likely-failing rate hit **44.5% in 2021-Q4**, fell to 3.1% in 2022-Q4 when
-Omicron displaced Delta, and runs at 9–24% across the 2025–2026 quarters.
-
-An assay can drift almost completely with every mutation in a position that does not
-stop the reaction. An assay can look healthy on a mismatch count and carry the one
-mutation that does. Only the position tells you which — and this is a prediction from
-sequence complementarity, not a measured failure: no PCR was run here.
-
-📊 **Full per-quarter tables: [`results/drift.json`](https://github.com/hammasbuilds/assay-drift/blob/main/results/drift.json)**
-
----
-
-## What a PCR test actually is
-
-Three short synthetic DNA sequences that must bind a specific stretch of the target genome:
-
-```mermaid
-flowchart LR
-    G["target genome"] --> F["forward primer<br/>binds, extends 3'"]
-    G --> P["probe<br/>binds, gets cleaved<br/>-> fluorescence"]
-    G --> R["reverse primer<br/>binds other strand"]
-    F --> A["amplification<br/>= positive result"]
-    P --> A
-    R --> A
-    M["mutation under<br/>any binding site"] -.-> X["no amplification<br/>= looks like NEGATIVE"]
-
-    style A fill:#16a34a,color:#fff
-    style X fill:#b91c1c,color:#fff
-```
-
-If the organism mutates under those sites, the test reports negative. That is the failure
-mode this measures.
-
----
-
-## How it works
-
-**Sequences come from GenBank with their collection dates.** A record with no usable date
-is dropped and counted — never defaulted to today, which would move old sequences into the
-current period and corrupt exactly the trend being measured. 35 of 2,800 were dropped.
-
-**Downloads are stratified by year — the *deposit* year, which is not the same as the
-collection quarter the table is built on.** Sorting newest-first and taking N gives a single
-year of data, which cannot show drift at all, so the query is split per deposit year. But
-within each year the sample is the newest-*deposited* records, and those were mostly
-*collected* in that year's final quarter. The collection-quarter distribution is that shape:
-2021-Q4 holds 330, 2022-Q4 421, 2023-Q4 423, 2025-Q4 327, while **2022-Q1, 2024-Q2 and
-2024-Q3 hold nothing at all** and 2024 has only Q1 and Q4 — a nine-month hole. Ten of the
-24 populated quarters fall below the 25-sequence floor.
-
-So the series is seven annual clumps spread unevenly across quarters, not a quarterly
-time series, and adjacent quarters can come from different clumps — which is also why
-2026-Q1 is Wisconsin-heavy and 2026-Q3 California-heavy. The year view
-(`--granularity year`) is the honest granularity for this corpus and is published
-alongside. **The fix is to stratify by collection quarter and sample randomly within
-each stratum**, which would change every number here and has not been done; until it is,
-read the year table first.
-
-**An `N` in the target is missing data, not a mismatch.** This is the load-bearing decision.
-Sequencing quality changed enormously over the pandemic — in this run the exclusion rate runs from
-0.0% of sequences in 2020-2022 and 0.1% in 2023 to 2.5% in 2024, and 16.5% for one assay in a
-single quarter (CDC N1, 2024-Q4) — so counting unknown bases as mismatches would
-manufacture a *time trend* out of laboratory practice and present it as viral drift. Oligos
-with an unknown base under them are excluded from the rates and reported separately.
-
-`N` is not the only ambiguity code, and the rule is now about possibilities rather than
-about that one letter. A base is compared as the *set* of what it could be: a subject code
-contained in what the primer accepts is a match (primer `R`, subject `A`), one that
-overlaps without being contained is ambiguous (primer `A`, subject `R` — it might be the
-`A`), and one that is disjoint is a real mismatch (primer `A`, subject `Y`). The comparison
-used to expand only the primer's code and treat the subject's as literal unless it was
-exactly `N`, so an `R` where a primer wanted `A` counted as a definite mismatch — the error
-running in the direction of overstating drift, which is the mistake this repository has had
-to correct twice already. Nothing in the result above moves: the 2,765 sequences behind it
-contain only `A`, `C`, `G`, `T` and `N`, and no oligo in the catalogue contains an `N`, so
-re-running `scripts/analyse.py` after the change gave a byte-identical `drift.json`. It
-matters for GISAID consensus sequences, which do carry `R` and `Y`.
-
-**A site has to be similar enough to be the site at all.** An 18-mer scored against every
-offset of a 29,903-base genome will always find somewhere that matches to within 5 bases by
-chance; brute force over the reference puts the best *wrong* site for the catalogue's fifteen
-oligos at 27%–42% divergence. A candidate site is therefore capped at a fifth of the oligo's
-length in definite mismatches, not at a flat number — a flat cap of 8 is 31% of a 26-mer but
-44% of an 18-mer, and admitted a coincidence for ten of the fifteen. Above the cap the answer
-is "no binding site", which is a different statement from "the site could not be read": with
-all 18 bases of CDC N2's reverse primer masked as `N`, the flat cap reported a site 8,436
-bases away with 7 mismatches as a usable measurement, where the honest answer — and now the
-output — is the real locus with 18 unknown bases and excluded from every rate.
-
-**The search has to be able to find a drifted site, not only a perfect one.** Candidate
-positions come from exact seeds, and the seed length is computed from the oligo so that two
-substitutions anywhere in it cannot break every seed. Fixed 8-base seeds at every fourth
-offset gave an 18-mer three seeds covering bases 0-15, which left two of its bases in no
-seed at all: enumerating every pair of positions, **31.4% of all two-mismatch sites in an
-18-mer came back as "no binding site"** — a much stronger claim than "it has two
-substitutions", and CDC N2's reverse primer is an 18-mer. It is now 0.0% at every oligo
-length in the catalogue, and three-mismatch misses fell from 60.8% to 0.5%. This changed no
-number in the committed run, because the mutations that circulate in these sites are single
-substitutions at recurring positions and one mismatch was never missed; it matters for
-`check`, where the primers and sequences are your own.
-
-**Ambiguity codes in a primer are a real mixture.** `R` means the oligo was synthesised as
-both A and G, so it genuinely matches both. Charité RdRp uses them deliberately, to catch
-SARS-related viruses broadly. Treating `R` as the letter R reports that assay as broken
-everywhere.
-
-**A mismatch near the 3′ end is only special on a primer.** Polymerase extends from that
-terminus. A hydrolysis probe is never extended — its 3′ end carries the quencher and is
-chemically blocked — so the same mismatch there is an ordinary binding penalty.
-
----
+- Python 3.10+, standard library only: `urllib` for NCBI E-utilities, `re`, `json`, `gzip`, `argparse`
+- The 2019 reference genome (NC_045512.2) vendored as 9 KB of gzipped JSON with a pinned sha256, so tests never
+  touch the network
+- pytest and ruff (pinned 0.16) for development; CI on Ubuntu and Windows, Python 3.10-3.13
 
 ## Run it
 
 ```bash
 git clone https://github.com/hammasbuilds/assay-drift
 cd assay-drift
-
-python demo.py          # the setup check and the finding, no network, ~2s
-pytest -q               # 134 tests, no network, no install step
+python demo.py          # the setup check and the finding, no network, ~2 s
+pytest -q               # 224 tests, no network, no install step
 ```
-
-Nothing to install — zero runtime dependencies, standard library only.
 
 To rebuild the data from scratch:
 
 ```bash
 python scripts/fetch.py --per-year 400    # ~10 min, polite to NCBI, cached for a month
-python scripts/analyse.py
+python scripts/analyse.py                 # writes results/drift.json and results/mutations.json
 ```
 
 Or with `make`: `make demo`, `make test`, `make lint`, `make fetch`, `make analyse`.
 
-### Your own primers, your own sequences
-
-The same scoring rules, applied to files you supply — no network, no GenBank:
+Your own primers against your own sequences:
 
 ```bash
 pip install -e .        # only needed for the CLI; demo and tests need no install
-assay-drift check --primers examples/cdc_n2.tsv --sequences examples/two_genomes.fasta
+assay-drift check --primers my_assay.tsv --sequences genomes.fasta --json out.json
 ```
 
-```
-sequence                verdict                 N2-F        N2-R        N2-P
-NC_045512.2             perfect                  0mm         0mm         0mm
-synthetic_C29215T       likely_failing           0mm      1mm/3'         0mm
-
-perfect 1, drifted 0, likely_failing 1, unknown 0  (of 2)
-```
-
-The two shipped example sequences are the 2019 reference and the same genome carrying
-C29215T, the 2026 N2 mutation above — one base, and the verdict changes. Point it at your
-own files with `--primers my_assay.tsv --sequences genomes.fasta --json out.json`.
-
-`my_assay.tsv` is one oligo per line, `name<TAB>role<TAB>sequence`, role being `forward`,
-`reverse` or `probe`; `#` comments and blank lines are skipped. Each sequence comes back as
-`perfect`, `drifted` (mismatched but still expected to amplify), `likely_failing` (an oligo
-lost, a mismatch in a primer's last five bases, or three or more mismatches across the assay)
-or `unknown` (an `N` under an oligo — not evidence either way). `--json` writes the per-oligo
-positions, mismatch counts and unknown-base counts.
-
----
-
-## Input
-
-Five published assays, as the oligonucleotides clinical laboratories ran. Sources in
-[`src/assaydrift/primers.py`](https://github.com/hammasbuilds/assay-drift/blob/main/src/assaydrift/primers.py) — CDC-006-00019 rev.06 and
-Corman et al. 2020, *Euro Surveill* 25(3).
-
-## Output
-
-`python demo.py` — every oligo against the 2019 reference genome first, because a mistyped
-base would read as drift that is not there:
-
-```
-  oligo     role      len  position  mismatch   note
-  N1-F      forward    20     28286         0
-  N1-R      reverse    24     28334         0
-  N1-P      probe      24     28308         0
-  N2-F      forward    20     29163         0
-  N2-R      reverse    18     29212         0
-  N2-P      probe      23     29187         0
-  N3-F      forward    22     28680         0
-  ...
-  RdRp-F    forward    22     15430         0
-  RdRp-R    reverse    26     15504         1   known: S vs T, 14 bases from the 3' end
-  RdRp-P    probe      25     15469         0
-
-  14 of 15 match perfectly.
-```
-
-...then the finding:
-
-```
-  assay                            exact match        likely failing
-  CDC N1            2020-Q1  99.3%  ->  2026-Q3   0.0%       10.9%   worst 10.9% (2026-Q3)
-  CDC N2            2020-Q1  98.7%  ->  2026-Q3  87.3%        4.2%   worst 34.5% (2026-Q2)
-  CDC N3 (retired)  2020-Q1  98.7%  ->  2026-Q3  86.7%        0.5%   worst 3.4% (2021-Q1)
-  Charite E         2020-Q1  99.3%  ->  2026-Q3   0.0%        0.0%   worst 1.8% (2026-Q1)
-  Charite RdRp *    2020-Q1  99.3%  ->  2026-Q3  90.8%        9.2%   worst 44.5% (2021-Q4)
-```
-
-*Shown as text rather than a chart: five assays over 24 quarters is a table, and a
-chart here would be decoration that hides the sample size behind each point.*
-
----
-
-## Scope
-
-**It predicts, it does not test.** Every claim here is about sequence complementarity. No
-PCR was run. Real amplification depends on melting temperature, salt, enzyme, cycling
-conditions and concentration, and assays tolerate more mismatch in practice than a
-thermodynamics-free model suggests. `likely_failing` is a hypothesis, not a result.
-
-**No melting-temperature model.** A mismatch is counted by position and number, not by how
-much it actually costs in ΔG. [`primer-designer`](https://github.com/hammasbuilds/primer-designer)
-does the nearest-neighbour thermodynamics for the *design* side of this problem; wiring its
-Tm calculation in here would turn `likely_failing` from a rule of thumb into an estimate.
-That is the most valuable thing missing.
-
-**`SEVERE_MISMATCH_LOAD = 3` is a judgement call**, stated in the source so it can be
-argued with rather than buried. So is the five-base 3′ window.
-
-**GenBank is not a random sample of infections.** Sequencing effort is wildly uneven by
-country, time and lineage of interest, and outbreak investigations deliberately over-sample
-the unusual. These rates describe deposited sequences, not circulating virus.
-
-**400 genomes per year is a sample.** Enough to separate 0% from 98%, not enough to resolve
-a two-point difference.
-
-**One organism, five assays.** The method is general; the numbers are about SARS-CoV-2.
-
-## Layout
-
-```
-src/assaydrift/ncbi.py      GenBank via E-utilities, rate-limited and cached
-src/assaydrift/primers.py   five published assays, with sources
-src/assaydrift/match.py     oligo alignment: IUPAC both ways, ambiguity, strand, 3' end
-src/assaydrift/analyze.py   grouping by collection date, rates, trend
-src/assaydrift/cli.py       assay-drift check: your own primers against your own FASTA
-scripts/fetch.py            deposit-year-stratified download; --from-manifest rebuilds exactly
-scripts/analyse.py          the report
-examples/                   a primers TSV and two genomes, for the CLI quickstart
-tests/                      223 tests, none touching the network
-```
-
-The reference genome is vendored at `tests/data/` as 9 KB of gzipped JSON with its sha256
-pinned, so the suite never depends on NCBI being reachable.
-
-**What the suite would not have noticed.** Mutation-tested with
-[suite-auditor](https://github.com/hammasbuilds/suite-auditor): 152 mutants scored, a
-79.6% kill rate, **7 proven gaps** and 12 functions no test reached at all - including
-`PeriodSummary.effective_n`, which this README quotes beside every rate. Each gap came
-with the call that proves it, all seven on inputs the tests already use:
-
-| function | the call | original | mutant |
-|---|---|---|---|
-| `submitter_block` | `("X", "")` | `'?\|X'` | `None`, and `'?\|?'` |
-| `period_of` | `("14-Mar-2021", "month")` | `'2021-03'` | `'2021-01'` |
-| `_seed_length` | `(20)` | `6` | `7`, `5`, `8` |
-| `_seeds` | `("ACGTACGT…", None)` | 6-base seeds | 5-base seeds |
-
-`period_of` is the one that would have shown: a one-month shift moves sequences across a
-quarter boundary, and the quarters are the trend. `_seed_length` is the formula that makes
-the seed search undefeatable by two mismatches, which is the defect the search was
-rewritten for. After closing them and covering the uncovered surface: **172 mutants, 86.6%
-killed, 0 proven gaps, 4 functions unreached** (`_cache_dir`, `_slot`, `_get`, `fetch` -
-all of them the network itself), and the share of the whole package whose mutants this
-suite would notice rose from 64.7% to 81.2%.
-
-## Prior art, and what this does differently
-
-Checking published primers against a growing sequence database is not a new idea. Anyone
-evaluating this should know what already exists:
-
-| | |
-|---|---|
-| [**Primer Monitor**](https://primer-monitor.neb.com/) (NEB / ARTIC) | A continuously updated service that flags primer-site mutations in SARS-CoV-2 against GISAID and public data. Far more current than this, and the right tool if you want a live dashboard. |
-| [**PCR_strainer**](https://github.com/KevinKuchinski/PCR_strainer) | Screens primer and probe sets against large genome collections and reports mismatch prevalence. The closest comparison to what `drift` does. |
-| [**CoV-Spectrum**](https://cov-spectrum.org/) | Interactive variant and mutation prevalence over public sequence data, including primer-region queries. |
-| **Nextclade** | Reports mutations per sequence, including in primer regions when given a primer set. |
-
-**What this does that those do not, and what it does worse.** It is one directory of
-standard-library Python with zero runtime dependencies, so it runs anywhere and can be read
-end to end — which is the point of it as a portfolio piece, not a claim to be better. Two
-substantive differences: an `N` under an oligo is treated as *missing data* and excluded
-from the rates rather than counted as a mismatch, which stops a change in sequencing
-quality from manufacturing a time trend; and a mismatch in the 3′ window is treated as
-special **only on a primer**, because a hydrolysis probe is chemically blocked at that end
-and is never extended. Against that: no thermodynamics (no Tm, no ΔG — the most valuable
-thing missing), no live data feed, a 2,765-genome sample rather than millions, and no wet
-lab anywhere near it.
-
-## Also worth reading
-
-| | |
-|---|---|
-| **[primer-designer](https://github.com/hammasbuilds/primer-designer)** | The other half: designing primers that survive drift, with real thermodynamics |
-| **[clcuv-surveillance](https://github.com/hammasbuilds/clcuv-surveillance)** | Mutation atlas and novel-strain calls from viral sequence data |
-
-## Keywords
-
-PCR diagnostics &middot; primer mismatch &middot; assay drift &middot; GenBank &middot;
-E-utilities &middot; SARS-CoV-2 &middot; molecular diagnostics &middot; false negatives
-&middot; sequence analysis &middot; bioinformatics &middot; public health &middot;
-variant surveillance &middot; oligonucleotide &middot; IUPAC
+`my_assay.tsv` is one oligo per line, `name<TAB>role<TAB>sequence`, role being `forward`, `reverse` or `probe`; `#`
+comments and blank lines are skipped. `--json` writes per-oligo positions, mismatch counts and unknown-base counts.
 
 ## Licence
 
-MIT — see [LICENSE](https://github.com/hammasbuilds/assay-drift/blob/main/LICENSE). The assay sequences are published in the cited sources; the
-genomes are GenBank's.
+MIT, see [LICENSE](LICENSE). The assay sequences are published in the cited sources; the genomes are GenBank's
+(NCBI).

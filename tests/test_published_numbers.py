@@ -213,6 +213,14 @@ def test_demo_runs_against_the_committed_results() -> None:
     assert "Corpus identity:" in output, "demo.py does not state the corpus provenance"
     for assay in ("CDC N1", "CDC N2", "Charite RdRp"):
         assert assay in output, f"{assay} missing from demo output"
+    # The C29215T sentence once carried typed figures (30.6%, 5.1%) that a re-run had
+    # moved to 28.7% and 4.2%. Every figure it prints must be the one results/ holds.
+    drift = json.loads(DRIFT.read_text(encoding="utf-8"))
+    mutations = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+    row = next(r for r in mutations["CDC N2"] if (r.get("mutation") or r.get("name")) == "C29215T")
+    for quarter in ("2026-Q1", "2026-Q3"):
+        rate = row["by_period"][quarter] / drift["CDC N2"]["periods"][quarter]["usable"]
+        assert f"{rate:.1%}" in output, f"demo.py does not print the {quarter} C29215T rate"
 
 
 def test_the_c29215t_quarter_table_matches_the_results():
