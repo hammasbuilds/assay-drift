@@ -36,6 +36,28 @@ there is.
 model (the design side, with nearest-neighbour thermodynamics, is
 [primer-designer](https://github.com/hammasbuilds/primer-designer)).
 
+## Screenshots
+
+A small browser front end drives the package for demonstrations. It is a local demo and is **not part of
+the package** — the package has no web surface and no runtime dependencies. Every result on these screens
+is a live call into the library.
+
+![Overview](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/00-overview.png)
+*The front end as it opens: every feature is a tab, and the page states that nothing on it is precomputed.*
+
+![Break An Assay](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/01-break-an-assay.png)
+*A substitution placed on the 3′ base of primer N1-F: mismatches 0 → 1, and **blocks extension 0 → 1**. The same change in the middle of the oligo would usually be tolerated.*
+
+![Score Reference](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/02-score-reference.png)
+*An assay scored against the reference genome, oligo by oligo.*
+
+![Six Years Drift](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/03-six-years-drift.png)
+*Exact match and likely-failing share per quarter, 2020 to 2026, for all five assays.*
+
+![Your Own Primers](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/04-your-own-primers.png)
+*Your own primers and sequences scored — typed, pasted, or dropped in as files.*
+
+
 ## Sample input / output
 
 `assay-drift check` on the shipped example: the CDC N2 primers and two genomes, the 2019 reference and the same
