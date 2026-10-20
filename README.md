@@ -36,6 +36,16 @@ there is.
 model (the design side, with nearest-neighbour thermodynamics, is
 [primer-designer](https://github.com/hammasbuilds/primer-designer)).
 
+## Architecture
+
+![Pipeline](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/architecture.png)
+*The path a call travels, stage by stage: read oligos -> sequences and dates -> vendored reference -> binding -> position -> per quarter. Every stage is a module in this
+repository. Animated: [`docs/architecture.html`](https://github.com/hammasbuilds/assay-drift/blob/main/docs/architecture.html) — one file, no
+dependencies, opens in any browser.*
+
+![Decision architecture](https://raw.githubusercontent.com/hammasbuilds/assay-drift/main/docs/screenshots/architecture-deep.png)
+*The same single substitution is harmless at base 1 and fatal at base 20. Only its distance from the 3' end decides whether amplification stops. Animated: [`docs/architecture-deep.html`](https://github.com/hammasbuilds/assay-drift/blob/main/docs/architecture-deep.html).*
+
 ## Screenshots
 
 A small browser front end drives the package for demonstrations. It is a local demo and is **not part of
