@@ -80,6 +80,11 @@ Every number below comes from [`results/drift.json`](results/drift.json) and
 [`results/mutations.json`](results/mutations.json), and `tests/test_published_numbers.py` checks each one against
 them. Assays: CDC-006-00019 rev.06 (N1, N2, N3) and Corman et al. 2020, *Euro Surveill* 25(3) (Charité E, RdRp).
 
+&#128202; **The same figures as a dataset:
+[PCR Assay Drift — SARS-CoV-2](https://www.kaggle.com/datasets/muhammadhammas13/pcr-assay-drift-sars-cov-2)**
+on Kaggle — one row per assay per quarter as CSV, the accession list for all 2,765 records,
+and both result files. CC BY-SA 4.0; please cite it if you use it.
+
 **Exact match and likely failing, by collection quarter** (first and last quarters with at least 25 usable
 sequences):
 
