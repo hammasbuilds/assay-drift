@@ -2,8 +2,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-.venv/
+.venv*/
 dist/
+dist_check/
 build/
 *.egg-info/
 
