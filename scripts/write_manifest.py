@@ -51,6 +51,18 @@ def submitter_block(accession: str, country: str) -> str:
     return f"{country or '?'}|{stem}"
 
 
+def _shown(path: Path) -> str:
+    """A readable path, whether or not it sits under the project root.
+
+    relative_to raises for a path outside ROOT, and it was called in the line that
+    reports success - so a run that had written the whole manifest exited 1.
+    """
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--corpus", type=Path, default=CORPUS)
@@ -101,7 +113,7 @@ def main() -> int:
         periods.setdefault(period, set()).add(submitter_block(accession, country))
         counts[period] = counts.get(period, 0) + 1
 
-    print(f"wrote {args.out.relative_to(ROOT)}: {len(rows):,} records")
+    print(f"wrote {_shown(args.out)}: {len(rows):,} records")
     print(f"identity sha256: {digest.hexdigest()}")
     print(f"\n{'period':<10}{'records':>9}{'clusters':>10}")
     for period in sorted(counts):
