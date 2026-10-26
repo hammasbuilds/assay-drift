@@ -69,7 +69,14 @@ def main() -> int:
             accession = str(record.get("accession") or "")
             collected = str(record.get("collected") or "")
             country = str(record.get("country") or "")
-            rows.append((accession, collected, country, str(record.get("length") or "")))
+            # A manifest is line-oriented, and these fields are somebody else's free
+            # text: a GenBank country wraps across lines, which split 14,247 of
+            # 291,827 rows in two and left the manifest unable to rebuild the corpus.
+            # The parser now collapses them, and this is the second line of defence,
+            # because a corpus file written before that fix still carries them.
+            rows.append(tuple(" ".join(str(f).split())
+                              for f in (accession, collected, country,
+                                        record.get("length") or "")))
             # Over the identity of the records, not the sequence bytes, so the hash is
             # stable against a GenBank record being revised in ways that do not change
             # which records these are.

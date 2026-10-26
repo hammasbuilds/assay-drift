@@ -232,6 +232,19 @@ IUPAC_CODES = frozenset("ACGTRYSWKMBDHVN")
 _ORGANISM = re.compile(r"^\s{2}ORGANISM\s+(.+)$", re.M)
 _COLLECTED = re.compile(r'/collection_date="([^"]+)"')
 _COUNTRY = re.compile(r'/(?:country|geo_loc_name)="([^"]+)"')
+
+
+def _collapse(text: str) -> str:
+    """One line, single-spaced.
+
+    A GenBank qualifier wraps across lines, and the continuation is indented, so a
+    country can arrive as 'Philippines: National Capital Region,
+     Makati City'.
+    Kept raw, that newline travels into every consumer of Record.country - and it
+    split 14,247 of 291,827 rows across two lines in the accession manifest, which
+    exists precisely so the corpus can be rebuilt exactly.
+    """
+    return " ".join(text.split())
 _ACCESSION = re.compile(r"^ACCESSION\s+(\S+)", re.M)
 _ORIGIN = re.compile(r"\nORIGIN\s*\n(.*?)\n//", re.S)
 
@@ -266,7 +279,7 @@ def _one_record(block: str) -> Record | None:
         organism=organism.group(1).strip() if organism else "",
         sequence=sequence,
         collected=collected.group(1) if collected else "",
-        country=country.group(1) if country else "",
+        country=_collapse(country.group(1)) if country else "",
         length=len(sequence),
     )
 
