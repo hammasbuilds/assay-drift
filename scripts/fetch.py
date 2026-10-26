@@ -148,7 +148,14 @@ def main() -> int:
                 print(f"  {year}: nothing deposited", flush=True)
                 continue
             ids = ncbi.search(term, limit=args.per_year)
-            records = ncbi.fetch(ids, batch=100)
+            # Fetched and written in batches rather than a year at a time. Holding a
+            # year of 50,000 genomes before writing cost about 1.5 GB of memory, and
+            # one failed request in the middle lost every record already downloaded.
+            def _stream(all_ids: list[str], size: int = 100):
+                for start in range(0, len(all_ids), size):
+                    yield from ncbi.fetch(all_ids[start : start + size], batch=size)
+
+            records = _stream(ids)
 
             kept = 0
             for record in records:
@@ -177,8 +184,8 @@ def main() -> int:
                     # be told apart from one that has hung.
                     handle.flush()
             print(
-                f"  {year}: {available:>9,} available, {len(ids):>4} requested, "
-                f"{len(records):>4} fetched, {kept:>4} dated",
+                f"  {year}: {available:>9,} available, "
+                f"{kept:>4} dated of {len(ids):>5} requested",
                 flush=True,
             )
 

@@ -11,10 +11,12 @@ build/
 # Downloaded from NCBI, not authored here. `scripts/fetch.py` rebuilds it, and
 # the HTTP cache makes a rebuild cost NCBI nothing. Committing ~250 MB of
 # sequence would also mean committing somebody else's database.
-data/cache/
-data/sequences.jsonl
-data/fetch.log
-data/partial.json
+# Corpus data. Named files were listed one by one, which left any NEW corpus file
+# committable - and a fetch at corpus scale writes gigabytes. The manifest
+# (data/accessions.tsv) is what belongs in git; it rebuilds the rest exactly.
+data/*
+!data/accessions.tsv
+!data/FINGERPRINT.tsv
 
 # Scratch launcher for the background fetch, not part of the project.
 run_fetch.bat

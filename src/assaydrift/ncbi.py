@@ -16,6 +16,7 @@ defaulted to today.
 from __future__ import annotations
 
 import gzip
+import http.client
 import hashlib
 import json
 import os
@@ -72,6 +73,10 @@ _last_call = 0.0
 
 TIMEOUT = 60.0
 RETRIES = 3
+
+# A truncated response is not an OSError, so it used to escape the retry loop and
+# end the whole run. Over a few thousand requests that is rare; over the hundreds
+# of thousands a large corpus needs, it is certain.
 
 
 class NCBIError(RuntimeError):
@@ -181,7 +186,8 @@ def _get(url: str, max_age: float = 30 * 86400) -> str:
             with gzip.open(slot, "wt", encoding="utf-8") as handle:
                 handle.write(text)
             return text
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        except (urllib.error.URLError, TimeoutError, OSError,
+                http.client.IncompleteRead, http.client.HTTPException) as exc:
             last = exc
             _last_call = time.time()
             time.sleep(2.0 * (attempt + 1))
