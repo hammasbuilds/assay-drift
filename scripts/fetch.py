@@ -172,6 +172,10 @@ def main() -> int:
                 by_period[period] += 1
                 kept += 1
                 written += 1
+                if written % 500 == 0:
+                    # A multi-hour fetch whose output file stays at zero bytes cannot
+                    # be told apart from one that has hung.
+                    handle.flush()
             print(
                 f"  {year}: {available:>9,} available, {len(ids):>4} requested, "
                 f"{len(records):>4} fetched, {kept:>4} dated",
