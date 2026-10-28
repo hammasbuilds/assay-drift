@@ -10,14 +10,26 @@
    "first_period": "2020-Q1",
    "first_rate": 0.9843405381561535,
    "first_n": 9068,
-   "last_period": "2026-Q4",
+   "first_effective_n": 119.34,
+   "last_period": "2026-Q3",
    "last_rate": 0.0,
-   "last_n": 68,
+   "last_n": 1876,
+   "last_effective_n": 35.06,
+   "periods_after_the_endpoint": [
+    {
+     "period": "2026-Q4",
+     "usable": 68,
+     "effective_n": 1.56,
+     "perfect_rate": 0.0
+    }
+   ],
+   "endpoints_meet_the_independence_floor": true,
+   "independence_floor": 10.0,
    "change": -0.9843405381561535,
    "worst_period": "2023-Q2",
    "worst_rate": 0.0,
    "first_failing_rate": 0.005072783414203794,
-   "last_failing_rate": 0.1323529411764706,
+   "last_failing_rate": 0.057569296375266525,
    "worst_failing_rate": 0.1323529411764706,
    "worst_failing_period": "2026-Q4"
   },
@@ -470,14 +482,26 @@
    "first_period": "2020-Q1",
    "first_rate": 0.9943770672546858,
    "first_n": 9070,
-   "last_period": "2026-Q4",
-   "last_rate": 0.9850746268656716,
-   "last_n": 67,
-   "change": -0.009302440389014177,
+   "first_effective_n": 119.17,
+   "last_period": "2026-Q3",
+   "last_rate": 0.8010752688172043,
+   "last_n": 1860,
+   "last_effective_n": 34.73,
+   "periods_after_the_endpoint": [
+    {
+     "period": "2026-Q4",
+     "usable": 67,
+     "effective_n": 1.57,
+     "perfect_rate": 0.9850746268656716
+    }
+   ],
+   "endpoints_meet_the_independence_floor": true,
+   "independence_floor": 10.0,
+   "change": -0.19330179843748152,
    "worst_period": "2026-Q2",
    "worst_rate": 0.4726507713884993,
    "first_failing_rate": 0.0,
-   "last_failing_rate": 0.0,
+   "last_failing_rate": 0.07580645161290323,
    "worst_failing_rate": 0.30434782608695654,
    "worst_failing_period": "2026-Q2"
   },
@@ -930,14 +954,26 @@
    "first_period": "2020-Q1",
    "first_rate": 0.9878747795414462,
    "first_n": 9072,
-   "last_period": "2026-Q4",
-   "last_rate": 0.8961038961038961,
-   "last_n": 77,
-   "change": -0.09177088343755013,
+   "first_effective_n": 119.14,
+   "last_period": "2026-Q3",
+   "last_rate": 0.8605388272583201,
+   "last_n": 1893,
+   "last_effective_n": 35.26,
+   "periods_after_the_endpoint": [
+    {
+     "period": "2026-Q4",
+     "usable": 77,
+     "effective_n": 1.48,
+     "perfect_rate": 0.8961038961038961
+    }
+   ],
+   "endpoints_meet_the_independence_floor": true,
+   "independence_floor": 10.0,
+   "change": -0.1273359522831261,
    "worst_period": "2023-Q1",
    "worst_rate": 0.4815100154083205,
    "first_failing_rate": 0.00033068783068783067,
-   "last_failing_rate": 0.0,
+   "last_failing_rate": 0.006867406233491812,
    "worst_failing_rate": 0.008241758241758242,
    "worst_failing_period": "2026-Q2"
   },
@@ -1390,9 +1426,21 @@
    "first_period": "2020-Q1",
    "first_rate": 0.9991177767975298,
    "first_n": 9068,
-   "last_period": "2026-Q4",
+   "first_effective_n": 119.11,
+   "last_period": "2026-Q3",
    "last_rate": 0.0,
-   "last_n": 71,
+   "last_n": 1879,
+   "last_effective_n": 35.03,
+   "periods_after_the_endpoint": [
+    {
+     "period": "2026-Q4",
+     "usable": 71,
+     "effective_n": 1.53,
+     "perfect_rate": 0.0
+    }
+   ],
+   "endpoints_meet_the_independence_floor": true,
+   "independence_floor": 10.0,
    "change": -0.9991177767975298,
    "worst_period": "2023-Q2",
    "worst_rate": 0.0,
@@ -1850,14 +1898,26 @@
    "first_period": "2020-Q1",
    "first_rate": 0.9985671773393585,
    "first_n": 9073,
-   "last_period": "2026-Q4",
-   "last_rate": 0.987012987012987,
-   "last_n": 77,
-   "change": -0.011554190326371505,
+   "first_effective_n": 119.15,
+   "last_period": "2026-Q3",
+   "last_rate": 0.8683236382866208,
+   "last_n": 1891,
+   "last_effective_n": 35.3,
+   "periods_after_the_endpoint": [
+    {
+     "period": "2026-Q4",
+     "usable": 77,
+     "effective_n": 1.48,
+     "perfect_rate": 0.987012987012987
+    }
+   ],
+   "endpoints_meet_the_independence_floor": true,
+   "independence_floor": 10.0,
+   "change": -0.13024353905273767,
    "worst_period": "2023-Q3",
    "worst_rate": 0.0511727078891258,
    "first_failing_rate": 0.00022043425548330211,
-   "last_failing_rate": 0.012987012987012988,
+   "last_failing_rate": 0.13114754098360656,
    "worst_failing_rate": 0.9488272921108742,
    "worst_failing_period": "2023-Q3"
   },
@@ -2300,7 +2360,7 @@
   }
  },
  "_run": {
-  "generated": "2026-10-28T05:32:04+00:00",
+  "generated": "2026-10-28T07:32:52+00:00",
   "granularity": "quarter",
   "sequences_read": 291827,
   "manifest": "data/accessions_big.tsv",
@@ -2308,7 +2368,8 @@
   "manifest_matches_data": true,
   "corpus_identity_sha256": "f564f669cde9bc3862eab7ad331ee2565fdba1a23998a86a08a5fd4ffbaf02a9",
   "tool_version": null,
-  "reproduce": "python scripts/fetch.py --from-manifest && python scripts/analyse.py",
+  "source_revision": "318632c",
+  "reproduce": "python scripts/fetch.py --from-manifest --manifest data/accessions_big.tsv && python scripts/analyse.py --data data/sequences_big.jsonl --manifest data/accessions_big.tsv --granularity quarter",
   "note": "Period rates carry `clusters` and `effective_n` as well as `total` and `usable`. The first two count independent submitter groups; the last two count sequences, and consecutive GenBank accessions come from one submission. A period can pass the 25-sequence floor on an effective n near 1, so read effective_n before any rate."
  }
 }
