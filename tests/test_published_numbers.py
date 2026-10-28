@@ -358,3 +358,46 @@ def test_the_top_places_quoted_are_the_ones_the_pipeline_stored():
     for place in row["top_places"]:
         quoted = f"{place['place']} {place['carrying']}/{place['sequenced']}"
         assert quoted in readme, f"the README does not quote {quoted!r}"
+
+
+def test_the_headline_paragraph_is_the_large_corpus() -> None:
+    """The first figures a reader sees, checked against the file they come from.
+
+    The opening said "2,765 SARS-CoV-2 genomes" and "99.3% to 0.0%" and "44.5% in
+    2021-Q4" - the small corpus - while the Results section below it now leads with the
+    large one. A headline and a table that disagree is worse than either alone, and the
+    headline is the part most readers stop at.
+    """
+    drift = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))
+    run = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))["_run"]
+    head = README.read_text(encoding="utf-8").split("## What it does", 1)[0]
+
+    assert f"**{run['sequences_read']:,}**" in head, (
+        f"the opening does not state the corpus size, {run['sequences_read']:,}"
+    )
+
+    # The two assays that lost their exact match entirely, and the figure they fell from.
+    zeroed = [
+        (name, body["trend"])
+        for name, body in drift.items()
+        if name != "_run" and body["trend"]["last_rate"] == 0.0
+    ]
+    assert len(zeroed) == 2, f"{len(zeroed)} assays are at 0.0%, the opening says two"
+    for _name, trend in zeroed:
+        assert f"{trend['first_rate'] * 100:.1f}%" in head, (
+            f"the opening does not state {trend['first_rate'] * 100:.1f}%"
+        )
+
+    # Charité RdRp's worst quarter, which the opening quotes to make its point about
+    # where a mutation lands.
+    rdrp = drift["Charite RdRp"]
+    worst = max(
+        (p for p in rdrp["periods"].values()
+         if p.get("reliable") and (p.get("effective_n") or 0) >= 10),
+        key=lambda p: p["failing_rate"],
+    )
+    assert f"**{worst['failing_rate'] * 100:.1f}%**" in head, (
+        f"the opening does not state Charité RdRp's worst failing rate, "
+        f"{worst['failing_rate'] * 100:.1f}%"
+    )
+    assert f"{rdrp['trend']['last_rate'] * 100:.1f}%" in head

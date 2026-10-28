@@ -4,18 +4,21 @@ A tool that checks whether published PCR diagnostic assays still match the virus
 for diagnostic labs, public-health analysts and assay designers: a PCR test fails silently when the target mutates
 under a primer, because a failed amplification looks exactly like a negative sample. assay-drift aligns every oligo
 of an assay against dated GenBank genomes, separates "no longer an exact match" from "would plausibly no longer
-amplify", and names the mutation responsible. The committed run covers 2,765 SARS-CoV-2 genomes from 2020 to 2026
-against five assays clinical laboratories ran. Standard-library Python, zero dependencies.
+amplify", and names the mutation responsible. The committed runs cover **291,827** SARS-CoV-2 genomes from 2020 to
+2026, and a 2,765-genome subset that reproduces in minutes, against five assays clinical laboratories ran.
+Standard-library Python, zero dependencies.
 
-**Headline:** two of five published assays lost their exact match entirely (99.3% to 0.0%) and neither mutation is
-at a position that stops the reaction; Charité RdRp never lost its exact match, yet in 2021-Q4 44.5% of sequences
-carried a mutation one base from its primer's 3′ end. Where the mutation lands matters more than how much of it
-there is.
+**Headline:** two of five published assays lost their exact match entirely (99.9% and 98.4% down to 0.0%) and
+neither mutation is at a position that stops the reaction. Charité RdRp still matched 86.8% of sequences exactly at
+the end of the series - and in 2023-Q3, **94.9%** of its sequences carried a mutation one base from its forward
+primer's 3′ end, where the polymerase extends. Where the mutation lands matters more than how much of it there is,
+and an assay can look healthy at both ends of a series and have been unusable in the middle.
 
 ## What it does
 
 - **Downloads dated genomes from GenBank** through NCBI E-utilities, rate-limited and cached, stratified by deposit
-  year. A record with no usable collection date is dropped and counted (35 of 2,800), never defaulted to today.
+  year for the small corpus and by accession for the large one. A record with no usable collection date is dropped
+  and counted (35 of 2,800 in the small corpus), never defaulted to today.
   `--from-manifest` rebuilds the exact corpus from the committed accession list.
 - **Aligns each oligo** with IUPAC codes read as sets on both sides: primer `R` matches `A` and `G`; a subject `R`
   where the primer wants `A` is ambiguous, not a mismatch. A site must be within a fifth of the oligo's length in
