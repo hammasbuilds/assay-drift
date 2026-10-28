@@ -142,3 +142,75 @@ class TestAgainstTheReference:
             assert low <= hit.position <= high, (
                 f"{oligo.name} binds at {hit.position}, outside {assay.target_gene} ({low}-{high})"
             )
+
+
+class TestTheReferenceGenomeItself:
+    """The bundled reference is the ruler every measurement in this package is read off.
+
+    Every primer is matched against NC_045512.2, every mutation is named by its offset in
+    it, and `expected_reference_mismatches` subtracts the mismatches an assay shipped
+    with. If the bundled copy were truncated, or a different isolate, every figure this
+    package publishes would shift by an amount no test would notice - the primers would
+    still match something, the mutations would still have positions, and the rates would
+    still look plausible.
+
+    `reference.genome()` does pin a sha256 and refuses to load anything else, and the
+    comment beside it says "re-fetch it rather than updating the digest - the reference
+    has not changed since 2020". Nothing enforced that advice: a digest can be updated in
+    the same commit as a wrong file and the check passes. These assertions are against
+    the record's published facts instead, so they fail on a wrong genome rather than
+    merely on a changed file.
+    """
+
+    def test_the_accession_is_consistent_across_the_package(self) -> None:
+        from assaydrift import primers, reference
+
+        assert reference.ACCESSION == "NC_045512.2"
+        assert primers.REFERENCE == reference.ACCESSION
+
+    def test_the_pinned_length_matches_the_pinned_sequence(self) -> None:
+        """Two constants that can disagree, and one is used in error messages."""
+        from assaydrift import reference
+
+        assert reference.LENGTH == len(reference.genome())
+
+    def test_the_length_is_the_published_one(self) -> None:
+        """29,903 bases, Wuhan-Hu-1. A truncated copy would silently move every offset."""
+        from assaydrift.reference import genome
+
+        assert len(genome()) == 29903
+
+    def test_it_holds_only_unambiguous_bases(self) -> None:
+        """An N in the reference would read as a mismatch for every sequence compared."""
+        from assaydrift.reference import genome
+
+        assert set(genome()) <= set("ACGT"), sorted(set(genome()) - set("ACGT"))
+
+    def test_the_landmarks_are_where_the_record_says(self) -> None:
+        """Two published coordinates, so a different isolate fails rather than passes.
+
+        The genome opens with the 5' UTR beginning ATTAAAGGTTTATACCTTCC, and the ORF1ab
+        start codon sits at position 266 in 1-based coordinates.
+        """
+        from assaydrift.reference import genome
+
+        seq = genome()
+        assert seq.startswith("ATTAAAGGTTTATACCTTCC")
+        assert seq[265:268] == "ATG"
+
+    def test_every_oligo_is_found_in_it(self) -> None:
+        """The rule in primers.py is that a primer failing against the reference is a typo.
+
+        That rule can only hold if the reference is the right genome, so it is also a
+        check on the reference: a wrong isolate would lose some of the fifteen sites.
+        """
+        from assaydrift import primers
+        from assaydrift.match import find_oligo
+        from assaydrift.reference import genome
+
+        seq = genome()
+        for assay in primers.ASSAYS:
+            for oligo in assay.oligos:
+                hit = find_oligo(seq, oligo.sequence, oligo.role)
+                assert hit is not None, f"{oligo.name} is not in the reference genome"
+                assert hit.position >= 0, f"{oligo.name} matched nowhere"
