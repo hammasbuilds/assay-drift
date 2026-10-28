@@ -19,10 +19,32 @@ ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
 DRIFT = ROOT / "results" / "drift.json"
 MUTATIONS = ROOT / "results" / "mutations.json"
+DRIFT_BIG = ROOT / "results" / "drift_big.json"
+MUTATIONS_BIG = ROOT / "results" / "mutations_big.json"
+
+# Where each corpus's figures live in the README. The document reports both, so a guard
+# that scans the whole of it compares a 291,827-genome table against 2,765-genome results
+# - which is how all three of these failed when the large corpus was published. "Any
+# percentage in the README" was never the same thing as "a figure from this corpus"; it
+# only looked like it while there was one corpus.
+BIG_HEADING = "### Over 291,827 genomes"
+BOTH_HEADING = "### The same four mutations, in both corpora"
+SMALL_HEADING = "### Over 2,765 genomes, which reproduces in minutes"
 
 
-def _mutation_rates() -> dict[str, float]:
-    data = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+def _section(start: str, end: str | None) -> str:
+    """The README between two headings, so a figure is read against its own corpus."""
+    text = README.read_text(encoding="utf-8")
+    assert start in text, f"the heading {start!r} moved - the guards key on it"
+    out = text.split(start, 1)[1]
+    if end is not None:
+        assert end in out, f"the heading {end!r} is no longer after {start!r}"
+        out = out.split(end, 1)[0]
+    return out
+
+
+def _mutation_rates(path: Path = MUTATIONS) -> dict[str, float]:
+    data = json.loads(path.read_text(encoding="utf-8"))
     out: dict[str, float] = {}
     for rows in data.values():
         if not isinstance(rows, list):
@@ -46,31 +68,70 @@ def test_the_mutation_table_has_the_rows_we_think_it_has() -> None:
     assert _mutation_rates(), "rates could not be read"
 
 
-def test_every_mutation_percentage_in_the_readme_matches_the_results() -> None:
-    rates = _mutation_rates()
-    text = README.read_text(encoding="utf-8")
+def test_the_shared_mutation_table_quotes_both_corpora() -> None:
+    """One row per mutation, with the share from each corpus in its own column.
+
+    The table exists to show that the same four oligos, at the same base of each, come
+    out of corpora 105 times apart in size. So both columns are checked, against their
+    own file: `| ... | C28311T | 57.2% | 76.5% |` is the large corpus then the small one.
+    """
+    big = _mutation_rates(MUTATIONS_BIG)
+    small = _mutation_rates(MUTATIONS)
     checked = 0
-    for match in re.finditer(r"([ACGT]\d{4,5}[ACGT])[^\n]*?(\d{1,2}\.\d)%", text):
-        name, claimed = match.group(1), float(match.group(2))
-        if name not in rates:
-            continue
-        checked += 1
-        actual = rates[name]
-        assert abs(actual - claimed) < 0.05, (
-            f"{name}: README says {claimed}%, results/mutations.json says {actual:.1f}%"
+    for line in _section(BOTH_HEADING, SMALL_HEADING).splitlines():
+        match = re.search(
+            r"\*{0,2}([ACGT]\d{4,5}[ACGT])\*{0,2}\s*\|\s*([\d.]+)%\s*\|\s*([\d.]+)%",
+            line,
         )
-    assert checked >= 3, f"only {checked} mutation figures found - has the README changed?"
+        if not match:
+            continue
+        name, claimed_big, claimed_small = match.groups()
+        assert name in big, f"{name} is not in results/mutations_big.json"
+        assert name in small, f"{name} is not in results/mutations.json"
+        assert abs(big[name] - float(claimed_big)) < 0.05, (
+            f"{name}: README says {claimed_big}% for the large corpus, "
+            f"mutations_big.json says {big[name]:.1f}%"
+        )
+        assert abs(small[name] - float(claimed_small)) < 0.05, (
+            f"{name}: README says {claimed_small}% for the small corpus, "
+            f"mutations.json says {small[name]:.1f}%"
+        )
+        checked += 1
+    assert checked >= 4, f"only {checked} mutation rows checked"
 
 
-def test_every_assay_rate_in_the_readme_table_matches_the_results() -> None:
-    """The quarter table's first, latest and change columns."""
-    drift = json.loads(DRIFT.read_text(encoding="utf-8"))
-    # Only the QUARTER table. The by-year section below it regroups the same sequences and
-    # its figures legitimately differ, so checking both against `trend` would compare a
-    # year rate to a quarter rate and fail for the right reason in the wrong place.
-    whole = README.read_text(encoding="utf-8")
-    assert "### The same data by year" in whole, "the by-year heading moved"
-    text = whole.split("### The same data by year", 1)[0]
+def test_the_two_corpora_agree_about_which_bases_carry_the_mutations() -> None:
+    """The claim the table is making, rather than the numbers in it.
+
+    Shares differ between the corpora because their year mixes differ. What must not
+    differ is the oligo and the base within it - that is the finding.
+    """
+    big = json.loads(MUTATIONS_BIG.read_text(encoding="utf-8"))
+    small = json.loads(MUTATIONS.read_text(encoding="utf-8"))
+
+    def leading(data: dict) -> dict[str, tuple[str, int, int]]:
+        out = {}
+        for assay, rows in data.items():
+            if not isinstance(rows, list) or not rows:
+                continue
+            top = max(rows, key=lambda r: r.get("overall_rate") or 0)
+            out[assay] = (top["oligo"], top["base_in_oligo"], top["bases_from_3_prime_end"])
+        return out
+
+    assert leading(big) == leading(small), (
+        "the two corpora disagree about which base carries each assay's leading mutation, "
+        "which is the finding the shared table reports"
+    )
+
+
+def _check_assay_table(text: str, drift_path: Path, least: int) -> int:
+    """The first and last columns of one corpus's quarter table.
+
+    Only a QUARTER table. A by-year section regroups the same sequences and its figures
+    legitimately differ, so checking both against `trend` would compare a year rate to a
+    quarter rate and fail for the right reason in the wrong place.
+    """
+    drift = json.loads(drift_path.read_text(encoding="utf-8"))
     names = {
         "CDC N1": "CDC N1",
         "Charité E": "Charite E",
@@ -94,10 +155,23 @@ def test_every_assay_rate_in_the_readme_table_matches_the_results() -> None:
             claimed = float(cells[index].replace("*", "").replace("%", ""))
             actual = trend[field] * 100
             assert abs(actual - claimed) < 0.05, (
-                f"{label} {field}: README {claimed}%, results {actual:.1f}%"
+                f"{label} {field} in {drift_path.name}: README {claimed}%, "
+                f"results {actual:.1f}%"
             )
             checked += 1
-    assert checked >= 8, f"only {checked} table cells checked"
+    assert checked >= least, f"only {checked} table cells checked in {drift_path.name}"
+    return checked
+
+
+def test_the_large_corpus_quarter_table_matches_its_results() -> None:
+    _check_assay_table(_section(BIG_HEADING, BOTH_HEADING), DRIFT_BIG, 10)
+
+
+def test_the_small_corpus_quarter_table_matches_its_results() -> None:
+    whole = README.read_text(encoding="utf-8")
+    assert "### The same data by year" in whole, "the by-year heading moved"
+    text = _section(SMALL_HEADING, "### The same data by year")
+    _check_assay_table(text, DRIFT, 8)
 
 
 def test_the_results_record_which_corpus_produced_them() -> None:
@@ -148,14 +222,19 @@ def test_every_period_rate_reports_how_independent_it_is() -> None:
 
 
 def test_the_readme_independence_table_matches_the_results() -> None:
-    """The caveat's own numbers are numbers, so they are checked like the others."""
-    drift = json.loads(DRIFT.read_text(encoding="utf-8"))
+    """The caveat's own numbers are numbers, so they are checked like the others.
+
+    The large corpus's table, read against the large corpus. It quotes `usable` rather
+    than `total`, because a quarter's independence is a property of the sequences that
+    could be scored.
+    """
+    drift = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))
     periods = drift["CDC N2"]["periods"]
-    text = README.read_text(encoding="utf-8")
+    text = _section(BIG_HEADING, BOTH_HEADING)
     checked = 0
     for line in text.splitlines():
         match = re.match(
-            r"\|\s*(\d{4}-Q\d)[^|]*\|\s*(\d+)\s*\|\s*\*{0,2}(\d+)\*{0,2}\s*\|"
+            r"\|\s*(\d{4}-Q\d)[^|]*\|\s*([\d,]+)\s*\|\s*\*{0,2}([\d,]+)\*{0,2}\s*\|"
             r"\s*\*{0,2}([\d.]+)\*{0,2}\s*\|",
             line,
         )
@@ -165,8 +244,8 @@ def test_the_readme_independence_table_matches_the_results() -> None:
         if period not in periods:
             continue
         row = periods[period]
-        assert int(sequences) == row["total"], f"{period} sequences"
-        assert int(clusters) == row["clusters"], f"{period} clusters"
+        assert int(sequences.replace(",", "")) == row["usable"], f"{period} usable"
+        assert int(clusters.replace(",", "")) == row["clusters"], f"{period} clusters"
         # Compared at the precision the README prints, not with a tolerance: 1.05 displays
         # as 1.1 and |1.1 - 1.05| is exactly 0.05, which no sane tolerance straddles.
         assert float(effective) == round(row["effective_n"], 1), (

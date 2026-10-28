@@ -97,14 +97,85 @@ that is not there), then reprints the finding from `results/drift.json` (trimmed
 
 ## Results
 
-Every number below comes from [`results/drift.json`](results/drift.json) and
-[`results/mutations.json`](results/mutations.json), and `tests/test_published_numbers.py` checks each one against
-them. Assays: CDC-006-00019 rev.06 (N1, N2, N3) and Corman et al. 2020, *Euro Surveill* 25(3) (Charité E, RdRp).
+Two corpora. The headline is the large one -
+[`results/drift_big.json`](results/drift_big.json) and
+[`results/mutations_big.json`](results/mutations_big.json), **291,827 genomes** - and the
+small one, [`results/drift.json`](results/drift.json) and
+[`results/mutations.json`](results/mutations.json), **2,765 genomes**, is what reproduces
+in minutes. `tests/test_published_numbers.py` checks each figure against the file it came
+from. Assays: CDC-006-00019 rev.06 (N1, N2, N3) and Corman et al. 2020, *Euro Surveill*
+25(3) (Charité E, RdRp).
+
+Both corpora rebuild exactly from a committed manifest -
+`data/accessions.tsv` and `data/accessions_big.tsv.gz` - because a published rate whose
+corpus cannot be rebuilt is not a result.
 
 &#128202; **The same figures as a dataset:
 [PCR Assay Drift — SARS-CoV-2](https://www.kaggle.com/datasets/muhammadhammas13/pcr-assay-drift-sars-cov-2)**
 on Kaggle — one row per assay per quarter as CSV, the accession list for all 2,765 records,
 and both result files. CC BY-SA 4.0; please cite it if you use it.
+
+### Over 291,827 genomes
+
+**Exact match, first to last quarter that can carry an endpoint.** A quarter needs 25
+usable sequences *and* 10 independent submitter groups to be an endpoint; 26 of the 28
+reliable quarters qualify, and 2026-Q4 is not one of them - it is partial, 68 to 77
+usable sequences from submitter groups so lopsided that Kish's effective n is 1.5. Ending
+there would have published CDC N2 as down 0.9 points instead of 19.3.
+
+| Assay | Exact match 2020-Q1 | Exact match 2026-Q3 | Change | Likely failing at the end | Worst quarter that can carry it |
+|---|---:|---:|---:|---:|---|
+| **Charité E** | 99.9% | **0.0%** | **−99.9** | 0.0% | 0.2% (2023-Q3) |
+| **CDC N1** | 98.4% | **0.0%** | **−98.4** | 5.8% | 5.8% (2026-Q3) |
+| **CDC N2** | 99.4% | 80.1% | **−19.3** | 7.6% | **30.4% (2026-Q2)** |
+| **Charité RdRp** | 99.9% | 86.8% | −13.0 | 13.1% | **94.9% (2023-Q3)** |
+| CDC N3 *(retired)* | 98.8% | 86.1% | −12.7 | 0.7% | 0.8% (2026-Q2) |
+
+**Charité RdRp is the one to read twice.** Its endpoint says 86.8% exact match and 13.1%
+likely failing, which looks like slow erosion. In 2023-Q3 it was 5.1% exact and **94.9%
+likely failing** - over 506 usable sequences from 57 submitter groups, so not an artefact
+of one submission. Delta's NSP12 G671S sits at the 3' terminus of its forward primer; the
+rate fell again when Omicron displaced Delta. An assay can be fine at both ends of a
+series and have been unusable in the middle, which is why the worst quarter is reported
+beside the endpoints and not folded into them.
+
+**How independent the quarters are.** Sequences from one submission are not independent
+observations, so each quarter is grouped by (country, accession block) and given a Kish
+effective sample size. Counted for **CDC N2**, because each assay scores a slightly
+different set - a sequence with an ambiguous base under one assay's oligos is excluded
+from that assay and not from the others, which puts 2020-Q1 between 9,068 and 9,073
+usable sequences depending on which:
+
+| quarter | usable sequences | submitter groups | effective n |
+|---|---:|---:|---:|
+| 2020-Q1, the baseline of every row above | 9,070 | 745 | **119.2** |
+| 2021-Q4, the Delta peak | 38,220 | 2,281 | **232.1** |
+| 2023-Q3, Charité RdRp's worst quarter | 508 | 57 | **12.4** |
+| 2026-Q3, the endpoint of every row above | 1,860 | 173 | **34.7** |
+| 2026-Q4, partial, and therefore not an endpoint | 67 | 7 | **1.6** |
+
+The median across the 28 reliable quarters is **82.3**, against about 4 on the small
+corpus below - which is the reason for the large one. Every rate above rests on tens of
+independent groups rather than a handful.
+
+### The same four mutations, in both corpora
+
+| Assay | Position in oligo | Genome coordinate | Share of 291,827 | Share of 2,765 |
+|---|---|---|---:|---:|
+| CDC N1 probe | base 3 of 24 (21 from the 3′ end) | **C28311T** | 57.2% | 76.5% |
+| Charité E forward | base 2 of 26 (24 from the 3′ end) | **C26270T** | 56.6% | 76.7% |
+| Charité RdRp forward | **1 base from the 3′ end** | **G15451A** | 18.2% | 11.1% |
+| CDC N2 reverse | **2 bases from the 3′ end** | **C29215T** | 0.6% | 2.3% |
+
+The same four oligos, at the same base of each, found independently in a corpus 105 times
+larger. The shares differ because the two corpora have different year mixes, not because
+the finding moved - the small corpus is stratified by deposit year, the large one is not.
+
+### Over 2,765 genomes, which reproduces in minutes
+
+`python scripts/fetch.py --from-manifest && python scripts/analyse.py` rebuilds everything
+below from `data/accessions.tsv` in a few minutes. The figures differ from the large
+corpus in the direction its own effective-n table predicts.
 
 **Exact match and likely failing, by collection quarter** (first and last quarters with at least 25 usable
 sequences):
