@@ -255,7 +255,14 @@ def main() -> int:
                 f"  perfect match   {movement['first_period']} "
                 f"{movement['first_rate']:.1%} (n={movement['first_n']})  ->  "
                 f"{movement['last_period']} {movement['last_rate']:.1%} "
-                f"(n={movement['last_n']})   change {movement['change']:+.1%}"
+                f"(n={movement['last_n']}, eff {movement['last_effective_n']:.0f})"
+                f"   change {movement['change']:+.1%}"
+                + (
+                    f"   [{len(movement['periods_after_the_endpoint'])} later period(s) "
+                    f"too lopsided to end on]"
+                    if movement["periods_after_the_endpoint"]
+                    else ""
+                )
             )
             print(
                 f"  likely failing  {movement['first_period']} "

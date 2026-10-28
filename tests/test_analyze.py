@@ -242,3 +242,119 @@ class TestEvaluate:
         assert result is not None
         assert result.period == "2021-Q2"
         assert set(result.hits) == {"N1-F", "N1-R", "N1-P"}
+
+
+class TestTrendEndpoints:
+    """An endpoint is a stronger claim than a table row, and takes a stronger floor.
+
+    `reliable` counts sequences on purpose - gating the per-period table on independence
+    would leave 2 of 24 quarters and delete the series rather than qualify it - and
+    `effective_n` is published on every row for the reader to weigh. `trend` then read the
+    first and last reliable period whatever their independence, and on the
+    291,827-sequence corpus the last quarter is partial: 67-77 usable sequences from
+    submitter groups so lopsided that Kish's effective n is 1.5.
+
+    Three of the five published headlines were that quarter rather than the assay. CDC N2
+    reads 56.6% perfect in 2026-Q1, 47.3% in Q2, 80.1% in Q3 and then 98.5% on an
+    effective n of 1.6 - and 98.5% is what the summary quoted, so an assay that is down
+    19 points was published as down 0.9.
+    """
+
+    def _period(self, name, rate, n, groups, lopsided=False):
+        """A period of `n` usable sequences across `groups` submitters.
+
+        Evenly by default, which makes Kish's effective n equal to `groups` - the shape
+        of the corpus's large quarters, whose effective n runs 35 to 245. With
+        `lopsided`, one submission holds all but one sequence per other group, which is
+        the shape of the partial final quarter: 68 sequences, 7 groups, effective n 1.6.
+
+        The first version of this fixture was lopsided for every period, so effective n
+        came out near 1 everywhere, every period failed the floor, and the fallback made
+        the two tests pass for the wrong reason - a fixture that cannot express the
+        condition under test is a test of the fallback.
+        """
+        summary = PeriodSummary(name, total=n, usable=n, perfect=int(round(rate * n)))
+        if groups == 1:
+            summary.submitters = {"one": n}
+        elif lopsided:
+            summary.submitters = {f"s{i}": 1 for i in range(groups - 1)}
+            summary.submitters["big"] = n - (groups - 1)
+        else:
+            share, extra = divmod(n, groups)
+            summary.submitters = {
+                f"s{i}": share + (1 if i < extra else 0) for i in range(groups)
+            }
+        assert sum(summary.submitters.values()) == n
+        return summary
+
+    def _summaries(self, rows):
+        return {r[0]: self._period(*r) for r in rows}
+
+    def test_the_fixture_produces_the_independence_it_claims(self):
+        """Prove the fixture can express both conditions before trusting a verdict."""
+        even = self._period("2026-Q3", 0.8, 1860, 60)
+        assert even.effective_n == pytest.approx(60, abs=1)
+        lopsided = self._period("2026-Q4", 0.985, 68, 7, lopsided=True)
+        assert lopsided.effective_n == pytest.approx(1.2, abs=0.5)
+        assert lopsided.reliable, "it passes the sequence floor; that is the point"
+
+    def test_a_lopsided_final_period_is_not_the_endpoint(self):
+        t = trend(self._summaries([
+            ("2020-Q1", 0.994, 9000, 200),
+            ("2026-Q3", 0.801, 1860, 60),
+            ("2026-Q4", 0.985, 67, 7, True),
+        ]))
+        assert t["last_period"] == "2026-Q3"
+        assert t["change"] == pytest.approx(-0.193, abs=0.002), (
+            "the headline must be the assay, not a quarter worth 1.6 observations"
+        )
+        assert t["endpoints_meet_the_independence_floor"]
+
+    def test_the_skipped_periods_are_named_with_their_rates(self):
+        """Withdrawn silently is worse than qualified out loud."""
+        t = trend(self._summaries([
+            ("2020-Q1", 0.994, 9000, 200),
+            ("2026-Q3", 0.801, 1860, 60),
+            ("2026-Q4", 0.985, 67, 7, True),
+        ]))
+        skipped = t["periods_after_the_endpoint"]
+        assert [s["period"] for s in skipped] == ["2026-Q4"]
+        assert skipped[0]["perfect_rate"] == pytest.approx(0.985, abs=0.01)
+        assert skipped[0]["effective_n"] < t["independence_floor"]
+
+    def test_an_independent_final_period_is_kept(self):
+        """The floor must not simply discard the end of every series."""
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 9000, 200),
+            ("2026-Q4", 0.5, 2000, 400),
+        ]))
+        assert t["last_period"] == "2026-Q4"
+        assert t["periods_after_the_endpoint"] == []
+        assert t["change"] == pytest.approx(-0.5)
+
+    def test_a_corpus_where_no_period_is_independent_still_gets_a_trend(self):
+        """Qualified, not refused: such a corpus still has a story to tell."""
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 100, 1),
+            ("2024-Q1", 0.4, 100, 1),
+        ]))
+        assert t["enough_to_say"]
+        assert t["change"] == pytest.approx(-0.6)
+        assert not t["endpoints_meet_the_independence_floor"], (
+            "the caveat is the whole point of the fallback"
+        )
+
+    def test_the_worst_period_may_be_one_that_cannot_be_an_endpoint(self):
+        """"The worst it ever got" is a different question from "where did it end".
+
+        A quarter too lopsided to anchor a trend is still evidence that a rate that low
+        occurred, so the worst-period figures stay over every reliable period.
+        """
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 9000, 200),
+            ("2023-Q3", 0.051, 469, 5, True),
+            ("2026-Q3", 0.868, 1891, 60),
+        ]))
+        assert t["worst_period"] == "2023-Q3"
+        assert t["worst_rate"] == pytest.approx(0.051, abs=0.01)
+        assert t["last_period"] == "2026-Q3"

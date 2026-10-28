@@ -35,6 +35,31 @@ from .primers import Assay
 # Below this, a period's rate is too noisy to read as a trend point.
 MIN_PERIOD_SAMPLES = 25
 
+# And below this many INDEPENDENT observations, a period cannot be an endpoint of the
+# trend - which is a stronger claim than appearing in the table, and so has a stronger
+# floor. PeriodSummary.reliable stays a sequence count on purpose (see the comment there:
+# gating the table on independence would leave 2 of 24 quarters and delete the series
+# rather than qualify it), and effective_n is published on every row, and the results
+# file's own note says "read effective_n before any rate" - and then `trend` read the
+# first and last reliable period whatever their independence.
+#
+# On the 291,827-sequence corpus the final quarter is partial: 67-77 usable sequences
+# from 7 submitter groups so lopsided that Kish's effective n is 1.5. Every published
+# trend ended there, and three of the five headlines were that quarter rather than the
+# assay:
+#
+#   CDC N2        -0.9 points published, -19.3 from the last quarter that can carry it
+#   Charite RdRp  -1.2 points published, -13.0
+#   CDC N3        -9.2 points published, -12.7
+#
+# CDC N2 reads 56.6% perfect in 2026-Q1, 47.3% in Q2, 80.1% in Q3, and then 98.5% on an
+# effective n of 1.6 - and 98.5% is the number the summary quoted, so the two assays the
+# report presented as barely drifted are down 19 and 13 points.
+#
+# 10 rather than 25: it is the smallest floor that gives all five assays an endpoint, and
+# the quarters it excludes here are not marginal but worth about one observation each.
+MIN_ENDPOINT_EFFECTIVE_N = 10.0
+
 # Total mismatches across an assay's three oligos, above the assay's own
 # baseline, at which binding is assumed to fail even without a 3' hit. Three is
 # a judgement call rather than a measured threshold: it is the point at which a
@@ -292,26 +317,50 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
 
 
 def trend(summaries: dict[str, PeriodSummary]) -> dict:
-    """First and last reliable periods, and the change between them.
+    """First and last periods that can carry an endpoint, and the change between them.
 
     Deliberately not a regression line. With a handful of periods, a fitted
     slope invites more confidence than the data supports; the honest summary is
     where it started, where it ended, and how many sequences are behind each.
+
+    An endpoint is a stronger claim than a table row, so it takes both floors: enough
+    sequences (MIN_PERIOD_SAMPLES) and enough independent submitter groups
+    (MIN_ENDPOINT_EFFECTIVE_N). Which periods were skipped at the end, and why, is in the
+    output - a measurement withdrawn silently is worse than one qualified out loud.
     """
     reliable = [s for s in summaries.values() if s.reliable and s.perfect_rate is not None]
     if len(reliable) < 2:
         return {"periods": len(reliable), "enough_to_say": False}
-    first, last = reliable[0], reliable[-1]
+    usable = [s for s in reliable if (s.effective_n or 0) >= MIN_ENDPOINT_EFFECTIVE_N]
+    # Fall back rather than refuse: a corpus whose every period rests on a few
+    # submissions still has a story, and the caveat belongs beside the number, not in
+    # place of it.
+    endpoints = usable if len(usable) >= 2 else reliable
+    first, last = endpoints[0], endpoints[-1]
+    skipped = [
+        {"period": s.period, "usable": s.usable, "effective_n": round(s.effective_n or 0, 2),
+         "perfect_rate": s.perfect_rate}
+        for s in reliable[reliable.index(last) + 1:]
+    ]
     return {
         "periods": len(reliable),
         "enough_to_say": True,
         "first_period": first.period,
         "first_rate": first.perfect_rate,
         "first_n": first.usable,
+        "first_effective_n": round(first.effective_n or 0, 2),
         "last_period": last.period,
         "last_rate": last.perfect_rate,
         "last_n": last.usable,
+        "last_effective_n": round(last.effective_n or 0, 2),
+        # Named, with their rates, so a reader can see what was left out and disagree.
+        "periods_after_the_endpoint": skipped,
+        "endpoints_meet_the_independence_floor": endpoints is usable,
+        "independence_floor": MIN_ENDPOINT_EFFECTIVE_N,
         "change": last.perfect_rate - first.perfect_rate,
+        # Over every reliable period, not only the ones that can be endpoints: "the worst
+        # it ever got" is a different question from "where did it end", and a quarter too
+        # lopsided to anchor a trend is still evidence that a rate that low occurred.
         "worst_period": min(reliable, key=lambda s: s.perfect_rate).period,
         "worst_rate": min(s.perfect_rate for s in reliable),
         # The consequential measure, alongside the sensitive one. The gap
