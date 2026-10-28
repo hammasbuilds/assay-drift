@@ -16,6 +16,11 @@ build/
 # (data/accessions.tsv) is what belongs in git; it rebuilds the rest exactly.
 data/*
 !data/accessions.tsv
+# The 291,827-record manifest, gzipped: 13.4 MB of text, 1.54 MB compressed. Committed
+# because results/drift_big.json is published from that corpus, and a results file whose
+# corpus the repository cannot rebuild is not reproducible whatever its `reproduce` field
+# says. Both scripts read a .gz manifest transparently.
+!data/accessions_big.tsv.gz
 !data/FINGERPRINT.tsv
 
 # Scratch launcher for the background fetch, not part of the project.

@@ -39,6 +39,26 @@ QUERY = "SARS-CoV-2[orgn] AND complete genome[title]"
 YEARS = range(2020, 2027)
 
 
+def _manifest_lines(manifest: Path) -> list[str]:
+    """The manifest's lines, whether it is plain text or gzipped.
+
+    The 291,827-record manifest is 13.4 MB as text and 1.54 MB gzipped, and the whole
+    claim of this file - "the manifest is the identity of every record behind the
+    committed results" - only holds if the manifest is actually committed. It was not:
+    `.gitignore` keeps `data/*` except `data/accessions.tsv`, so results/drift_big.json
+    was published from a corpus nothing in the repository could rebuild.
+
+    Transparent to the caller, so `--manifest data/accessions_big.tsv.gz` and the plain
+    file behave identically.
+    """
+    if manifest.suffix == ".gz":
+        import gzip
+
+        with gzip.open(manifest, "rt", encoding="utf-8") as handle:
+            return handle.read().splitlines()
+    return manifest.read_text(encoding="utf-8").splitlines()
+
+
 def _from_manifest(manifest: Path, out: Path) -> int:
     """Fetch exactly the accessions in `manifest`, in its order.
 
@@ -51,7 +71,7 @@ def _from_manifest(manifest: Path, out: Path) -> int:
         return 1
     wanted: list[str] = []
     expected_hash = ""
-    for line in manifest.read_text(encoding="utf-8").splitlines():
+    for line in _manifest_lines(manifest):
         if line.startswith("# identity sha256:"):
             expected_hash = line.split(":", 1)[1].strip()
         if not line or line.startswith("#") or line.startswith("accession\t"):

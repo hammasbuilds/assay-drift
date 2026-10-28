@@ -99,6 +99,21 @@ def baseline_for(assay) -> int:
     return sum(primers.expected_reference_mismatches(o.name) for o in assay.oligos)
 
 
+def _manifest_lines(manifest: Path) -> list[str]:
+    """The manifest's lines, plain or gzipped - the same reader fetch.py uses.
+
+    The large manifest is committed gzipped (13.4 MB of text, 1.54 MB compressed),
+    because a results file published from a corpus the repository cannot rebuild is not
+    reproducible, whatever its `reproduce` field says.
+    """
+    if manifest.suffix == ".gz":
+        import gzip
+
+        with gzip.open(manifest, "rt", encoding="utf-8") as handle:
+            return handle.read().splitlines()
+    return manifest.read_text(encoding="utf-8").splitlines()
+
+
 def _source_revision() -> str | None:
     """The git revision of this checkout, or None outside one.
 
@@ -317,7 +332,7 @@ def main() -> int:
     identity = ""
     manifest_records = 0
     if manifest.is_file():
-        for line in manifest.read_text(encoding="utf-8").splitlines():
+        for line in _manifest_lines(manifest):
             if line.startswith("# identity sha256:"):
                 identity = line.split(":", 1)[1].strip()
             elif line.startswith("# records:"):
