@@ -363,6 +363,25 @@ def trend(summaries: dict[str, PeriodSummary]) -> dict:
         # lopsided to anchor a trend is still evidence that a rate that low occurred.
         "worst_period": min(reliable, key=lambda s: s.perfect_rate).period,
         "worst_rate": min(s.perfect_rate for s in reliable),
+        # And the same two restricted to the periods that meet the independence floor,
+        # because a worst-quarter figure is quoted as readily as an endpoint. CDC N1's
+        # worst failing rate over every reliable quarter is 13.2% in 2026-Q4 - a partial
+        # quarter of 68 sequences worth 1.6 independent observations - and a reader
+        # quoting it is quoting that quarter rather than the assay. Both are published so
+        # a document can say which it means.
+        "worst_period_independent": (
+            min(usable, key=lambda s: s.perfect_rate).period if len(usable) >= 2 else None
+        ),
+        "worst_rate_independent": (
+            min(s.perfect_rate for s in usable) if len(usable) >= 2 else None
+        ),
+        "worst_failing_period_independent": (
+            max(usable, key=lambda s: s.failing_rate).period if len(usable) >= 2 else None
+        ),
+        "worst_failing_rate_independent": (
+            max(s.failing_rate for s in usable) if len(usable) >= 2 else None
+        ),
+        "periods_meeting_the_independence_floor": len(usable),
         # The consequential measure, alongside the sensitive one. The gap
         # between them is the point: an assay drifts long before it breaks.
         "first_failing_rate": first.failing_rate,

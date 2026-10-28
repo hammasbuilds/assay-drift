@@ -358,3 +358,44 @@ class TestTrendEndpoints:
         assert t["worst_period"] == "2023-Q3"
         assert t["worst_rate"] == pytest.approx(0.051, abs=0.01)
         assert t["last_period"] == "2026-Q3"
+
+    def test_the_worst_figures_come_in_both_kinds(self):
+        """A worst-quarter figure is quoted as readily as an endpoint, so both are given.
+
+        CDC N1's worst failing rate over every reliable quarter is 13.2% in 2026-Q4 - a
+        partial quarter of 68 sequences worth 1.6 independent observations. A reader
+        quoting that is quoting the quarter rather than the assay, so the trend now also
+        reports the worst over the periods that meet the independence floor, and a
+        document can say which one it means.
+        """
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 9000, 200),
+            ("2023-Q3", 0.051, 469, 5, True),
+            ("2026-Q3", 0.868, 1891, 60),
+        ]))
+        assert t["worst_period"] == "2023-Q3"
+        assert t["worst_rate"] == pytest.approx(0.051, abs=0.01)
+        assert t["worst_period_independent"] == "2026-Q3", (
+            "the lowest rate among the quarters that meet the floor, which is 0.868 - "
+            "not the lopsided 2023-Q3 at 0.051, and not the best quarter either"
+        )
+        assert t["worst_rate_independent"] == pytest.approx(0.868, abs=0.01)
+        assert t["periods_meeting_the_independence_floor"] == 2
+
+    def test_the_independent_worst_is_none_when_nothing_qualifies(self):
+        """Not 0.0, which would read as "it reached zero"."""
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 100, 1),
+            ("2024-Q1", 0.4, 100, 1),
+        ]))
+        assert t["worst_rate_independent"] is None
+        assert t["worst_period_independent"] is None
+        assert t["periods_meeting_the_independence_floor"] == 0
+
+    def test_the_independent_failing_worst_is_also_reported(self):
+        t = trend(self._summaries([
+            ("2020-Q1", 1.0, 9000, 200),
+            ("2026-Q3", 0.5, 1891, 60),
+        ]))
+        assert t["worst_failing_period_independent"] in {"2020-Q1", "2026-Q3"}
+        assert t["worst_failing_rate_independent"] is not None
