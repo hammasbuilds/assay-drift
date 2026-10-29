@@ -32,3 +32,8 @@ run_fetch.bat
 .coverage.*
 htmlcov/
 coverage.xml
+
+# Biopython lives in its own virtualenv for the comparison; it is not a dependency.
+.venv-compare/
+# The expensive half of the comparison, cached on (genomes, seed, biopython version).
+docs/aligner-comparison.biopython-cache.json

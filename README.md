@@ -14,6 +14,12 @@ the end of the series - and in 2023-Q3, **94.9%** of its sequences carried a mut
 primer's 3′ end, where the polymerase extends. Where the mutation lands matters more than how much of it there is,
 and an assay can look healthy at both ends of a series and have been unusable in the middle.
 
+&#9878; **[Next to a general-purpose aligner &rarr;](https://github.com/hammasbuilds/assay-drift/blob/main/docs/COMPARISON.md)**
+The same 15 oligos and 20 genomes through Biopython's `PairwiseAligner`: 270 of 300 pairs
+agree on the binding site, and every full-length disagreement is a published primer's
+**degenerate base** read as a mismatch - which inflates drift on Charité RdRp, the assay
+with the most degenerate bases and this repository's sharpest result.
+
 ## What it does
 
 - **Downloads dated genomes from GenBank** through NCBI E-utilities, rate-limited and cached, stratified by deposit

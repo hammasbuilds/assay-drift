@@ -1,0 +1,1189 @@
+{
+ "measured": "2026-10-29",
+ "biopython_version": "1.88",
+ "seed": 20261029,
+ "genomes": 20,
+ "oligos": 15,
+ "pairs": 300,
+ "assay_drift_seconds": 37.7,
+ "biopython_seconds": 231.0,
+ "both_found_the_same_site": 270,
+ "and_agreed_on_the_mismatch_count": 233,
+ "disagreed": 67,
+ "biopython_left_oligo_bases_unaligned": 33,
+ "found_only_by_biopython": 0,
+ "biopython_errors": 0,
+ "iupac_explains": 37,
+ "disagreements": [
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "9d474bfb1c7846ddfc5e",
+   "found": true,
+   "position": 28631,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28633,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "9d474bfb1c7846ddfc5e",
+   "found": true,
+   "position": 26205,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26207,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "9d474bfb1c7846ddfc5e",
+   "found": true,
+   "position": 15379,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "9d474bfb1c7846ddfc5e",
+   "found": true,
+   "position": 15453,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "8346440b4da0ff1050b1",
+   "found": true,
+   "position": 28645,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28647,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "8346440b4da0ff1050b1",
+   "found": true,
+   "position": 15382,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "8346440b4da0ff1050b1",
+   "found": true,
+   "position": 15456,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "43cb19123eaa68b10133",
+   "found": true,
+   "position": 28631,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28633,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "43cb19123eaa68b10133",
+   "found": true,
+   "position": 26205,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26207,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "43cb19123eaa68b10133",
+   "found": true,
+   "position": 15379,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "43cb19123eaa68b10133",
+   "found": true,
+   "position": 15453,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "bb61533b62e97f340827",
+   "found": true,
+   "position": 28604,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28606,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "bb61533b62e97f340827",
+   "found": true,
+   "position": 26178,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26180,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "bb61533b62e97f340827",
+   "found": true,
+   "position": 15349,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "bb61533b62e97f340827",
+   "found": true,
+   "position": 15423,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "871631e45d0f3d979080",
+   "found": true,
+   "position": 28673,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28675,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "871631e45d0f3d979080",
+   "found": true,
+   "position": 91018,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 91020,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "871631e45d0f3d979080",
+   "found": true,
+   "position": 48170,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "871631e45d0f3d979080",
+   "found": true,
+   "position": 15495,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "53d0ef3a2f9f8729543c",
+   "found": true,
+   "position": 28673,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28675,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "53d0ef3a2f9f8729543c",
+   "found": true,
+   "position": 77501,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "53d0ef3a2f9f8729543c",
+   "found": true,
+   "position": 46596,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "35b6a0df9bb2f5098f1a",
+   "found": true,
+   "position": 28601,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28603,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "35b6a0df9bb2f5098f1a",
+   "found": true,
+   "position": 26175,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26177,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "35b6a0df9bb2f5098f1a",
+   "found": true,
+   "position": 15349,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "35b6a0df9bb2f5098f1a",
+   "found": true,
+   "position": 15423,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "d47cfdef175cc52afcce",
+   "found": true,
+   "position": 28700,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28702,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "d47cfdef175cc52afcce",
+   "found": true,
+   "position": 15427,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "d47cfdef175cc52afcce",
+   "found": true,
+   "position": 15501,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "8668c70f8836f792f017",
+   "found": true,
+   "position": 28648,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28650,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "8668c70f8836f792f017",
+   "found": true,
+   "position": 26222,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26224,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "8668c70f8836f792f017",
+   "found": true,
+   "position": 56468,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "8668c70f8836f792f017",
+   "found": true,
+   "position": 56542,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "cc05d8aa08a8761fdedc",
+   "found": true,
+   "position": 28674,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28676,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "cc05d8aa08a8761fdedc",
+   "found": true,
+   "position": 137600,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "cc05d8aa08a8761fdedc",
+   "found": true,
+   "position": 15495,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "7d4be264bd831224ffd4",
+   "found": true,
+   "position": 28651,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28653,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "7d4be264bd831224ffd4",
+   "found": true,
+   "position": 15465,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "ffc4221c91d09b05166f",
+   "found": true,
+   "position": 28665,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28667,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "ffc4221c91d09b05166f",
+   "found": true,
+   "position": 15479,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "18ea677a2e26a4a812d8",
+   "found": true,
+   "position": 28620,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28622,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "18ea677a2e26a4a812d8",
+   "found": true,
+   "position": 15365,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "18ea677a2e26a4a812d8",
+   "found": true,
+   "position": 15439,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "e44ffdc126fc35760900",
+   "found": true,
+   "position": 28703,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28705,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "e44ffdc126fc35760900",
+   "found": true,
+   "position": 15430,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "e44ffdc126fc35760900",
+   "found": true,
+   "position": 15504,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "50d51fec1f7b4db6f196",
+   "found": true,
+   "position": 28598,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28600,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "50d51fec1f7b4db6f196",
+   "found": true,
+   "position": 26172,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26174,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "50d51fec1f7b4db6f196",
+   "found": true,
+   "position": 15349,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "50d51fec1f7b4db6f196",
+   "found": true,
+   "position": 15423,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "cd5a593e050564525253",
+   "found": true,
+   "position": 28601,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28603,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "cd5a593e050564525253",
+   "found": true,
+   "position": 15415,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "2b1b3c00007b292b637a",
+   "found": true,
+   "position": 28616,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28618,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "2b1b3c00007b292b637a",
+   "found": true,
+   "position": 26190,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26192,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "2b1b3c00007b292b637a",
+   "found": true,
+   "position": 15367,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "2b1b3c00007b292b637a",
+   "found": true,
+   "position": 15441,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "7d1e26e87c103f57af54",
+   "found": true,
+   "position": 28673,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28675,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "7d1e26e87c103f57af54",
+   "found": true,
+   "position": 26247,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26249,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "7d1e26e87c103f57af54",
+   "found": true,
+   "position": 15421,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "7d1e26e87c103f57af54",
+   "found": true,
+   "position": 15495,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "fd8acf0da8c7a9ee6b47",
+   "found": true,
+   "position": 28669,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28671,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite E",
+   "oligo": "E-F",
+   "role": "forward",
+   "accession": "fd8acf0da8c7a9ee6b47",
+   "found": true,
+   "position": 26243,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [],
+   "biopython_position": 26245,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "fd8acf0da8c7a9ee6b47",
+   "found": true,
+   "position": 15417,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "fd8acf0da8c7a9ee6b47",
+   "found": true,
+   "position": 15491,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "CDC N3",
+   "oligo": "N3-P",
+   "role": "probe",
+   "accession": "c221c63a869cce70807f",
+   "found": true,
+   "position": 28695,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "Y"
+   ],
+   "biopython_position": 28697,
+   "biopython_mismatches": 0,
+   "biopython_unaligned": 2
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-F",
+   "role": "forward",
+   "accession": "c221c63a869cce70807f",
+   "found": true,
+   "position": 15425,
+   "mismatches": 0,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 1,
+   "degenerate_bases_in_oligo": [
+    "R"
+   ],
+   "biopython_mismatches": 1,
+   "biopython_unaligned": 0
+  },
+  {
+   "assay": "Charite RdRp",
+   "oligo": "RdRp-R",
+   "role": "reverse",
+   "accession": "c221c63a869cce70807f",
+   "found": true,
+   "position": 15499,
+   "mismatches": 1,
+   "ambiguous": 0,
+   "unknown": null,
+   "mismatches_plain_identity": 2,
+   "degenerate_bases_in_oligo": [
+    "R",
+    "S"
+   ],
+   "biopython_mismatches": 2,
+   "biopython_unaligned": 0
+  }
+ ],
+ "found_only_by_biopython_rows": []
+}
