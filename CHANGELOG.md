@@ -4,6 +4,32 @@ Dates are when the work landed, not when a version was tagged. Nothing is on PyP
 
 ## Unreleased
 
+### What `check` does with a FASTA that is not plain uppercase DNA
+
+- **An RNA sequence scored as a failing assay.** `check` was given the reference genome
+  with `T` written as `U` - which several pipelines emit, and which is what a coronavirus
+  genome actually is - and reported `likely_failing` against an assay the sequence matches
+  perfectly. `U` is not an IUPAC *DNA* code, so every base fell to `compare_base`'s "a gap
+  character, or junk in the record" branch and counted as a mismatch.
+- **The two sequence readers disagreed about letters outside the IUPAC set.** `ncbi.py`
+  stores them as `N` - missing data, excluded from the rates and reported - while
+  `read_fasta`, the path a user's own file takes, left them to be scored as definite
+  mismatches. Two code paths erring in opposite directions, and the user's path erring
+  towards more drift.
+- **Alignment padding (`-`, `.`) is removed rather than read as an unknown base.**
+  Stripping it restores the sequence that was aligned, byte for byte. The first version of
+  this fix turned padding into `N` and made the answer *worse*: `match.py` aligns an oligo
+  across an indel with an affine-gap aligner, so a gapped record already scored `perfect`,
+  and calling the gaps unknown bases replaced a correct verdict with "not evidence either
+  way".
+- A record that is nothing but padding is refused rather than scored.
+- Every rewrite the reader makes is counted per record and printed: how many `U` were read
+  as `T`, how many gap characters were removed, how many letters became `N`. A tool that
+  silently edits someone's sequence is worse than either behaviour.
+- `tests/test_sequence_input.py` covers all three rewrites, their counts, and the input
+  shapes that already worked (line-wrapped, lowercase, CRLF, shorter than the oligos).
+
+
 ### Two corrections to published claims
 
 - **"both stayed in clinical use" is retracted.** It was the only external fact in the

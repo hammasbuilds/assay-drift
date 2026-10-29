@@ -54,6 +54,54 @@ def read_primers(path: Path) -> Assay:
     return Assay(name=path.stem, target_gene="", source=str(path), oligos=oligos)
 
 
+# Every IUPAC nucleotide code, as `ncbi.py` has it. Named here rather than imported so
+# that the two readers can be seen to agree.
+IUPAC_CODES = frozenset("ACGTRYSWKMBDHVN")
+
+
+# Alignment padding, not sequence. MAFFT and friends write `-`; some formats use `.`.
+GAP_CHARACTERS = frozenset("-.")
+
+
+def normalise(sequence: str) -> tuple[str, int, int, int]:
+    """(sequence, U read as T, gap characters removed, other letters read as N).
+
+    Three different things happen to three different kinds of character, and conflating
+    any two of them gets an answer wrong:
+
+    **`U` is `T`.** The same base, and no DNA alphabet uses `U`, so there is nothing to
+    confuse it with. Before this, an RNA sequence of a coronavirus scored
+    `likely_failing` against an assay it matches perfectly, because `U` is not an IUPAC
+    DNA code and `compare_base` calls anything outside that set a mismatch.
+
+    **A gap character is removed.** It is padding relative to the other records in an
+    aligned file, not a base of this sequence, so dropping it restores the sequence that
+    was aligned. The first version of this function turned gaps into `N` - citing
+    `ncbi.py`, which does that to stray LETTERS - and that was worse than leaving them
+    alone: `match.py` aligns an oligo across an indel with an affine-gap aligner, so a
+    gapped record already scored `perfect`, and calling the gaps unknown bases replaced a
+    correct verdict with "not evidence either way".
+
+    **Any other letter outside the IUPAC set becomes `N`**: missing data, excluded from
+    the rates and reported, which is what `ncbi.py` does with it. This reader scored it as
+    a definite mismatch, so the two input paths erred in opposite directions, and the
+    user's path erred towards more drift.
+
+    Positions after a removed gap shift, so a coordinate read off the returned sequence
+    does not match the aligned file. `check` reports mismatch counts per oligo and no
+    coordinates; the study's coordinate work runs on GenBank records, which carry no gaps.
+    """
+    rna = sequence.count("U")
+    sequence = sequence.replace("U", "T")
+    gaps = sum(1 for c in sequence if c in GAP_CHARACTERS)
+    if gaps:
+        sequence = "".join(c for c in sequence if c not in GAP_CHARACTERS)
+    unknown = sum(1 for c in sequence if c not in IUPAC_CODES)
+    if unknown:
+        sequence = "".join(c if c in IUPAC_CODES else "N" for c in sequence)
+    return sequence, rna, gaps, unknown
+
+
 def read_fasta(path: Path) -> list[tuple[str, str]]:
     records: list[tuple[str, str]] = []
     name: str | None = None
@@ -79,6 +127,26 @@ def read_fasta(path: Path) -> list[tuple[str, str]]:
     if empty:
         raise InputError(f"{path}: empty sequence for {empty[0]}")
     return records
+
+
+def read_sequences(path: Path) -> tuple[list[tuple[str, str]], dict[str, tuple[int, int, int]]]:
+    """The records, and what had to be rewritten in each to be read as DNA.
+
+    Returned rather than printed, and keyed by record, because a sequence this tool
+    altered before scoring is something the person reading the verdict has to know.
+    """
+    records = read_fasta(path)
+    out, notes = [], {}
+    for name, sequence in records:
+        fixed, rna, gaps, unknown = normalise(sequence)
+        out.append((name, fixed))
+        if rna or gaps or unknown:
+            notes[name] = (rna, gaps, unknown)
+    if not any(s for _, s in out):
+        # Every record was padding. Reported here rather than scored, because an empty
+        # sequence is not a sequence an assay can be checked against.
+        raise InputError(f"{path}: every record is empty once gap characters are removed")
+    return out, notes
 
 
 def too_short(sequence: str, assay: Assay) -> int:
@@ -166,13 +234,24 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     try:
         assay = read_primers(args.primers)
-        sequences = read_fasta(args.sequences)
+        sequences, rewritten = read_sequences(args.sequences)
     except (InputError, UnicodeDecodeError) as exc:
         print(f"assay-drift: {exc}", file=sys.stderr)
         return 1
 
     rows = check(assay, sequences)
     names = [o.name for o in assay.oligos]
+    for index, (what, how) in enumerate((
+        ("are RNA", "U read as T"),
+        ("are aligned", "gap character(s) removed - padding, not bases"),
+        ("hold letters that are not nucleotide codes",
+         "read as N - unknown, not mismatched"),
+    )):
+        records = [n for n, counts in rewritten.items() if counts[index]]
+        if not records:
+            continue
+        total = sum(counts[index] for counts in rewritten.values())
+        print(f"{len(records)} record(s) {what}: {total:,} {how}")
     print(f"{'sequence':<24}{'verdict':<16}" + "".join(f"{n:>12}" for n in names))
     for row in rows:
         cells = []

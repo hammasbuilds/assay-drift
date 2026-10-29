@@ -26,6 +26,12 @@ and an assay can look healthy at both ends of a series and have been unusable in
   hide a site.
 - **Treats an unknown base (`N`) under an oligo as missing data**, excluded from the rates and reported, so a change
   in sequencing quality does not show up as viral drift.
+- **Reads your FASTA as it arrives**: line-wrapped, lowercase, CRLF, and **RNA** - `U` is `T`, which it has to be for
+  a virus whose genome is RNA, and until this was fixed an RNA copy of the reference scored `likely_failing` against
+  an assay it matches perfectly. Alignment padding (`-`, `.`) is removed rather than read as an unknown base, because
+  it is not a base of your sequence; any other letter becomes `N`, as the GenBank reader already did with it. Every
+  one of those rewrites is counted and printed - a tool that silently edits your sequence is worse than either
+  behaviour.
 - **Scores each sequence** as `perfect`, `drifted` (mismatched but expected to amplify), `likely_failing` (an oligo
   lost, a mismatch in a primer's last five bases, or three or more mismatches across the assay) or `unknown`. The 3′
   window counts only on primers: a hydrolysis probe is blocked at its 3′ end and never extended.
