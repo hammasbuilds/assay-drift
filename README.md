@@ -103,11 +103,11 @@ that is not there), then reprints the finding from `results/drift.json` (trimmed
   14 of 15 match perfectly.
 
   assay                            exact match        likely failing
-  CDC N1            2020-Q1  99.3%  ->  2026-Q3   0.0%       10.9%   worst 10.9% (2026-Q3)
-  CDC N2            2020-Q1  98.7%  ->  2026-Q3  87.3%        4.2%   worst 34.5% (2026-Q2)
-  CDC N3 (retired)  2020-Q1  98.7%  ->  2026-Q3  86.7%        0.5%   worst 3.4% (2021-Q1)
-  Charite E         2020-Q1  99.3%  ->  2026-Q3   0.0%        0.0%   worst 1.8% (2026-Q1)
-  Charite RdRp *    2020-Q1  99.3%  ->  2026-Q3  90.8%        9.2%   worst 44.5% (2021-Q4)
+  CDC N1            2022-Q4   0.0%  ->  2025-Q4   0.0%        7.7%   worst 10.9% (2026-Q3)
+  CDC N2            2022-Q4  97.9%  ->  2025-Q4  81.0%        3.8%   worst 34.5% (2026-Q2)
+  CDC N3 (retired)  2022-Q4  73.5%  ->  2025-Q4  93.6%        0.0%   worst 3.4% (2021-Q1)
+  Charite E         2022-Q4   0.7%  ->  2025-Q4   0.0%        0.3%   worst 1.8% (2026-Q1)
+  Charite RdRp *    2022-Q4  96.7%  ->  2025-Q4  87.2%       12.8%   worst 44.5% (2021-Q4)
 ```
 
 ## Results
@@ -192,31 +192,44 @@ the finding moved - the small corpus is stratified by deposit year, the large on
 below from `data/accessions.tsv` in a few minutes. The figures differ from the large
 corpus in the direction its own effective-n table predicts.
 
-**Exact match and likely failing, by collection quarter** (first and last quarters with at least 25 usable
-sequences):
+**Exact match and likely failing, by collection quarter.** Endpoints are the first and last quarters whose
+**Kish effective sample size reaches 10**, not merely the first and last with 25 usable sequences. That is a
+stricter rule than this table used to apply, and it moves the endpoints from 2020-Q1 → 2026-Q3 to
+**2022-Q4 → 2025-Q4**, because 2020-Q1 has an effective n of 2.4 and 2026-Q3 of 4.6. Both were endpoints of
+every row here until the rule changed:
 
-| Assay | Exact match 2020-Q1 | Exact match 2026-Q3 | Change | Likely failing, worst quarter |
-|---|---:|---:|---:|---|
-| **CDC N1** | 99.3% | **0.0%** | **−99.3** | 10.9% (2026-Q3) |
-| **Charité E** | 99.3% | **0.0%** | **−99.3** | 1.8% (2026-Q1) |
-| **Charité RdRp** | 99.3% | 90.8% | −8.6 | **44.5% (2021-Q4)** |
-| CDC N3 *(retired)* | 98.7% | 86.7% | −12.0 | 3.4% (2021-Q1) |
-| **CDC N2** | 98.7% | 87.3% | −11.4 | **34.5% (2026-Q2)** |
+| Assay | Exact match 2022-Q4 | Exact match 2025-Q4 | Change | Likely failing, worst quarter | …that also clears the floor |
+|---|---:|---:|---:|---|---|
+| **CDC N1** | **0.0%** | **0.0%** | +0.0 | 10.9% (2026-Q3) | 7.7% (2025-Q4) |
+| **Charité E** | 0.7% | **0.0%** | −0.7 | 1.8% (2026-Q1) | 0.3% (2025-Q4) |
+| **Charité RdRp** | 96.7% | 87.2% | −9.5 | **44.5% (2021-Q4)** | 12.8% (2025-Q4) |
+| CDC N3 *(retired)* | 73.5% | 93.6% | **+20.1** | 3.4% (2021-Q1) | 0.0% (2022-Q4) |
+| **CDC N2** | 97.9% | 81.0% | −16.8 | **34.5% (2026-Q2)** | 3.8% (2025-Q4) |
+
+Read the change column with the first column beside it. **CDC N1 does not fall from 99.3% to 0.0% here — it is
+already at 0.0% in the first quarter that can carry an endpoint.** Its collapse happened earlier, in quarters
+too dominated by single submitters to end a trend on. That is a weaker claim than the one this table made
+before, and it is the correct one.
+
+The last column exists because every worst quarter in the fifth column fails the same independence floor the
+endpoints must now pass: 2021-Q4 has an effective n of 5.2 and 2026-Q1 of 4.0. The worst *independent* quarter
+is a much quieter number in every row.
 
 **How independent those quarters are.** Sequences from one submission are not independent observations, so each
 quarter is grouped by (country, accession block) and given a Kish effective sample size:
 
 | quarter | sequences | submitter groups | effective n |
 |---|---:|---:|---:|
-| 2020-Q1, the baseline of every row above | 153 | 11 | **2.4** |
+| **2022-Q4, the baseline of every row above** | 421 | 42 | **19.1** |
+| **2025-Q4, the endpoint of every row above** | 327 | 23 | **11.2** |
+| 2020-Q1, the former baseline | 153 | 11 | 2.4 |
 | 2021-Q4, Charité RdRp's worst quarter | 330 | 20 | 5.2 |
 | 2024-Q1 | 159 | **4** | **1.1** |
-| 2026-Q3, the endpoint of every row above | 196 | 33 | 4.4 |
+| 2026-Q3, the former endpoint | 196 | 33 | 4.6 |
 
-The median across quarters that pass the floor is about 4. The 0.0% endpoints are large enough to survive that;
-quarter-to-quarter shape and worst-quarter figures are not, and no confidence interval is quoted. Downloads are
-stratified by deposit year, so collection quarters are uneven (2022-Q1, 2024-Q2 and 2024-Q3 hold no sequences);
-the year view below is the steadier one.
+Three quarters sit after the endpoint and are excluded from it for this reason (2026-Q1 at 4.0, 2026-Q2 at 4.7,
+2026-Q3 at 4.6). Downloads are stratified by deposit year, so collection quarters are uneven (2022-Q1, 2024-Q2
+and 2024-Q3 hold no sequences); the year view below is the steadier one.
 
 ### The same data by year
 

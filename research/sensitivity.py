@@ -48,7 +48,23 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 WINDOWS = (3, 5, 7)
 LOADS = (2, 3, 4, 5)
-SHAPES = ("all three clauses", "without the 3' clause", "oligo lost only")
+SHAPES = ("all three clauses", "clustered 3' clause", "without the 3' clause",
+          "oligo lost only")
+# `clustered 3' clause` is the only shape here with wet-lab evidence behind its
+# threshold, and it was added after @wetlab2025 was read in full rather than quoted from
+# a search summary. Otwell et al. tested, among others:
+#
+#   * a reverse-primer mismatch ~1 nt from the 3' end (BVP 501Y, Omicron) - about a
+#     1-cycle Ct shift, no false negative;
+#   * two forward-primer mismatches in the same assay - a 9 to 12 cycle shift and a
+#     genuine false negative;
+#   * three mismatches within the last four 3' nucleotides (C3 ORF3a) - failure below
+#     5,000 copies, Ct shifts above 15.
+#
+# A single 3'-proximal mismatch is therefore tolerated and a cluster is not, which is
+# precisely what the published clause - `three_prime_mismatches > 0` - cannot express.
+# This shape requires two.
+CLUSTERED_MINIMUM = 2
 
 
 def wilson(successes: int, n: int, z: float = 1.96) -> dict | None:
@@ -119,6 +135,8 @@ def score(rows: list[tuple[bool, int, int, bool]], load: int, shape: str) -> dic
             pass
         elif shape == "without the 3' clause":
             failing += total >= load
+        elif shape == "clustered 3' clause":
+            failing += three_prime >= CLUSTERED_MINIMUM or total >= load
         else:
             failing += three_prime > 0 or total >= load
     return wilson(failing, usable_n)

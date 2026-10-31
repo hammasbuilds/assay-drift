@@ -191,6 +191,11 @@ def main() -> int:
         help="the manifest identifying this corpus (default: derived from --data, so "
         "sequences_big.jsonl pairs with accessions_big.tsv)",
     )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="allow a smaller corpus to overwrite the published results/drift.json",
+    )
     ap.add_argument("--granularity", default="quarter", choices=["quarter", "year", "month"])
     ap.add_argument(
         "--mutations-json",
@@ -253,15 +258,17 @@ def main() -> int:
         print(label)
         print(
             f"  {'period':<9}{'n':>6}{'usable':>8}{'eff n':>7}{'perfect':>9}"
-            f"{'failing':>9}{'excl%':>8}{'3prime':>8}{'lost':>6}"
+            f"{'failing':>9}{'clust':>8}{'excl%':>8}{'3prime':>8}{'lost':>6}"
         )
         for summary in summaries.values():
             pr, fr = summary.perfect_rate, summary.failing_rate
+            cr = summary.failing_clustered_rate
             print(
                 f"  {summary.period:<9}{summary.total:>6}{summary.usable:>8}"
                 f"{('    n/a' if summary.effective_n is None else f'{summary.effective_n:>7.1f}')}"
                 f"{('      n/a' if pr is None else f'{pr:>8.1%}')}"
                 f"{('      n/a' if fr is None else f'{fr:>8.1%}')}"
+                f"{('     n/a' if cr is None else f'{cr:>7.1%}')}"
                 f"{summary.excluded_rate:>8.1%}{summary.three_prime:>8}"
                 f"{summary.lost_oligo:>6}" + ("" if summary.reliable else "   (too few)")
             )
@@ -313,6 +320,8 @@ def main() -> int:
                     "failing": s.failing,
                     "perfect_rate": s.perfect_rate,
                     "failing_rate": s.failing_rate,
+                    "failing_clustered": s.failing_clustered,
+                    "failing_clustered_rate": s.failing_clustered_rate,
                     "excluded_rate": s.excluded_rate,
                     "three_prime": s.three_prime,
                     "lost_oligo": s.lost_oligo,
@@ -367,6 +376,32 @@ def main() -> int:
             "1, so read effective_n before any rate."
         ),
     }
+
+    # The published `results/drift.json` is the 291,827-genome run, and the README and
+    # the paper are generated from it. A quick pass over the 2,765-genome sample writes
+    # the same default path and silently replaces it - which is exactly what happened
+    # once in this repository, and was caught only because a test compared the README
+    # against the file. So a smaller corpus has to say so explicitly.
+    published = ROOT / "results" / "drift.json"
+    if (args.json.resolve() == published.resolve() and published.exists()
+            and not args.force):
+        existing = json.loads(published.read_text(encoding="utf-8"))
+        was = (existing.get("_run") or {}).get("sequences_read") or 0
+        now = (payload.get("_run") or {}).get("sequences_read") or 0
+        if not was or not now:
+            raise SystemExit(
+                f"cannot compare corpus sizes: _run.sequences_read is "
+                f"{was!r} in {published.name} and {now!r} in this run. The guard that "
+                f"stops a small run replacing the published one cannot do its job, so "
+                f"this refuses rather than overwriting. Use --json or --force."
+            )
+        if now < was:
+            raise SystemExit(
+                f"refusing to overwrite {published} - it holds a {was:,}-sequence run "
+                f"and this one is {now:,}. The README and paper are generated from "
+                f"that file. Use --json to write elsewhere, or --force if you really "
+                f"mean to replace the published results with a smaller corpus."
+            )
 
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(payload, indent=1), encoding="utf-8")

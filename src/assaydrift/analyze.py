@@ -68,6 +68,26 @@ MIN_ENDPOINT_EFFECTIVE_N = 10.0
 # with rather than buried.
 SEVERE_MISMATCH_LOAD = 3
 
+# How many mismatches must sit inside a primer's 3' window before the *clustered* rule
+# calls the assay failing. Two, and unlike the thresholds above this one has direct
+# wet-lab evidence behind it.
+#
+# Lefever et al. 2013 (Clin Chem 59(10):1470-1480) conclude that single mismatches
+# located **more than** 5 bp from the 3' end can be tolerated - a statement about
+# mismatches outside the window, which `likely_failing` inverts into a failure
+# prediction for single mismatches inside it. Otwell et al. 2025
+# (10.3389/fcimb.2025.1524025) tested the inside case directly: a single reverse-primer
+# mismatch about one nucleotide from the 3' end cost roughly one cycle of Ct and caused
+# no false negative, while **two** forward-primer mismatches in the same assay shifted
+# Ct by 9-12 cycles and did, and three within the last four nucleotides failed below
+# 5,000 copies.
+#
+# So a single 3'-proximal mismatch is tolerated and a cluster is not. `likely_failing`
+# cannot express that distinction; `clustered_failing` can, and both are reported so the
+# difference between a published rate and a defensible one is visible rather than
+# chosen by the author.
+CLUSTERED_THREE_PRIME = 2
+
 
 def submitter_block(accession: str, country: str) -> str:
     """Group records that plausibly arrived in one submission.
@@ -192,6 +212,23 @@ class AssayResult:
             return True
         return self.total_mismatches - baseline >= SEVERE_MISMATCH_LOAD
 
+    def clustered_failing(self, baseline: int = 0) -> bool:
+        """`likely_failing` with the one clause the wet-lab literature supports.
+
+        Identical except that the 3' clause requires `CLUSTERED_THREE_PRIME` mismatches
+        in the window rather than one, because a single 3'-proximal mismatch was
+        measured in vitro at about one cycle of Ct and no false negative, while two
+        caused a genuine one. See `CLUSTERED_THREE_PRIME` for the sources.
+
+        This is the conservative reading of the same alignment, not a different
+        measurement, and it exists so the two can be printed side by side.
+        """
+        if self.any_oligo_lost:
+            return True
+        if self.three_prime_mismatches >= CLUSTERED_THREE_PRIME:
+            return True
+        return self.total_mismatches - baseline >= SEVERE_MISMATCH_LOAD
+
 
 def evaluate(record: Record, assay: Assay, granularity: str = "quarter") -> AssayResult | None:
     """Run one assay against one sequence. None when the record has no date."""
@@ -216,6 +253,7 @@ class PeriodSummary:
     usable: int = 0  # ... and with no N under any oligo
     perfect: int = 0  # ... and matching every oligo exactly
     failing: int = 0  # ... and plausibly no longer amplifying
+    failing_clustered: int = 0  # ... under the clustered 3' rule (see CLUSTERED_THREE_PRIME)
     lost_oligo: int = 0  # an oligo with no binding site at all
     three_prime: int = 0  # a mismatch in the last 5 bases of a PRIMER
     mismatch_counts: list[int] = field(default_factory=list)
@@ -250,6 +288,18 @@ class PeriodSummary:
         before it stops working.
         """
         return self.failing / self.usable if self.usable else None
+
+    @property
+    def failing_clustered_rate(self) -> float | None:
+        """`failing_rate` under the clustered 3' rule - the defensible floor above `lost`.
+
+        Printed beside `failing_rate` rather than replacing it, because the distance
+        between the two is the size of the claim the uncalibrated clause is making. On
+        the 2,765-genome corpus that distance is the whole of Charite RdRp's rate:
+        0.1116 against 0.0004, because every 3'-proximal hit in the corpus is a single
+        mismatch and none is a pair.
+        """
+        return self.failing_clustered / self.usable if self.usable else None
 
     @property
     def excluded_rate(self) -> float | None:
@@ -313,6 +363,8 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
             summary.perfect += 1
         if result.likely_failing(baseline):
             summary.failing += 1
+        if result.clustered_failing(baseline):
+            summary.failing_clustered += 1
     return dict(sorted(out.items()))
 
 
