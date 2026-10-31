@@ -114,6 +114,48 @@ def _manifest_lines(manifest: Path) -> list[str]:
     return manifest.read_text(encoding="utf-8").splitlines()
 
 
+# The files whose code decides the numbers in the output. Named here so the digest below
+# and the staleness test in tests/ read one list.
+ANALYSIS_SOURCES = (
+    "src/assaydrift/analyze.py",
+    "src/assaydrift/match.py",
+    "scripts/analyse.py",
+)
+
+
+def source_digest(root: Path | None = None) -> str | None:
+    """A digest of the analysis code's *syntax tree*, not of its bytes.
+
+    `source_revision` records the commit, which is what the staleness test compared
+    against - and that comparison fails on a change that cannot alter a single number.
+    Running the repository's own formatter over the tree moved the mtime and the commit
+    date of all three files and would have demanded another three-hour run to republish
+    identical results.
+
+    `ast.dump` drops comments, blank lines and every formatting choice while keeping
+    every expression, so reformatting leaves this digest unchanged and editing a
+    threshold does not. Docstrings are kept: they carry the thresholds' justifications
+    and a changed one is worth noticing.
+
+    None when a source cannot be read or parsed, which the test treats as "cannot say"
+    rather than as agreement.
+    """
+    import ast
+    import hashlib
+
+    root = root or ROOT
+    out = hashlib.sha256()
+    for name in ANALYSIS_SOURCES:
+        try:
+            text = (root / name).read_text(encoding="utf-8")
+            tree = ast.parse(text)
+        except (OSError, SyntaxError):
+            return None
+        out.update(name.encode("utf-8"))
+        out.update(ast.dump(tree, include_attributes=False).encode("utf-8"))
+    return out.hexdigest()
+
+
 def _source_revision() -> str | None:
     """The git revision of this checkout, or None outside one.
 
@@ -130,14 +172,18 @@ def _source_revision() -> str | None:
 
         out = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         rev = out.stdout.strip()
         if out.returncode or not rev:
             return None
         dirty = subprocess.run(
             ["git", "-C", str(ROOT), "status", "--porcelain"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return f"{rev}-dirty" if dirty.stdout.strip() else rev
     except Exception:  # noqa: BLE001 - absence is a normal case here
@@ -258,7 +304,8 @@ def main() -> int:
         print(label)
         print(
             f"  {'period':<9}{'n':>6}{'usable':>8}{'eff n':>7}{'perfect':>9}"
-            f"{'failing':>9}{'clust':>8}{'excl%':>8}{'3prime':>8}{'lost':>6}"
+            f"{'failing':>9}{'clust':>8}{'excl%':>8}{'3prime':>8}{'pair':>6}"
+            f"{'lost':>6}{'frag':>6}"
         )
         for summary in summaries.values():
             pr, fr = summary.perfect_rate, summary.failing_rate
@@ -270,7 +317,14 @@ def main() -> int:
                 f"{('      n/a' if fr is None else f'{fr:>8.1%}')}"
                 f"{('     n/a' if cr is None else f'{cr:>7.1%}')}"
                 f"{summary.excluded_rate:>8.1%}{summary.three_prime:>8}"
-                f"{summary.lost_oligo:>6}" + ("" if summary.reliable else "   (too few)")
+                f"{summary.three_prime_pair:>6}"
+                # `lost` and `frag` beside each other on purpose: one record of 291,827
+                # produced five "assay has no binding site" readings, and it was a
+                # 2,859-base partial deposit. Printing the fragment count next to the
+                # lost count is what makes that visible in the report rather than only
+                # in the JSON.
+                f"{summary.lost_oligo:>6}{summary.region_absent:>6}"
+                + ("" if summary.reliable else "   (too few)")
             )
         if movement["enough_to_say"]:
             print(
@@ -324,7 +378,10 @@ def main() -> int:
                     "failing_clustered_rate": s.failing_clustered_rate,
                     "excluded_rate": s.excluded_rate,
                     "three_prime": s.three_prime,
+                    "three_prime_pair": s.three_prime_pair,
+                    "severe_load": s.severe_load,
                     "lost_oligo": s.lost_oligo,
+                    "region_absent": s.region_absent,
                     "median_mismatches": s.median_mismatches,
                     "reliable": s.reliable,
                 }
@@ -362,6 +419,8 @@ def main() -> int:
         "corpus_identity_sha256": identity or None,
         "tool_version": _tool_version(),
         "source_revision": _source_revision(),
+        # What the staleness guard compares. See `source_digest`.
+        "analysis_source_digest": source_digest(),
         # Built from this run's arguments. It was a constant, so a file produced from the
         # 291,827-sequence corpus carried the command that rebuilds the 2,765-sequence one
         # - the same defect as `manifest` naming data/accessions.tsv whatever was read,
@@ -383,8 +442,7 @@ def main() -> int:
     # once in this repository, and was caught only because a test compared the README
     # against the file. So a smaller corpus has to say so explicitly.
     published = ROOT / "results" / "drift.json"
-    if (args.json.resolve() == published.resolve() and published.exists()
-            and not args.force):
+    if args.json.resolve() == published.resolve() and published.exists() and not args.force:
         existing = json.loads(published.read_text(encoding="utf-8"))
         was = (existing.get("_run") or {}).get("sequences_read") or 0
         now = (payload.get("_run") or {}).get("sequences_read") or 0

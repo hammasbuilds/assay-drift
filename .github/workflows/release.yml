@@ -49,8 +49,10 @@ jobs:
       # The same versions CI gets from the dev group in pyproject.toml. An unpinned
       # ruff here meant a release could fail (or pass) on lint rules CI never ran.
       - run: pip install "pytest>=8" "ruff>=0.16,<0.17"
-      - run: ruff check src tests scripts demo.py
-      - run: ruff format --check src tests scripts demo.py
+      # research/ draws the paper's figures, so it is linted too: an unlinted
+      # directory is where the next shadowed name goes to live.
+      - run: ruff check src tests scripts research demo.py
+      - run: ruff format --check src tests scripts research demo.py
       - run: pip install -e .
       - run: pytest -q
 

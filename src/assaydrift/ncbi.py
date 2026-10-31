@@ -16,8 +16,8 @@ defaulted to today.
 from __future__ import annotations
 
 import gzip
-import http.client
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -186,8 +186,13 @@ def _get(url: str, max_age: float = 30 * 86400) -> str:
             with gzip.open(slot, "wt", encoding="utf-8") as handle:
                 handle.write(text)
             return text
-        except (urllib.error.URLError, TimeoutError, OSError,
-                http.client.IncompleteRead, http.client.HTTPException) as exc:
+        except (
+            urllib.error.URLError,
+            TimeoutError,
+            OSError,
+            http.client.IncompleteRead,
+            http.client.HTTPException,
+        ) as exc:
             last = exc
             _last_call = time.time()
             time.sleep(2.0 * (attempt + 1))
@@ -245,6 +250,8 @@ def _collapse(text: str) -> str:
     exists precisely so the corpus can be rebuilt exactly.
     """
     return " ".join(text.split())
+
+
 _ACCESSION = re.compile(r"^ACCESSION\s+(\S+)", re.M)
 _ORIGIN = re.compile(r"\nORIGIN\s*\n(.*?)\n//", re.S)
 

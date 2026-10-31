@@ -88,6 +88,28 @@ SEVERE_MISMATCH_LOAD = 3
 # chosen by the author.
 CLUSTERED_THREE_PRIME = 2
 
+# Shortest sequence that is treated as a whole genome rather than a fragment.
+#
+# SARS-CoV-2 is about 29,900 bases. GenBank also carries partial records - LR877184,
+# for instance, is 2,859 bases collected 2020-04-26 in Stockholm - and a fragment that
+# does not happen to span an assay's target region has no binding site for any of its
+# oligos. `find_oligo` returns NOT_FOUND for all three, `any_oligo_lost` becomes True,
+# and the record is reported as an assay with no binding site: clause 1 of
+# `likely_failing`, the one clause a bench would not dispute. That is the strongest
+# claim the tool can make, produced by a short record rather than by drift.
+#
+# cli.py already refused to score records shorter than an oligo for exactly this
+# reason. That guard was never applied on the corpus path and would not have caught
+# this one anyway, because 2,859 bases is longer than any 24-mer; the fact that
+# matters is not oligo length but whether the record can contain the target region.
+#
+# 25,000 rather than something nearer 29,900 deliberately: a genome with large
+# deletions is still a genome, and `region_absent` is only allowed to excuse a record
+# that is also too short to be one. A full-length record that has genuinely lost an
+# entire target region still counts as a lost oligo, which is the finding this rule
+# must not be able to hide.
+MIN_WHOLE_GENOME = 25_000
+
 
 def submitter_block(accession: str, country: str) -> str:
     """Group records that plausibly arrived in one submission.
@@ -152,6 +174,15 @@ class AssayResult:
     groups a period's rate rests on - see PeriodSummary.effective_n.
     """
 
+    sequence_length: int = 0
+    """Length of the record this result came from, in bases.
+
+    Carried on the result rather than looked up again, because `region_absent` needs it
+    and the sequence itself is not kept - a 291,827-genome run holds the summaries, not
+    8.7 GB of sequence. Zero means "not recorded", which `region_absent` treats as
+    unknown rather than as a fragment.
+    """
+
     @property
     def usable(self) -> bool:
         """Every oligo located, with no unknown bases under any of them."""
@@ -177,6 +208,22 @@ class AssayResult:
     def any_oligo_lost(self) -> bool:
         """An oligo that cannot be found at all - the assay has no binding site."""
         return any(not h.found for h in self.hits.values())
+
+    @property
+    def region_absent(self) -> bool:
+        """The record does not cover this assay's target region at all.
+
+        Every oligo missing from a record too short to be a whole genome is a record
+        that does not reach the region, not three binding sites that were lost. One
+        oligo missing while the others align is a real and interpretable loss and is
+        deliberately not covered here - see `MIN_WHOLE_GENOME` for why the length
+        condition is part of the test rather than the whole of it.
+        """
+        if not self.hits:
+            return False
+        if any(h.found for h in self.hits.values()):
+            return False
+        return 0 < self.sequence_length < MIN_WHOLE_GENOME
 
     def perfect(self, baseline: int = 0) -> bool:
         """Every oligo matches exactly.
@@ -240,6 +287,7 @@ def evaluate(record: Record, assay: Assay, granularity: str = "quarter") -> Assa
         assay=assay.name,
         period=period,
         submitter=submitter_block(record.accession, getattr(record, "country", "")),
+        sequence_length=record.length or len(record.sequence),
     )
     for oligo in assay.oligos:
         result.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence, oligo.role)
@@ -255,7 +303,19 @@ class PeriodSummary:
     failing: int = 0  # ... and plausibly no longer amplifying
     failing_clustered: int = 0  # ... under the clustered 3' rule (see CLUSTERED_THREE_PRIME)
     lost_oligo: int = 0  # an oligo with no binding site at all
+    region_absent: int = 0  # a fragment that does not reach this assay's target region
     three_prime: int = 0  # a mismatch in the last 5 bases of a PRIMER
+    three_prime_pair: int = 0  # ... and CLUSTERED_THREE_PRIME or more of them under one assay
+    severe_load: int = 0  # SEVERE_MISMATCH_LOAD or more mismatches in total
+    """The two clauses `clustered_failing` can fire on besides a lost oligo.
+
+    Recorded separately because the clustered count alone cannot say which clause
+    carried it, and the paper's claim is specifically about 3' pairs. On the
+    2,765-genome corpus `three_prime_pair` is zero everywhere; on the 291,827-genome
+    corpus it is not, and a bound inferred from `three_prime` and `failing_clustered`
+    would have been an inequality where an exact count was available for one more
+    comparison per sequence.
+    """
     mismatch_counts: list[int] = field(default_factory=list)
     submitters: dict[str, int] = field(default_factory=dict)
     """Usable records per submitter group, for effective_n.
@@ -348,6 +408,12 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
         summary = out[result.period]
         summary.period = result.period
         summary.total += 1
+        if result.region_absent:
+            # Counted and then dropped. Left in `total` so the excluded share still adds
+            # up, and kept out of `lost_oligo` so clause 1 of `likely_failing` reports
+            # binding sites that were lost rather than records that never carried one.
+            summary.region_absent += 1
+            continue
         if result.any_oligo_lost:
             summary.lost_oligo += 1
         if not result.usable:
@@ -359,6 +425,10 @@ def summarise(results: list[AssayResult], baseline: int = 0) -> dict[str, Period
         summary.mismatch_counts.append(result.total_mismatches)
         if result.three_prime_mismatches > 0:
             summary.three_prime += 1
+        if result.three_prime_mismatches >= CLUSTERED_THREE_PRIME:
+            summary.three_prime_pair += 1
+        if result.total_mismatches - baseline >= SEVERE_MISMATCH_LOAD:
+            summary.severe_load += 1
         if result.perfect(baseline):
             summary.perfect += 1
         if result.likely_failing(baseline):
@@ -390,9 +460,13 @@ def trend(summaries: dict[str, PeriodSummary]) -> dict:
     endpoints = usable if len(usable) >= 2 else reliable
     first, last = endpoints[0], endpoints[-1]
     skipped = [
-        {"period": s.period, "usable": s.usable, "effective_n": round(s.effective_n or 0, 2),
-         "perfect_rate": s.perfect_rate}
-        for s in reliable[reliable.index(last) + 1:]
+        {
+            "period": s.period,
+            "usable": s.usable,
+            "effective_n": round(s.effective_n or 0, 2),
+            "perfect_rate": s.perfect_rate,
+        }
+        for s in reliable[reliable.index(last) + 1 :]
     ]
     return {
         "periods": len(reliable),

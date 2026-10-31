@@ -155,8 +155,7 @@ def _check_assay_table(text: str, drift_path: Path, least: int) -> int:
             claimed = float(cells[index].replace("*", "").replace("%", ""))
             actual = trend[field] * 100
             assert abs(actual - claimed) < 0.05, (
-                f"{label} {field} in {drift_path.name}: README {claimed}%, "
-                f"results {actual:.1f}%"
+                f"{label} {field} in {drift_path.name}: README {claimed}%, results {actual:.1f}%"
             )
             checked += 1
     assert checked >= least, f"only {checked} table cells checked in {drift_path.name}"
@@ -392,8 +391,11 @@ def test_the_headline_paragraph_is_the_large_corpus() -> None:
     # where a mutation lands.
     rdrp = drift["Charite RdRp"]
     worst = max(
-        (p for p in rdrp["periods"].values()
-         if p.get("reliable") and (p.get("effective_n") or 0) >= 10),
+        (
+            p
+            for p in rdrp["periods"].values()
+            if p.get("reliable") and (p.get("effective_n") or 0) >= 10
+        ),
         key=lambda p: p["failing_rate"],
     )
     assert f"**{worst['failing_rate'] * 100:.1f}%**" in head, (

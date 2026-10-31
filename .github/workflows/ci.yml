@@ -22,8 +22,10 @@ jobs:
       # Pinned: an unpinned ruff turns CI red on untouched code the day the
       # formatter changes its mind. The sibling packages all pin it.
       - run: pip install "pytest>=8" "ruff>=0.16,<0.17"
-      - run: ruff check src tests scripts demo.py
-      - run: ruff format --check src tests scripts demo.py
+      # research/ draws the paper's figures, so it is linted too: an unlinted
+      # directory is where the next shadowed name goes to live.
+      - run: ruff check src tests scripts research demo.py
+      - run: ruff format --check src tests scripts research demo.py
       # The suite never touches NCBI: the reference genome is vendored at
       # tests/data. A test that needs a public API to be up is a test that
       # fails on someone else's outage.

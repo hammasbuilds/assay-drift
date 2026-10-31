@@ -48,8 +48,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 WINDOWS = (3, 5, 7)
 LOADS = (2, 3, 4, 5)
-SHAPES = ("all three clauses", "clustered 3' clause", "without the 3' clause",
-          "oligo lost only")
+SHAPES = ("all three clauses", "clustered 3' clause", "without the 3' clause", "oligo lost only")
 # `clustered 3' clause` is the only shape here with wet-lab evidence behind its
 # threshold, and it was added after @wetlab2025 was read in full rather than quoted from
 # a search summary. Otwell et al. tested, among others:
@@ -74,8 +73,13 @@ def wilson(successes: int, n: int, z: float = 1.96) -> dict | None:
     d = 1 + z * z / n
     centre = (p + z * z / (2 * n)) / d
     half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
-    return {"rate": round(p, 4), "lo": round(max(0.0, centre - half), 4),
-            "hi": round(min(1.0, centre + half), 4), "n": n, "failing": successes}
+    return {
+        "rate": round(p, 4),
+        "lo": round(max(0.0, centre - half), 4),
+        "hi": round(min(1.0, centre + half), 4),
+        "n": n,
+        "failing": successes,
+    }
 
 
 def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bool]]]:
@@ -89,10 +93,11 @@ def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bo
     import assaydrift.match as match
 
     match.THREE_PRIME_WINDOW = window  # before the first alignment
+    from analyse import load  # noqa: PLC0415
+
     from assaydrift.analyze import AssayResult  # noqa: PLC0415
     from assaydrift.match import find_oligo  # noqa: PLC0415
     from assaydrift.primers import ASSAYS  # noqa: PLC0415
-    from analyse import load  # noqa: PLC0415
 
     out: dict[str, list] = {assay.name: [] for assay in ASSAYS}
     seen = 0
@@ -102,15 +107,28 @@ def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bo
             continue
         seen += 1
         for assay in ASSAYS:
-            result = AssayResult(accession=record.accession, assay=assay.name, period="")
+            result = AssayResult(
+                accession=record.accession,
+                assay=assay.name,
+                period="",
+                sequence_length=record.length or len(sequence),
+            )
             for oligo in assay.oligos:
                 result.hits[oligo.name] = find_oligo(sequence, oligo.sequence, oligo.role)
-            out[assay.name].append((
-                result.any_oligo_lost,
-                result.three_prime_mismatches,
-                result.total_mismatches,
-                result.usable,
-            ))
+            if result.region_absent:
+                # A fragment that does not reach the target region would be counted as
+                # `lost` below and so would land in every shape including "oligo lost
+                # only" - the floor the whole comparison rests on. Excluded by the same
+                # predicate the published analysis uses, imported rather than restated.
+                continue
+            out[assay.name].append(
+                (
+                    result.any_oligo_lost,
+                    result.three_prime_mismatches,
+                    result.total_mismatches,
+                    result.usable,
+                )
+            )
         if seen % 500 == 0:
             print(f"    window {window}: {seen:,} sequences", flush=True)
     print(f"    window {window}: {seen:,} sequences aligned", flush=True)
@@ -145,14 +163,15 @@ def score(rows: list[tuple[bool, int, int, bool]], load: int, shape: str) -> dic
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", type=Path, default=ROOT / "data" / "sequences.jsonl")
-    ap.add_argument("--out", type=Path,
-                    default=ROOT / "research" / "results" / "sensitivity.json")
+    ap.add_argument("--out", type=Path, default=ROOT / "research" / "results" / "sensitivity.json")
     args = ap.parse_args()
     if not args.data.exists():
         raise SystemExit(f"no sequence store at {args.data}")
 
-    print(f"sensitivity grid over {args.data.name}: "
-          f"{len(WINDOWS)} window(s) x {len(LOADS)} load(s) x {len(SHAPES)} shape(s)\n")
+    print(
+        f"sensitivity grid over {args.data.name}: "
+        f"{len(WINDOWS)} window(s) x {len(LOADS)} load(s) x {len(SHAPES)} shape(s)\n"
+    )
     grid: dict = {}
     for window in WINDOWS:
         per_assay = features(args.data, window)
@@ -172,32 +191,39 @@ def main() -> int:
     print(f"  {'assay':16}{'published':>12}{'lost only':>12}{'the claim':>12}")
     for assay in sorted(published):
         p, f = published[assay], floor[assay]
-        print(f"  {assay:16}{p['rate']:>12.4f}{f['rate']:>12.4f}"
-              f"{p['rate'] - f['rate']:>+12.4f}")
+        print(f"  {assay:16}{p['rate']:>12.4f}{f['rate']:>12.4f}{p['rate'] - f['rate']:>+12.4f}")
 
     print("\nrange across the whole grid, per assay:")
     for assay in sorted(published):
         rates = [v["rate"] for k, v in grid.items() if k.startswith(assay + "|") and v]
-        print(f"  {assay:16} {min(rates):.4f} to {max(rates):.4f} "
-              f"(spread {max(rates) - min(rates):.4f})")
+        print(
+            f"  {assay:16} {min(rates):.4f} to {max(rates):.4f} "
+            f"(spread {max(rates) - min(rates):.4f})"
+        )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps({
-        "corpus": args.data.name,
-        "windows": list(WINDOWS),
-        "loads": list(LOADS),
-        "shapes": list(SHAPES),
-        "published_rule": {"window": 5, "load": 3, "shape": "all three clauses"},
-        "challenge": (
-            "Frontiers Cell Infect Microbiol 2025, 10.3389/fcimb.2025.1524025: assays "
-            "tested in vitro mostly kept working despite primer and probe mismatches, so "
-            "in-silico predictions of false negatives may overstate the risk. "
-            "`likely_failing` is such a prediction; this grid measures how much of it is "
-            "the rule."
+    args.out.write_text(
+        json.dumps(
+            {
+                "corpus": args.data.name,
+                "windows": list(WINDOWS),
+                "loads": list(LOADS),
+                "shapes": list(SHAPES),
+                "published_rule": {"window": 5, "load": 3, "shape": "all three clauses"},
+                "challenge": (
+                    "Frontiers Cell Infect Microbiol 2025, 10.3389/fcimb.2025.1524025: assays "
+                    "tested in vitro mostly kept working despite primer and probe mismatches, so "
+                    "in-silico predictions of false negatives may overstate the risk. "
+                    "`likely_failing` is such a prediction; this grid measures how much of it is "
+                    "the rule."
+                ),
+                "conservative_floor": "oligo lost only - the clause a bench would not dispute",
+                "grid": grid,
+            },
+            indent=1,
         ),
-        "conservative_floor": "oligo lost only - the clause a bench would not dispute",
-        "grid": grid,
-    }, indent=1), encoding="utf-8")
+        encoding="utf-8",
+    )
     print(f"\nwritten to {args.out.name}")
     return 0
 

@@ -2,6 +2,14 @@
 
     .venv-research/Scripts/python research/run_all.py
 
+`.venv-research` is not in the repository (every `.venv*` is ignored) and holds only
+matplotlib, so a fresh clone has to create it before this command can run. A sibling
+repository had lost its copy without anything failing, because the committed figures still
+looked fine:
+
+    uv venv .venv-research --python 3.12
+    uv pip install --python .venv-research/Scripts/python matplotlib==3.11.2
+
 Reads `research/results/sensitivity.json`, written by `research/sensitivity.py`, and the
 shipped 2,765-genome corpus for the 3'-mismatch distribution. Nothing here re-runs the
 291,827-genome analysis.
@@ -45,17 +53,14 @@ def three_prime_counts() -> dict[str, dict[int, int]]:
     from assaydrift.match import find_oligo  # noqa: PLC0415
     from assaydrift.primers import ASSAYS  # noqa: PLC0415
 
-    out: dict[str, collections.Counter] = {a.name: collections.Counter()
-                                           for a in ASSAYS}
+    out: dict[str, collections.Counter] = {a.name: collections.Counter() for a in ASSAYS}
     for record in load(CORPUS):
         if not record.sequence:
             continue
         for assay in ASSAYS:
-            result = AssayResult(accession=record.accession, assay=assay.name,
-                                 period="")
+            result = AssayResult(accession=record.accession, assay=assay.name, period="")
             for oligo in assay.oligos:
-                result.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence,
-                                                     oligo.role)
+                result.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence, oligo.role)
             if result.usable or result.any_oligo_lost:
                 out[assay.name][result.three_prime_mismatches] += 1
     return {k: dict(v) for k, v in out.items()}
@@ -63,9 +68,7 @@ def three_prime_counts() -> dict[str, dict[int, int]]:
 
 def main() -> int:
     if not SENSITIVITY.exists():
-        raise SystemExit(
-            f"no {SENSITIVITY}: run research/sensitivity.py first"
-        )
+        raise SystemExit(f"no {SENSITIVITY}: run research/sensitivity.py first")
     payload = json.loads(SENSITIVITY.read_text(encoding="utf-8"))
     grid = payload.get("grid", payload)
 
@@ -76,7 +79,7 @@ def main() -> int:
     )
 
     captions = {}
-    for name, (pdf, png, caption) in {
+    for name, (_pdf, png, caption) in {
         "fig1_clause_decomposition": figures.clause_decomposition(grid),
         "fig2_sensitivity_heatmap": figures.sensitivity_heatmap(grid),
     }.items():

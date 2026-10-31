@@ -172,7 +172,7 @@ class TestTheReferenceGenomeItself:
         """Two constants that can disagree, and one is used in error messages."""
         from assaydrift import reference
 
-        assert reference.LENGTH == len(reference.genome())
+        assert len(reference.genome()) == reference.LENGTH
 
     def test_the_length_is_the_published_one(self) -> None:
         """29,903 bases, Wuhan-Hu-1. A truncated copy would silently move every offset."""

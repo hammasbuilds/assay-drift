@@ -166,6 +166,13 @@ def verdict(result: AssayResult, sequence: str = "", assay: Assay | None = None)
     # reported as an assay that would no longer amplify, with three oligos "lost".
     if assay is not None and sequence and too_short(sequence, assay):
         return "unknown"
+    # The same fact one size up. `too_short` only knows that a record is shorter than an
+    # oligo; a 2,859-base fragment of a 29,900-base genome is longer than every 24-mer
+    # and still has no binding site for any of them, and was reported here as an assay
+    # that would no longer amplify. `region_absent` is the predicate the corpus path
+    # uses, imported rather than restated so the two cannot drift apart.
+    if result.region_absent:
+        return "unknown"
     if not result.usable and not result.any_oligo_lost:
         return "unknown"
     if result.likely_failing():
@@ -176,7 +183,9 @@ def verdict(result: AssayResult, sequence: str = "", assay: Assay | None = None)
 def check(assay: Assay, sequences: list[tuple[str, str]]) -> list[dict]:
     rows = []
     for name, sequence in sequences:
-        result = AssayResult(accession=name, assay=assay.name, period="")
+        result = AssayResult(
+            accession=name, assay=assay.name, period="", sequence_length=len(sequence)
+        )
         for oligo in assay.oligos:
             result.hits[oligo.name] = find_oligo(sequence, oligo.sequence, oligo.role)
         rows.append(
@@ -241,12 +250,13 @@ def main(argv: list[str] | None = None) -> int:
 
     rows = check(assay, sequences)
     names = [o.name for o in assay.oligos]
-    for index, (what, how) in enumerate((
-        ("are RNA", "U read as T"),
-        ("are aligned", "gap character(s) removed - padding, not bases"),
-        ("hold letters that are not nucleotide codes",
-         "read as N - unknown, not mismatched"),
-    )):
+    for index, (what, how) in enumerate(
+        (
+            ("are RNA", "U read as T"),
+            ("are aligned", "gap character(s) removed - padding, not bases"),
+            ("hold letters that are not nucleotide codes", "read as N - unknown, not mismatched"),
+        )
+    ):
         records = [n for n, counts in rewritten.items() if counts[index]]
         if not records:
             continue

@@ -14,6 +14,26 @@ the end of the series - and in 2023-Q3, **94.9%** of its sequences carried a mut
 primer's 3′ end, where the polymerase extends. Where the mutation lands matters more than how much of it there is,
 and an assay can look healthy at both ends of a series and have been unusable in the middle.
 
+&#9888; **`likely_failing` is surveillance, not a failure prediction.** The rule has three
+clauses, and after reading both of its wet-lab sources in full we re-scored all 291,827
+genomes against what they license:
+
+| | Charité RdRp | CDC N1 | CDC N2 | CDC N3 | Charité E |
+|---|---:|---:|---:|---:|---:|
+| published `likely_failing` | 0.1829 | 0.0062 | 0.0073 | 0.0023 | 0.0004 |
+| requiring **two** 3′ mismatches | **0.00018** | 0.0050 | 0.000014 | 0.000014 | 0.00007 |
+| oligo with no binding site at all | **0** | **0** | **0** | **0** | **0** |
+
+All 51,465 of Charité RdRp's flagged genomes carry a *single* mismatch near a 3′ end, and
+a single 3′-proximal mismatch is the one configuration measured directly in vitro: about
+one cycle of Ct shift and no false negative. **The 18.29% is therefore withdrawn as a
+failure prediction.** The positional finding stands and is the thing worth watching: a
+*second* mismatch in the same window does cause false negatives, and over 291,827 genomes
+that pair occurs 52 times in 54,755 3′-proximal hits - 0.095%, reached by two assays in
+six quarters. `likely_failing` marks genomes one mutation away from a configuration with
+evidence behind it. [paper/main.md §4](paper/main.md) has the full re-scoring, the two
+sources, and the grid.
+
 &#9878; **[Next to a general-purpose aligner &rarr;](https://github.com/hammasbuilds/assay-drift/blob/main/docs/COMPARISON.md)**
 The same 15 oligos and 20 genomes through Biopython's `PairwiseAligner`: 270 of 300 pairs
 agree on the binding site, and every full-length disagreement is a published primer's
@@ -148,8 +168,8 @@ there would have published CDC N2 as down 0.9 points instead of 19.3.
 
 **Charité RdRp is the one to read twice.** Its endpoint says 86.8% exact match and 13.1%
 likely failing, which looks like slow erosion. In 2023-Q3 it was 5.1% exact and **94.9%
-likely failing** - over 506 usable sequences from 57 submitter groups, so not an artefact
-of one submission. Delta's NSP12 G671S sits at the 3' terminus of its forward primer; the
+likely failing** - over 469 usable sequences from 57 submitter groups, Kish effective n
+14.2, so not an artefact of one submission. Delta's NSP12 G671S sits at the 3' terminus of its forward primer; the
 rate fell again when Omicron displaced Delta. An assay can be fine at both ends of a
 series and have been unusable in the middle, which is why the worst quarter is reported
 beside the endpoints and not folded into them.

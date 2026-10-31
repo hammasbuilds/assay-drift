@@ -232,9 +232,7 @@ class TestFetch:
         ncbi.fetch([f"AA{i:06d}" for i in range(5)], batch=2)
         assert len(urls) == 3, f"5 ids at a batch of 2 is 3 requests, not {len(urls)}"
 
-    def test_one_failed_batch_does_not_end_the_run(
-        self, tmp_path, monkeypatch, no_sleep
-    ) -> None:
+    def test_one_failed_batch_does_not_end_the_run(self, tmp_path, monkeypatch, no_sleep) -> None:
         """The reason fetch() swallows NCBIError: a long run must not die on one batch."""
         monkeypatch.setenv("ASSAY_DRIFT_CACHE", str(tmp_path))
 

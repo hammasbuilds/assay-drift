@@ -281,9 +281,7 @@ class TestTrendEndpoints:
             summary.submitters["big"] = n - (groups - 1)
         else:
             share, extra = divmod(n, groups)
-            summary.submitters = {
-                f"s{i}": share + (1 if i < extra else 0) for i in range(groups)
-            }
+            summary.submitters = {f"s{i}": share + (1 if i < extra else 0) for i in range(groups)}
         assert sum(summary.submitters.values()) == n
         return summary
 
@@ -299,11 +297,15 @@ class TestTrendEndpoints:
         assert lopsided.reliable, "it passes the sequence floor; that is the point"
 
     def test_a_lopsided_final_period_is_not_the_endpoint(self):
-        t = trend(self._summaries([
-            ("2020-Q1", 0.994, 9000, 200),
-            ("2026-Q3", 0.801, 1860, 60),
-            ("2026-Q4", 0.985, 67, 7, True),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 0.994, 9000, 200),
+                    ("2026-Q3", 0.801, 1860, 60),
+                    ("2026-Q4", 0.985, 67, 7, True),
+                ]
+            )
+        )
         assert t["last_period"] == "2026-Q3"
         assert t["change"] == pytest.approx(-0.193, abs=0.002), (
             "the headline must be the assay, not a quarter worth 1.6 observations"
@@ -312,11 +314,15 @@ class TestTrendEndpoints:
 
     def test_the_skipped_periods_are_named_with_their_rates(self):
         """Withdrawn silently is worse than qualified out loud."""
-        t = trend(self._summaries([
-            ("2020-Q1", 0.994, 9000, 200),
-            ("2026-Q3", 0.801, 1860, 60),
-            ("2026-Q4", 0.985, 67, 7, True),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 0.994, 9000, 200),
+                    ("2026-Q3", 0.801, 1860, 60),
+                    ("2026-Q4", 0.985, 67, 7, True),
+                ]
+            )
+        )
         skipped = t["periods_after_the_endpoint"]
         assert [s["period"] for s in skipped] == ["2026-Q4"]
         assert skipped[0]["perfect_rate"] == pytest.approx(0.985, abs=0.01)
@@ -324,20 +330,28 @@ class TestTrendEndpoints:
 
     def test_an_independent_final_period_is_kept(self):
         """The floor must not simply discard the end of every series."""
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 9000, 200),
-            ("2026-Q4", 0.5, 2000, 400),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 9000, 200),
+                    ("2026-Q4", 0.5, 2000, 400),
+                ]
+            )
+        )
         assert t["last_period"] == "2026-Q4"
         assert t["periods_after_the_endpoint"] == []
         assert t["change"] == pytest.approx(-0.5)
 
     def test_a_corpus_where_no_period_is_independent_still_gets_a_trend(self):
         """Qualified, not refused: such a corpus still has a story to tell."""
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 100, 1),
-            ("2024-Q1", 0.4, 100, 1),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 100, 1),
+                    ("2024-Q1", 0.4, 100, 1),
+                ]
+            )
+        )
         assert t["enough_to_say"]
         assert t["change"] == pytest.approx(-0.6)
         assert not t["endpoints_meet_the_independence_floor"], (
@@ -345,16 +359,20 @@ class TestTrendEndpoints:
         )
 
     def test_the_worst_period_may_be_one_that_cannot_be_an_endpoint(self):
-        """"The worst it ever got" is a different question from "where did it end".
+        """ "The worst it ever got" is a different question from "where did it end".
 
         A quarter too lopsided to anchor a trend is still evidence that a rate that low
         occurred, so the worst-period figures stay over every reliable period.
         """
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 9000, 200),
-            ("2023-Q3", 0.051, 469, 5, True),
-            ("2026-Q3", 0.868, 1891, 60),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 9000, 200),
+                    ("2023-Q3", 0.051, 469, 5, True),
+                    ("2026-Q3", 0.868, 1891, 60),
+                ]
+            )
+        )
         assert t["worst_period"] == "2023-Q3"
         assert t["worst_rate"] == pytest.approx(0.051, abs=0.01)
         assert t["last_period"] == "2026-Q3"
@@ -368,11 +386,15 @@ class TestTrendEndpoints:
         reports the worst over the periods that meet the independence floor, and a
         document can say which one it means.
         """
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 9000, 200),
-            ("2023-Q3", 0.051, 469, 5, True),
-            ("2026-Q3", 0.868, 1891, 60),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 9000, 200),
+                    ("2023-Q3", 0.051, 469, 5, True),
+                    ("2026-Q3", 0.868, 1891, 60),
+                ]
+            )
+        )
         assert t["worst_period"] == "2023-Q3"
         assert t["worst_rate"] == pytest.approx(0.051, abs=0.01)
         assert t["worst_period_independent"] == "2026-Q3", (
@@ -384,18 +406,26 @@ class TestTrendEndpoints:
 
     def test_the_independent_worst_is_none_when_nothing_qualifies(self):
         """Not 0.0, which would read as "it reached zero"."""
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 100, 1),
-            ("2024-Q1", 0.4, 100, 1),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 100, 1),
+                    ("2024-Q1", 0.4, 100, 1),
+                ]
+            )
+        )
         assert t["worst_rate_independent"] is None
         assert t["worst_period_independent"] is None
         assert t["periods_meeting_the_independence_floor"] == 0
 
     def test_the_independent_failing_worst_is_also_reported(self):
-        t = trend(self._summaries([
-            ("2020-Q1", 1.0, 9000, 200),
-            ("2026-Q3", 0.5, 1891, 60),
-        ]))
+        t = trend(
+            self._summaries(
+                [
+                    ("2020-Q1", 1.0, 9000, 200),
+                    ("2026-Q3", 0.5, 1891, 60),
+                ]
+            )
+        )
         assert t["worst_failing_period_independent"] in {"2020-Q1", "2026-Q3"}
         assert t["worst_failing_rate_independent"] is not None

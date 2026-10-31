@@ -36,8 +36,14 @@ from assaydrift.match import Hit  # noqa: E402
 
 
 def hit(mismatches=0, three_prime=0, found=True, role="forward"):
-    return Hit(position=10, mismatches=mismatches, ambiguous=0,
-               three_prime_mismatches=three_prime, found=found, role=role)
+    return Hit(
+        position=10,
+        mismatches=mismatches,
+        ambiguous=0,
+        three_prime_mismatches=three_prime,
+        found=found,
+        role=role,
+    )
 
 
 def result(**hits) -> AssayResult:
@@ -78,8 +84,10 @@ class TestTheThresholdIsTwo:
         rule is expressible; this one is not it, and the limitation belongs in the
         paper's threats rather than in a silent approximation.
         """
-        r = result(fwd=hit(mismatches=1, three_prime=1),
-                   rev=hit(mismatches=1, three_prime=1, role="reverse"))
+        r = result(
+            fwd=hit(mismatches=1, three_prime=1),
+            rev=hit(mismatches=1, three_prime=1, role="reverse"),
+        )
         assert r.three_prime_mismatches == 2
         assert r.clustered_failing() is True
 
@@ -117,8 +125,7 @@ class TestTheClusteredRuleIsNeverLouder:
         fails, the two rules have diverged somewhere other than the 3' threshold and the
         paper's framing of one as the conservative reading of the other is wrong.
         """
-        r = result(fwd=hit(mismatches=max(mismatches, three_prime),
-                           three_prime=three_prime))
+        r = result(fwd=hit(mismatches=max(mismatches, three_prime), three_prime=three_prime))
         if r.clustered_failing():
             assert r.likely_failing(), (
                 f"clustered fired and published did not at "
@@ -151,8 +158,7 @@ def test_the_corpus_distribution_is_what_the_paper_says():
         for assay in ASSAYS:
             r = AssayResult(accession=record.accession, assay=assay.name, period="")
             for oligo in assay.oligos:
-                r.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence,
-                                                oligo.role)
+                r.hits[oligo.name] = find_oligo(record.sequence, oligo.sequence, oligo.role)
             if not (r.usable or r.any_oligo_lost):
                 continue
             if r.three_prime_mismatches >= 2:

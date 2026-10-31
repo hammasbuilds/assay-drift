@@ -87,9 +87,9 @@ def test_the_large_manifest_is_in_the_repository() -> None:
     if not big.is_file():
         pytest.skip("the large result is not in this checkout")
     out = subprocess.run(
-        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch",
-         "data/accessions_big.tsv.gz"],
-        capture_output=True, text=True,
+        ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "data/accessions_big.tsv.gz"],
+        capture_output=True,
+        text=True,
     )
     assert out.returncode == 0, (
         "results/drift_big.json is published but data/accessions_big.tsv.gz is not "
@@ -103,9 +103,7 @@ def test_the_committed_manifest_counts_what_it_says(tmp_path: Path) -> None:
     if not path.is_file():
         pytest.skip("the large manifest is not in this checkout")
     lines = fetch._manifest_lines(path)
-    stated = next(
-        int(ln.split(":", 1)[1]) for ln in lines if ln.startswith("# records:")
-    )
+    stated = next(int(ln.split(":", 1)[1]) for ln in lines if ln.startswith("# records:"))
     rows = [ln for ln in lines if ln and not ln.startswith(("#", "accession\t"))]
     assert len(rows) == stated
     assert all(len(ln.split("\t")) == 4 for ln in rows), "a row is split across lines"

@@ -91,8 +91,10 @@ def test_biopython_found_no_site_this_tool_missed(data, doc):
 
 def test_the_disagreements_fall_on_the_number_of_oligos_claimed(data, doc):
     oligos = {r["oligo"] for r in data["disagreements"]}
-    assert f"**{len(oligos)} of\nthe {data['oligos']} oligos**" in doc or \
-           f"**{len(oligos)} of the {data['oligos']} oligos**" in doc
+    assert (
+        f"**{len(oligos)} of\nthe {data['oligos']} oligos**" in doc
+        or f"**{len(oligos)} of the {data['oligos']} oligos**" in doc
+    )
     assert len(data["disagreements"]) == data["disagreed"]
 
 
@@ -114,11 +116,12 @@ def test_the_gap_never_exceeds_the_oligos_degenerate_base_count(full_length, doc
         degenerate = row.get("degenerate_bases_in_oligo") or []
         gap = (row["biopython_mismatches"] or 0) - (row["mismatches"] or 0)
         assert 0 < gap <= len(degenerate), (
-            f"{row['oligo']}: Biopython is {gap} higher with {len(degenerate)} "
-            "degenerate base(s)"
+            f"{row['oligo']}: Biopython is {gap} higher with {len(degenerate)} degenerate base(s)"
         )
-    assert "never exceeds\nthat oligo's degenerate-base count" in doc or \
-           "never exceeds that oligo's degenerate-base count" in doc
+    assert (
+        "never exceeds\nthat oligo's degenerate-base count" in doc
+        or "never exceeds that oligo's degenerate-base count" in doc
+    )
 
 
 def test_plain_letter_equality_accounts_for_every_one_of_them(data, full_length, doc):
@@ -128,7 +131,8 @@ def test_plain_letter_equality_accounts_for_every_one_of_them(data, full_length,
     no IUPAC - must give Biopython's number. That is the one variable between them.
     """
     explained = [
-        r for r in full_length
+        r
+        for r in full_length
         if r.get("mismatches_plain_identity") == r.get("biopython_mismatches")
         and r.get("mismatches_plain_identity") != r.get("mismatches")
     ]
@@ -137,8 +141,10 @@ def test_plain_letter_equality_accounts_for_every_one_of_them(data, full_length,
         "explained by plain letter equality"
     )
     assert data["iupac_explains"] == len(full_length)
-    assert f"**All {len(full_length)}** of Biopython's counts\nequal that plain count" in doc \
+    assert (
+        f"**All {len(full_length)}** of Biopython's counts\nequal that plain count" in doc
         or f"**All {len(full_length)}** of Biopython's counts equal that plain count" in doc
+    )
 
 
 def test_the_degenerate_oligos_in_the_table_are_the_ones_with_degenerate_bases(doc):
@@ -147,16 +153,12 @@ def test_the_degenerate_oligos_in_the_table_are_the_ones_with_degenerate_bases(d
     from assaydrift.primers import ASSAYS  # noqa: PLC0415
 
     degenerate = {
-        o.name: sorted(set(o.sequence) - set("ACGT"))
-        for assay in ASSAYS
-        for o in assay.oligos
+        o.name: sorted(set(o.sequence) - set("ACGT")) for assay in ASSAYS for o in assay.oligos
     }
     named = {name for name, codes in degenerate.items() if codes}
     assert named == {"RdRp-F", "RdRp-R", "N3-P"}, named
     for name in named:
-        sequence = next(
-            o.sequence for assay in ASSAYS for o in assay.oligos if o.name == name
-        )
+        sequence = next(o.sequence for assay in ASSAYS for o in assay.oligos if o.name == name)
         assert f"`{sequence}`" in doc, f"{name}'s sequence is not the one in the document"
     assert "Three of the fifteen oligos" in doc
 
@@ -201,16 +203,18 @@ def test_the_understating_oligo_has_no_degenerate_base(trimmed, doc):
 def test_the_corrections_section_keeps_all_three(doc):
     section = doc.split("## Three corrections to this comparison", 1)
     assert len(section) == 2, "the corrections section is gone"
-    for phrase in ("reverse-complements a reverse primer", "19 mismatches of 24",
-                   "Unterminated string"):
+    for phrase in (
+        "reverse-complements a reverse primer",
+        "19 mismatches of 24",
+        "Unterminated string",
+    ):
         assert phrase in section[1], f"a correction has been dropped: {phrase}"
 
 
 def test_the_limits_section_still_names_what_it_does_not_show(doc):
     limits = doc.split("## What this does not show", 1)
     assert len(limits) == 2, "the limits section is gone"
-    for phrase in ("not a drift tool", "chosen by me", "not a corpus",
-                   "is a recall comparison"):
+    for phrase in ("not a drift tool", "chosen by me", "not a corpus", "is a recall comparison"):
         assert phrase in limits[1], f"the limits no longer say: {phrase}"
 
 

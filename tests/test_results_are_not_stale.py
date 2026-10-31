@@ -48,11 +48,20 @@ def fresh(tmp_path_factory) -> dict:
     """Run the published command on the published corpus, into a scratch directory."""
     out = tmp_path_factory.mktemp("fresh")
     result = subprocess.run(
-        [sys.executable, str(ANALYSE),
-         "--data", str(SMALL),
-         "--json", str(out / "drift.json"),
-         "--mutations-json", str(out / "mutations.json")],
-        capture_output=True, text=True, cwd=str(ROOT), timeout=900,
+        [
+            sys.executable,
+            str(ANALYSE),
+            "--data",
+            str(SMALL),
+            "--json",
+            str(out / "drift.json"),
+            "--mutations-json",
+            str(out / "mutations.json"),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+        timeout=900,
     )
     assert result.returncode == 0, (
         f"analyse.py failed:\n{result.stdout[-3000:]}\n{result.stderr[-3000:]}"
@@ -71,8 +80,7 @@ def committed() -> dict:
 
 def test_the_same_corpus_was_measured(fresh, committed):
     """If the corpus differs, every other assertion here is meaningless."""
-    assert (fresh["_run"]["corpus_identity_sha256"]
-            == committed["_run"]["corpus_identity_sha256"])
+    assert fresh["_run"]["corpus_identity_sha256"] == committed["_run"]["corpus_identity_sha256"]
     assert fresh["_run"]["sequences_read"] == committed["_run"]["sequences_read"]
 
 
@@ -112,8 +120,7 @@ def test_trend_rates_reproduce(fresh, committed, field):
             f"{assay}.trend.{field}: committed {want!r}, fresh {got!r}"
         )
         assert abs(got - want) < 1e-9, (
-            f"{assay}.trend.{field}: committed {want}, fresh {got}. "
-            f"Regenerate results/drift.json."
+            f"{assay}.trend.{field}: committed {want}, fresh {got}. Regenerate results/drift.json."
         )
 
 
@@ -125,11 +132,9 @@ def test_every_period_reproduces(fresh, committed):
         assert sorted(a) == sorted(b), f"{assay}: period set differs"
         for period, want in a.items():
             got = b[period]
-            for key in ("total", "usable", "perfect", "failing", "lost_oligo",
-                        "three_prime"):
+            for key in ("total", "usable", "perfect", "failing", "lost_oligo", "three_prime"):
                 assert got.get(key) == want.get(key), (
-                    f"{assay} {period} {key}: committed {want.get(key)}, "
-                    f"fresh {got.get(key)}"
+                    f"{assay} {period} {key}: committed {want.get(key)}, fresh {got.get(key)}"
                 )
 
 
@@ -144,34 +149,112 @@ def test_the_clustered_rate_is_present_in_the_committed_results(committed):
 
 
 @pytest.mark.skipif(not DRIFT_BIG.exists(), reason="the big results are not shipped")
-def test_the_big_results_are_newer_than_the_code_that_makes_them():
-    """The 291,827-genome run takes hours, so check its age rather than rerun it.
+def test_the_big_results_come_from_the_code_in_this_repository():
+    """The 291,827-genome run takes hours, so compare a digest rather than rerun it.
 
-    Weaker than the checks above and still enough: it fails the moment someone changes
-    the analysis without regenerating, which is exactly how the endpoint rule shipped
-    against a stale artefact.
+    Three versions of this guard, and the first two were wrong in opposite directions.
+
+    It began as "the artefact is not older than the last commit touching the analysis
+    sources". That passed in any working tree where the code had been edited and not yet
+    committed - the state in which the artefact is *most* likely to be stale. Dating the
+    dirty files by their mtime closed that, and then overshot: running this repository's
+    own formatter over the tree changed three files' mtimes without changing a single
+    expression, and the guard then demanded a three-hour run to republish byte-identical
+    numbers. A guard that cries wolf over whitespace gets switched off.
+
+    So the comparison is a digest of the sources' *syntax trees*, recorded in the artefact
+    when it was generated. Reformatting leaves it unchanged; editing a threshold, a
+    comparison or a docstring does not.
     """
-    generated = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))["_run"]["generated"]
-    watched = ["src/assaydrift/analyze.py", "src/assaydrift/match.py",
-               "scripts/analyse.py"]
-    out = subprocess.run(
-        ["git", "log", "-1", "--format=%cI", "--", *watched],
-        capture_output=True, text=True, cwd=str(ROOT),
-    )
-    if out.returncode != 0 or not out.stdout.strip():
-        pytest.skip("not a git checkout, or no history for the analysis sources")
-    # Parsed, not compared as strings. Git writes the committer's local offset and the
-    # artefact writes UTC, so "2026-10-28T07:32:52+00:00" and "2026-10-28T13:54:06+05:00"
-    # order one way lexically and the other way as instants - here they happen to agree,
-    # which is exactly the kind of accident that makes a guard pass for the wrong reason.
-    from datetime import datetime
+    run = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))["_run"]
+    recorded = run.get("analysis_source_digest")
+    if recorded is None:
+        pytest.fail(
+            "results/drift_big.json carries no analysis_source_digest, so nothing says "
+            "whether its numbers come from this code. Regenerate it with "
+            "  python scripts/analyse.py --data data/sequences_big.jsonl "
+            "--json results/drift_big.json --mutations-json results/mutations_big.json"
+        )
 
-    changed = datetime.fromisoformat(out.stdout.strip())
-    generated = datetime.fromisoformat(generated)
-    assert generated >= changed, (
-        f"results/drift_big.json was generated at {generated} but the analysis code "
-        f"last changed at {changed}. The published big-corpus numbers do not come from "
-        f"the code in this repository. Regenerate with:\n"
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from analyse import ANALYSIS_SOURCES, source_digest  # noqa: PLC0415
+
+    current = source_digest(ROOT)
+    assert current is not None, (
+        f"one of {', '.join(ANALYSIS_SOURCES)} could not be read or parsed, so the "
+        f"digest cannot be computed - which is not a pass"
+    )
+    assert current == recorded, (
+        f"results/drift_big.json was generated from analysis code whose syntax digest "
+        f"was {recorded[:12]}; the code here digests to {current[:12]}, so the published "
+        f"big-corpus numbers do not come from it. Regenerate with "
         f"  python scripts/analyse.py --data data/sequences_big.jsonl "
         f"--json results/drift_big.json --mutations-json results/mutations_big.json"
+    )
+
+
+def test_the_digest_ignores_formatting_and_notices_a_changed_threshold(tmp_path):
+    """Both directions of the claim the guard above rests on.
+
+    A digest that moved on whitespace would reintroduce the false alarm it was rewritten
+    to remove; one that did not move on a different constant would be worthless. Checked
+    on copies in a temporary directory, so neither the repository nor the published
+    artefact is touched.
+    """
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from analyse import ANALYSIS_SOURCES, source_digest  # noqa: PLC0415
+
+    def plant(tag, edit):
+        root = tmp_path / tag
+        for name in ANALYSIS_SOURCES:
+            target = root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                edit(name, (ROOT / name).read_text(encoding="utf-8")), encoding="utf-8"
+            )
+        return source_digest(root)
+
+    same = lambda name, text: text  # noqa: E731
+    original = plant("plain", same)
+    assert original == source_digest(ROOT), "copying the files changed the digest"
+
+    # Blank lines and trailing spaces: the two things the formatter moved, written as
+    # chr(10) so the escape survives every editor and shell this file passes through.
+    nl = chr(10)
+    reformatted = plant(
+        "reformatted",
+        lambda name, text: text.replace(nl * 3, nl * 4).replace(
+            "    return " + nl, "    return" + nl
+        ),
+    )
+    assert reformatted == original, (
+        "the digest moved on blank lines, which is the false alarm this guard exists to avoid"
+    )
+
+    def bump(name, text):
+        if name.endswith("analyze.py"):
+            return text.replace("SEVERE_MISMATCH_LOAD = 3", "SEVERE_MISMATCH_LOAD = 4", 1)
+        return text
+
+    assert plant("bumped", bump) != original, (
+        "the digest did not move when SEVERE_MISMATCH_LOAD went from 3 to 4, which moves "
+        "every failing rate in the output"
+    )
+
+    def gut(name, text):
+        if name.endswith("analyze.py"):
+            return text.replace(
+                "return bool(self.hits) and all(h.usable for h in self.hits.values())",
+                "return True",
+                1,
+            )
+        return text
+
+    gutted = ROOT / "src" / "assaydrift" / "analyze.py"
+    assert (
+        "return bool(self.hits) and all(h.usable for h in self.hits.values())"
+        in gutted.read_text(encoding="utf-8")
+    ), "the line this test plants over has moved; the plant would be a no-op"
+    assert plant("gutted", gut) != original, (
+        "the digest did not move when AssayResult.usable was replaced with True"
     )

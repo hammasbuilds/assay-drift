@@ -37,7 +37,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from assaydrift.match import compare_base, find_oligo, reverse_complement  # noqa: E402
+from assaydrift.match import find_oligo, reverse_complement  # noqa: E402
 from assaydrift.primers import ASSAYS  # noqa: E402
 
 VENV = ROOT / ".venv-compare"
@@ -46,7 +46,7 @@ SEED = 20261029
 
 # Runs in the other interpreter: Biopython's side of every pair, in one subprocess, so
 # the aligner is set up once rather than per oligo.
-BIOPYTHON_SIDE = '''
+BIOPYTHON_SIDE = """
 import json, sys, time
 from Bio import Align
 from Bio.Align import substitution_matrices
@@ -118,7 +118,7 @@ for item in work:
     })
 
 print("__JSON__" + json.dumps(out))
-'''
+"""
 
 
 def python_in(venv: Path) -> Path:
@@ -129,13 +129,20 @@ def ensure_biopython() -> str:
     python = python_in(VENV)
     if not python.exists():
         subprocess.run([sys.executable, "-m", "venv", str(VENV)], check=True)
-    shown = subprocess.run([str(python), "-m", "pip", "show", "biopython"],
-                           capture_output=True, text=True)
+    shown = subprocess.run(
+        [str(python), "-m", "pip", "show", "biopython"], capture_output=True, text=True
+    )
     if shown.returncode != 0:
-        subprocess.run([str(python), "-m", "pip", "install", "-q",
-                        "--disable-pip-version-check", "biopython"], check=True)
-        shown = subprocess.run([str(python), "-m", "pip", "show", "biopython"],
-                               capture_output=True, text=True, check=True)
+        subprocess.run(
+            [str(python), "-m", "pip", "install", "-q", "--disable-pip-version-check", "biopython"],
+            check=True,
+        )
+        shown = subprocess.run(
+            [str(python), "-m", "pip", "show", "biopython"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
     for line in shown.stdout.splitlines():
         if line.startswith("Version:"):
             return line.split(":", 1)[1].strip()
@@ -156,9 +163,11 @@ def cached_genomes(count: int) -> list[tuple[str, str]]:
     for path in rng.sample(files, min(len(files), count * 3)):
         with gzip.open(path, "rb") as fh:
             text = fh.read().decode("utf-8", "replace")
-        sequence = "".join(
-            c for c in text.split("ORIGIN", 1)[-1].upper() if c in "ACGTRYSWKMBDHVN"
-        ) if "ORIGIN" in text else ""
+        sequence = (
+            "".join(c for c in text.split("ORIGIN", 1)[-1].upper() if c in "ACGTRYSWKMBDHVN")
+            if "ORIGIN" in text
+            else ""
+        )
         if len(sequence) > 25_000:
             out.append((path.stem, sequence))
         if len(out) == count:
@@ -186,16 +195,22 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--genomes", type=int, default=20)
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "aligner-comparison.json")
-    ap.add_argument("--refresh", action="store_true",
-                    help="re-run the Biopython side even if its cached result matches "
-                         "this run's genomes, seed and biopython version")
+    ap.add_argument(
+        "--refresh",
+        action="store_true",
+        help="re-run the Biopython side even if its cached result matches "
+        "this run's genomes, seed and biopython version",
+    )
     args = ap.parse_args()
 
     version = ensure_biopython()
     genomes = cached_genomes(args.genomes)
     oligos = [(assay.name, o) for assay in ASSAYS for o in assay.oligos]
-    print(f"biopython {version}: {len(oligos)} oligo(s) x {len(genomes)} genome(s) "
-          f"= {len(oligos) * len(genomes)} pair(s)\n", flush=True)
+    print(
+        f"biopython {version}: {len(oligos)} oligo(s) x {len(genomes)} genome(s) "
+        f"= {len(oligos) * len(genomes)} pair(s)\n",
+        flush=True,
+    )
 
     work, mine = [], {}
     start = time.perf_counter()
@@ -204,9 +219,7 @@ def main() -> int:
             hit = find_oligo(sequence, oligo.sequence, oligo.role)
             key = f"{accession}|{oligo.name}"
             searched_for = (
-                reverse_complement(oligo.sequence)
-                if oligo.role == "reverse"
-                else oligo.sequence
+                reverse_complement(oligo.sequence) if oligo.role == "reverse" else oligo.sequence
             )
             # The same site, counted two ways: with IUPAC codes read as sets (what this
             # tool does) and with plain letter equality (what a substitution matrix of
@@ -215,7 +228,7 @@ def main() -> int:
             if hit.found:
                 window = sequence[hit.position : hit.position + len(searched_for)]
                 if len(window) == len(searched_for):
-                    plain = sum(1 for a, b in zip(searched_for, window) if a != b)
+                    plain = sum(1 for a, b in zip(searched_for, window, strict=True) if a != b)
             mine[key] = {
                 "assay": assay_name,
                 "oligo": oligo.name,
@@ -234,9 +247,7 @@ def main() -> int:
             # carries; handing Biopython the oligo as written asked it a different
             # question and made all five reverse primers look like disagreements.
             searched = (
-                reverse_complement(oligo.sequence)
-                if oligo.role == "reverse"
-                else oligo.sequence
+                reverse_complement(oligo.sequence) if oligo.role == "reverse" else oligo.sequence
             )
             work.append({"key": key, "oligo": searched, "accession": accession})
     ours = time.perf_counter() - start
@@ -247,8 +258,7 @@ def main() -> int:
     # is free - which is the only reason a KeyError in the formatting cost 232 seconds of
     # alignment once.
     cache = args.out.with_suffix(".biopython-cache.json")
-    stamp = {"version": version, "seed": SEED,
-             "keys": sorted(item["key"] for item in work)}
+    stamp = {"version": version, "seed": SEED, "keys": sorted(item["key"] for item in work)}
     rows = None
     if cache.exists() and not args.refresh:
         try:
@@ -269,22 +279,21 @@ def main() -> int:
             )
             proc = subprocess.run(
                 [str(python_in(VENV)), "-c", BIOPYTHON_SIDE, str(payload)],
-                capture_output=True, text=True,
+                capture_output=True,
+                text=True,
             )
             theirs = time.perf_counter() - start
             marker = proc.stdout.find("__JSON__")
             if marker < 0:
-                raise SystemExit(
-                    f"biopython side failed:\n{(proc.stderr or proc.stdout)[-800:]}"
-                )
-            rows = json.loads(proc.stdout[marker + len("__JSON__"):].splitlines()[0])
+                raise SystemExit(f"biopython side failed:\n{(proc.stderr or proc.stdout)[-800:]}")
+            rows = json.loads(proc.stdout[marker + len("__JSON__") :].splitlines()[0])
             print(f"biopython:   {len(rows)} pair(s) in {theirs:.1f}s", flush=True)
-            cache.write_text(json.dumps({"stamp": stamp, "seconds": round(theirs, 1),
-                                         "rows": rows}, indent=1), encoding="utf-8")
-        else:
-            theirs = float(
-                json.loads(cache.read_text(encoding="utf-8")).get("seconds") or 0.0
+            cache.write_text(
+                json.dumps({"stamp": stamp, "seconds": round(theirs, 1), "rows": rows}, indent=1),
+                encoding="utf-8",
             )
+        else:
+            theirs = float(json.loads(cache.read_text(encoding="utf-8")).get("seconds") or 0.0)
 
     agree_site, agree_mm, only_mine, only_theirs, differ = [], [], [], [], []
     partial_rows: list[str] = []
@@ -295,8 +304,13 @@ def main() -> int:
             only_mine.append({**ours_row, "biopython": row["error"]})
             continue
         if not ours_row["found"]:
-            only_theirs.append({**ours_row, "biopython_position": row["position"],
-                                "biopython_mismatches": row["mismatches"]})
+            only_theirs.append(
+                {
+                    **ours_row,
+                    "biopython_position": row["position"],
+                    "biopython_mismatches": row["mismatches"],
+                }
+            )
             continue
         partial = row["unaligned_oligo_bases"] > 0
         same_site = ours_row["position"] == row["position"]
@@ -305,12 +319,22 @@ def main() -> int:
             if ours_row["mismatches"] == row["mismatches"]:
                 agree_mm.append(key)
             else:
-                differ.append({**ours_row, "biopython_mismatches": row["mismatches"],
-                               "biopython_unaligned": row["unaligned_oligo_bases"]})
+                differ.append(
+                    {
+                        **ours_row,
+                        "biopython_mismatches": row["mismatches"],
+                        "biopython_unaligned": row["unaligned_oligo_bases"],
+                    }
+                )
         else:
-            differ.append({**ours_row, "biopython_position": row["position"],
-                           "biopython_mismatches": row["mismatches"],
-                           "biopython_unaligned": row["unaligned_oligo_bases"]})
+            differ.append(
+                {
+                    **ours_row,
+                    "biopython_position": row["position"],
+                    "biopython_mismatches": row["mismatches"],
+                    "biopython_unaligned": row["unaligned_oligo_bases"],
+                }
+            )
         if partial:
             partial_rows.append(row["key"])
 
@@ -330,7 +354,8 @@ def main() -> int:
         "found_only_by_biopython": len(only_theirs),
         "biopython_errors": len(only_mine),
         "iupac_explains": sum(
-            1 for r in differ
+            1
+            for r in differ
             if r.get("mismatches_plain_identity") is not None
             and r.get("biopython_mismatches") == r["mismatches_plain_identity"]
             and r["mismatches_plain_identity"] != r["mismatches"]
@@ -347,14 +372,18 @@ def main() -> int:
     print(f"  found only by biopython    {len(only_theirs):>6}")
     print(f"  biopython aligned only part of the oligo  {len(partial_rows):>6}")
     explained = out["iupac_explains"]
-    print(f"  ... of which biopython's count equals plain letter equality at the same "
-          f"site: {explained}")
+    print(
+        f"  ... of which biopython's count equals plain letter equality at the same "
+        f"site: {explained}"
+    )
     for row in differ[:8]:
-        print(f"    {row['accession'][:12]} {row['oligo']:<8} "
-              f"mine {row['mismatches']}mm at {row['position']} | "
-              f"biopython {row.get('biopython_mismatches')}mm at "
-              f"{row.get('biopython_position', row['position'])}"
-              f" ({row.get('biopython_unaligned')} oligo base(s) unaligned)")
+        print(
+            f"    {row['accession'][:12]} {row['oligo']:<8} "
+            f"mine {row['mismatches']}mm at {row['position']} | "
+            f"biopython {row.get('biopython_mismatches')}mm at "
+            f"{row.get('biopython_position', row['position'])}"
+            f" ({row.get('biopython_unaligned')} oligo base(s) unaligned)"
+        )
     print(f"\nwritten to {args.out.name}")
     return 0
 

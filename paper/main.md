@@ -26,13 +26,18 @@ A 2025 wet-lab study [@wetlab2025] tested 16 assays against over 200 mismatched 
 in vitro. We take it as a measurement problem and apply it to our own rule. The result is
 unflattering and is published as a headline rather than a caveat. The only clause a bench
 would not dispute — an oligo with no binding site, which cannot prime — **fires for no
-sequence in the corpus**. Worse, the clause that produces almost all of the rate is
+sequence in either corpus**: not one of the 2,765 genomes and not one of the 291,827,
+once the single partial deposit that has no such region to lose is counted separately
+(§5). Worse, the clause that produces almost all of the rate is
 contradicted by the source it derives from: Lefever et al. [@lefever2013] license
 tolerating single mismatches *more than* 5 bases from a 3′ end, which our rule inverts
 into a failure prediction for single mismatches *within* 5 bases. Across 2,765 genomes
 and five assays, **every one of the 395 3′-proximal hits is a single mismatch and none is
 a pair** — and a single 3′-proximal mismatch is the one configuration Otwell et al.
-measured directly, at about one cycle of Ct shift and no false negative. We therefore
+measured directly, at about one cycle of Ct shift and no false negative. At 291,827
+genomes the pair does appear, **52 times in 54,755 3′-proximal hits, 0.095% of them**
+(§4.5), which puts a measured base rate under the surveillance claim instead of an
+absence. We therefore
 withdraw our most alarming number, Charité RdRp's 11.16%, as a failure prediction and
 reframe the category as **surveillance**: those genomes are one mutation away from a
 configuration that does have wet-lab evidence behind it (§4).
@@ -104,8 +109,9 @@ Exact match, first to last quarter able to carry an endpoint:
 | CDC N3 *(retired)* | 98.8% | 86.1% | −12.7 | 0.7% | 0.8% (2026-Q2) |
 
 **Charité RdRp is the result.** Its endpoints say 86.8% exact and 13.1% likely failing —
-slow erosion. In 2023-Q3 it was 5.1% exact and 94.9% likely failing over 506 usable
-sequences from 57 submitter groups, so not an artefact of one submission. Delta's NSP12
+slow erosion. In 2023-Q3 it was 5.1% exact and 94.9% likely failing over 469 usable
+sequences from 57 submitter groups ($n_\text{eff} = 14.2$), so not an artefact of one
+submission. Delta's NSP12
 G671S sits at the 3′ terminus of its forward primer; the rate recovered when Omicron
 displaced Delta. **An assay can be fine at both ends of a series and have been unusable in
 the middle**, which is what an endpoint-only tool cannot report and why the worst
@@ -172,7 +178,8 @@ shapes:
 | Charité RdRp | 0.1116 | **0.0004** | 0.0004 | **0.0000** |
 
 The clustered column is identical to dropping clause 2 altogether, which is not a
-coincidence and not an artefact. The distribution of 3′-proximal mismatch counts over all
+coincidence and not an artefact — at this corpus size. §4.5 repeats the re-scoring over
+291,827 genomes, where the two columns part company. The distribution of 3′-proximal mismatch counts over all
 2,765 genomes is:
 
 | Assay | 0 in window | 1 | ≥2 |
@@ -236,6 +243,65 @@ rule fires on one. The only direct in-vitro measurement of one reports about a s
 cycle of Ct shift and no false negative; two produce a 9–12 cycle shift and a real one.
 Charité RdRp's 11.16% is composed entirely of the left-hand bars.
 
+## 4.5 The same re-scoring over 291,827 genomes
+
+§4.2 is scoped to the 2,765-genome corpus, and its load-bearing sentence — no genome
+carries two mismatches in a 3′ window — is the kind of claim a hundredfold larger corpus
+is apt to overturn. It does, and the overturning is the more useful result.
+
+Re-scoring all 291,827 genomes at the published settings (3′ window 5, mismatch load 3):
+
+| Assay | usable | published | **clustered 3′ (≥2)** | without clause 2 | clause 1 alone |
+|---|---:|---:|---:|---:|---:|
+| CDC N1 | 289,287 | 0.0062 | 0.0050 | 0.0050 | **0.0000** |
+| CDC N2 | 288,108 | 0.0073 | 0.000014 | 0.000014 | **0.0000** |
+| CDC N3 | 289,945 | 0.0023 | 0.000014 | 0.000014 | **0.0000** |
+| Charité E | 285,298 | 0.0004 | 0.000070 | 0.000070 | **0.0000** |
+| Charité RdRp | 281,456 | 0.1829 | **0.00018** | 0.000014 | **0.0000** |
+
+Three things hold across the two corpora and one does not.
+
+**Clause 1 still fires for nothing.** Zero for all five assays over 281,456 to 289,945
+usable sequences each — the one clause with uncontested wet-lab backing contributes
+nothing to the published rate at either scale. The single record that would have fired it,
+a 2,859-base partial deposit, is now counted as `region_absent` rather than as a lost
+oligo (§5), because a fragment that never contained the target region cannot be evidence
+that the region was lost.
+
+**The published rate is still almost entirely clause 2 at one mismatch.** Charité RdRp's
+0.1829 is 51,465 genomes, and all 51,465 of them are 3′-proximal hits. Re-scoring clause 2
+at two mismatches takes that rate to 0.00018, a factor of a thousand. §4.3's withdrawal
+therefore does not rest on the small corpus; it is the same withdrawal, over a hundred times as
+many genomes.
+
+**Pairs exist, and they are rare in a way worth quantifying.** The column that was all
+zeroes in §4.2 is not:
+
+| Assay | 3′-proximal hits | of which a pair | share |
+|---|---:|---:|---:|
+| CDC N1 | 423 | 4 | 0.95% |
+| CDC N2 | 2,097 | 0 | 0% |
+| CDC N3 | 672 | 0 | 0% |
+| Charité E | 98 | 0 | 0% |
+| Charité RdRp | 51,465 | 48 | 0.093% |
+
+52 pairs in 54,755 3′-proximal hits, and 52 in 1,434,094 assay–genome evaluations. This
+strengthens §4.3 rather than weakening it: the configuration Otwell et al. found does
+cause false negatives is **reachable** — it was reached, by two assays, in six quarters —
+and its base rate among the genomes `likely_failing` flags is about one in a thousand.
+That is what "one mutation away" is worth as a number, and it is a figure only a corpus of
+this size can supply. The RdRp pairs are concentrated in 2021-Q3 and 2021-Q4, 46 of the
+48, the Delta quarters in which G15451A was spreading — which is the mechanism §4.3
+describes, arriving at the 3′ terminus a second time.
+
+**What changes is the arithmetic of the clustered column.** In §4.2 the clustered rate
+equalled the rate with clause 2 dropped, because there were no pairs for clause 2 to
+contribute. Here the two part for Charité RdRp — 0.00018 against 0.000014, 48 pairs
+against 4 severe-load genomes — which is why the tool now carries `three_prime_pair` and
+`severe_load` as separate counters rather than one `failing_clustered` total. A union
+count cannot say which clause fired, and the published 0.1829 was taken apart only
+because each clause is counted on its own.
+
 # 5. Threats to validity
 
 **The failure rule is uncalibrated** (§4). This is the dominant threat and it is the
@@ -246,6 +312,19 @@ institution; the Kish correction addresses the arithmetic of that, not the selec
 
 **Short and partial records.** A record shorter than an oligo has no binding site by
 construction, which is not the same fact as a site having been lost; those are `unknown`.
+That sentence stood in an earlier draft of this section while the code behind it checked
+only oligo length, and it was too weak by a factor of a hundred. LR877184 is 2,859 bases,
+collected 2020-04-26 in Stockholm, with no unknown bases anywhere in it: a partial deposit
+of a 29,900-base genome. It is longer than every 24-mer, so the length check passed it,
+and it then aligned none of the fifteen oligos of the five assays — so it was reported, for
+all five, as an assay with no binding site left. That is clause 1 of `likely_failing`, the
+one clause with no judgement call in it, and in 291,827 genomes its only instance was this
+record. The predicate is now whether the assay's target *region* is present: every oligo
+absent **and** the record too short to be a whole genome (25,000 bases). The length half is
+deliberate — a full-length genome that has genuinely lost an entire target region is still
+reported as a lost oligo, because that is the finding the rule must not be able to hide.
+A threat bullet that describes a guard is worth only as much as the guard, and this one
+was describing a narrower check than it claimed.
 
 **One alignment implementation.** The matcher is compared against Biopython's
 `PairwiseAligner` on 300 oligo–genome pairs: 270 agree on the binding site, and every
@@ -254,7 +333,8 @@ substitution matrix counts as a mismatch. That validates the aligner, not the ru
 
 **The sensitivity grid is the small corpus.** One pass over 291,827 genomes is about three
 hours and the grid is twelve passes. The direction is reported; the magnitudes are the
-2,765-genome subset's.
+2,765-genome subset's. The published setting alone was re-scored over all 291,827
+genomes (§4.5) and the conclusion does not move, but the grid around it has not been.
 
 # 6. Reproducibility
 

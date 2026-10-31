@@ -168,6 +168,7 @@ def main() -> int:
                 print(f"  {year}: nothing deposited", flush=True)
                 continue
             ids = ncbi.search(term, limit=args.per_year)
+
             # Fetched and written in batches rather than a year at a time. Holding a
             # year of 50,000 genomes before writing cost about 1.5 GB of memory, and
             # one failed request in the middle lost every record already downloaded.
@@ -204,8 +205,7 @@ def main() -> int:
                     # be told apart from one that has hung.
                     handle.flush()
             print(
-                f"  {year}: {available:>9,} available, "
-                f"{kept:>4} dated of {len(ids):>5} requested",
+                f"  {year}: {available:>9,} available, {kept:>4} dated of {len(ids):>5} requested",
                 flush=True,
             )
 
