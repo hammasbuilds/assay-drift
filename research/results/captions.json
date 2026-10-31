@@ -1,0 +1,4 @@
+{
+ "fig1_clause_decomposition": "Which clause of the `likely_failing` rule produces the published rate, at the published settings (3' window 5, mismatch load 3), about 2,719 usable sequences per assay. The grey floor is the only clause a bench would not dispute - an oligo with no binding site cannot prime - and it is **zero for all five assays**: no sequence in this corpus loses an oligo outright. For Charite RdRp the 3'-window clause alone accounts for 0.1112 of a 0.1116 rate.",
+ "fig2_sensitivity_heatmap": "`likely_failing` for Charite RdRp across both thresholds, 2,759 usable sequences. The blue box is the published setting. The rate ranges from 0.1116 to 0.1174 across choices that are all defensible, and neither threshold was calibrated against a bench."
+}

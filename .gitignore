@@ -37,3 +37,7 @@ coverage.xml
 .venv-compare/
 # The expensive half of the comparison, cached on (genomes, seed, biopython version).
 docs/aligner-comparison.biopython-cache.json
+
+# The research environment. research/ and paper/ are experiment and manuscript
+# material, in neither the wheel nor the sdist.
+.venv-research/
