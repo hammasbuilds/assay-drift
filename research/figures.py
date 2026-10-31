@@ -126,3 +126,56 @@ def sensitivity_heatmap(grid: dict, assay: str = "Charite RdRp") -> tuple[Path, 
         "neither threshold was calibrated against a bench."
     )
     return (*_save(fig, "fig2_sensitivity_heatmap"), caption)
+
+
+# --- 3. where the rate actually comes from -------------------------------------------
+
+
+def three_prime_distribution(counts: dict[str, dict[int, int]]) -> tuple[Path, Path, str]:
+    """How many 3'-proximal mismatches each assay-genome pair carries: 0, 1, or two or more.
+
+    This is the figure the paper's section 4 turns on, and it is nearly empty by design.
+    `likely_failing` fires on **one** mismatch within five bases of a primer's 3' end.
+    Otwell et al. 2025 measured that configuration in vitro at about one cycle of Ct shift
+    and no false negative, and measured **two** at nine to twelve cycles and a genuine
+    false negative. So the question that decides whether the published rate means anything
+    is: are these single mismatches, or clusters?
+
+    Across 2,765 genomes and five assays, every one of them is a single mismatch. The
+    "two or more" column is zero everywhere. A bar chart of zeros is the honest way to
+    show that, because the alternative is a sentence the reader has to take on trust.
+    """
+    names = list(counts)
+    ones = [counts[a].get(1, 0) for a in names]
+    pairs = [sum(n for k, n in counts[a].items() if k >= 2) for a in names]
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
+    x = range(len(names))
+    width = 0.38
+    ax.bar([i - width / 2 for i in x], ones, width, color=ORANGE, edgecolor="white",
+           linewidth=0.6, label="exactly one 3'-proximal mismatch (tolerated in vitro)")
+    ax.bar([i + width / 2 for i in x], pairs, width, color=BLUE, edgecolor="white",
+           linewidth=0.6, label="two or more (the configuration that fails in vitro)")
+
+    for i, (a, b) in enumerate(zip(ones, pairs)):
+        ax.text(i - width / 2, a + max(ones) * 0.015, f"{a:,}", ha="center", fontsize=8.5)
+        ax.text(i + width / 2, b + max(ones) * 0.015, str(b), ha="center", fontsize=8.5,
+                color="#0072B2", fontweight="bold")
+
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(names, fontsize=9)
+    ax.set_ylabel("assay-genome pairs")
+    ax.set_ylim(0, max(ones) * 1.18)
+    ax.legend(frameon=False, fontsize=8.5, loc="upper left")
+    _bare(ax)
+    pdf, png = _save(fig, "fig3_three_prime_distribution")
+    total_ones, total_pairs = sum(ones), sum(pairs)
+    caption = (
+        f"Number of mismatches falling inside a primer's 3' window, per assay, over "
+        f"2,765 genomes. {total_ones:,} assay-genome pairs carry exactly one and "
+        f"{total_pairs} carry two or more. `likely_failing` fires on one; the only "
+        f"direct in-vitro measurement of one reports about a single cycle of Ct shift "
+        f"and no false negative, while two produce a 9-12 cycle shift and a real false "
+        f"negative. Charite RdRp's 11.16% is composed entirely of the left-hand bar."
+    )
+    return pdf, png, caption

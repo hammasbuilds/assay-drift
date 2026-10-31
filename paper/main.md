@@ -209,6 +209,33 @@ useful thing to watch and a different claim from the one the name makes.
 Accordingly the tool now reports the clustered rate beside the published one, and this
 paper's abstract and §3 are to be read with 4.3 in force.
 
+## 4.4 Figures
+
+All three rebuild via `python research/sensitivity.py && python research/run_all.py`.
+
+![Figure 1](../research/figures/fig1_clause_decomposition.png)
+
+**Figure 1.** Which clause of the `likely_failing` rule produces the published rate, at
+the published settings (3′ window 5, mismatch load 3), about 2,719 usable sequences per
+assay. The grey floor is the only clause a bench would not dispute — an oligo with no
+binding site cannot prime — and it is **zero for all five assays**. For Charité RdRp the
+3′-window clause alone accounts for 0.1112 of a 0.1116 rate.
+
+![Figure 2](../research/figures/fig2_sensitivity_heatmap.png)
+
+**Figure 2.** `likely_failing` for Charité RdRp across both thresholds, 2,759 usable
+sequences. The blue box is the published setting. The rate ranges from 0.1116 to 0.1174
+across choices that are all defensible, and neither threshold was calibrated against a
+bench.
+
+![Figure 3](../research/figures/fig3_three_prime_distribution.png)
+
+**Figure 3.** Mismatches falling inside a primer's 3′ window, per assay, over 2,765
+genomes: **395 assay–genome pairs carry exactly one and none carries two or more.** The
+rule fires on one. The only direct in-vitro measurement of one reports about a single
+cycle of Ct shift and no false negative; two produce a 9–12 cycle shift and a real one.
+Charité RdRp's 11.16% is composed entirely of the left-hand bars.
+
 # 5. Threats to validity
 
 **The failure rule is uncalibrated** (§4). This is the dominant threat and it is the
