@@ -168,6 +168,20 @@ def cached_genomes(count: int) -> list[tuple[str, str]]:
     return out
 
 
+def scratch_dir() -> Path:
+    """A temp parent on the same drive as this repository.
+
+    `tempfile` follows TMPDIR, which is C: here, and these scripts write generated
+    fixtures, JSON payloads and - in the sibling census scripts - whole package trees.
+    C: went from 58 GB free to 31 over one day of measurements because nothing said
+    which drive. CENSUS_SCRATCH overrides it, the same variable the census scripts use.
+    """
+    root = Path(os.environ.get("CENSUS_SCRATCH", str(ROOT.parent / "_census_scratch")))
+    out = root / "tmp"
+    out.mkdir(parents=True, exist_ok=True)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--genomes", type=int, default=20)
@@ -247,7 +261,7 @@ def main() -> int:
 
     theirs = 0.0
     start = time.perf_counter()
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=scratch_dir()) as tmp:
         payload = Path(tmp) / "pairs.json"
         if rows is None:
             payload.write_text(
