@@ -32,6 +32,11 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.16,<0.17"]
+# The nearest-neighbour cross-check in tests/test_thermo.py. Deliberately NOT in
+# `dev`: the default test run must pass without it, because a matrix that installs
+# nothing is what proves the "no runtime dependencies" claim rather than asserting
+# it. The oracle tests skip when it is absent and one CI job installs it.
+oracle = ["biopython>=1.80"]
 
 [project.scripts]
 assay-drift = "assaydrift.cli:main"
@@ -42,6 +47,8 @@ Issues = "https://github.com/hammasbuilds/assay-drift/issues"
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.16,<0.17"]
+# Same oracle extra as above, for `uv sync --group oracle`.
+oracle = ["biopython>=1.80"]
 
 [build-system]
 requires = ["hatchling"]

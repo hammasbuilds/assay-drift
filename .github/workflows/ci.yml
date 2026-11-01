@@ -31,3 +31,23 @@ jobs:
       # fails on someone else's outage.
       - run: pytest -q
       - run: python demo.py
+
+  # The nearest-neighbour cross-check needs Biopython, and the matrix above must not have
+  # it: a run that installs nothing is what proves the package has no runtime
+  # dependencies. So the oracle gets a job of its own. Without this job the cross-check
+  # would skip everywhere and the claim in section 4.6 would rest on a local run.
+  oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install "pytest>=8" "biopython>=1.80"
+      # Fail if the oracle is absent rather than skipping: a skipped cross-check in the
+      # one job that exists to run it is a green tick for nothing.
+      - run: python -c "import Bio; print(Bio.__version__)"
+      - run: pytest -q tests/test_thermo.py --no-header -rs
+      # And prove the oracle tests actually ran here, rather than skipping quietly.
+      - run: pytest -q tests/test_thermo.py -k biopython --no-header | tee /tmp/oracle.txt
+      - run: grep -qE "[0-9]+ passed" /tmp/oracle.txt && ! grep -q "skipped" /tmp/oracle.txt

@@ -341,6 +341,114 @@ against 4 severe-load genomes — which is why the tool now carries `three_prime
 count cannot say which clause fired, and the published 0.1829 was taken apart only
 because each clause is counted on its own.
 
+## 4.6 A second opinion that is not a rule of thumb
+
+Everything above argues about a threshold by argument. `THREE_PRIME_WINDOW = 5` is a
+primer-design convention, §4.1 shows the wet-lab literature licenses something weaker than
+the code applies, and §4.2 re-scores under the weaker reading. None of that compares the
+rule against a quantity measured independently of it, because until now the tool had no
+such quantity.
+
+Nearest-neighbour duplex thermodynamics is one. A duplex's stability is the sum of
+contributions from each stacked pair, with parameters measured by UV melting rather than
+chosen: Watson-Crick stacks from Allawi & SantaLucia (1997), internal mismatches from
+Allawi & SantaLucia (1997–1998), Peyret et al. (1999) and Watkins & SantaLucia (2005),
+terminal mismatches from SantaLucia & Peyret (2001), and the salt correction and framework
+from SantaLucia (1998) and SantaLucia & Hicks (2004). `assaydrift.thermo` implements the
+model with those tables vendored, and reports ΔΔG — the binding free energy the observed
+target gives up relative to a perfect complement — together with the same fact in degrees,
+ΔTm.
+
+The implementation is checked against Biopython's `MeltingTemp.Tm_NN`, an independent
+implementation of the same published model, over 35,204 duplexes covering every single
+substitution at every position of randomly drawn oligos plus every member of every
+degenerate pool in the catalogue. The two agree to floating-point noise. The check is
+two-sided: adjacent mismatches make a stack no published table covers, and where the
+oracle refuses to produce a number this module refuses too, rather than inventing one. That
+limitation is real and not hypothetical — C28311T and C28312T are adjacent bases of the
+same N1 probe.
+
+**The prediction, written before the measurement.** The 3′ rule exists because polymerase
+extends from that terminus. If it is a usable proxy for how much a mismatch costs, ΔΔG
+should rise towards the 3′ end, and the two should agree about which mismatches matter.
+
+**It does not.** `research/thermo_landscape.py` enumerates every single substitution in
+all fifteen published oligos — 1,029 of them, 663 on primers, none unscorable — and asks
+whether the positional rule picks out the expensive ones. It does not: the probability that
+a mismatch the rule flags costs more binding energy than one it ignores is **0.4605**,
+marginally worse than a coin flip, and the rank correlation between distance from the 3′ end
+and ΔΔG is **−0.055**. The flagged mismatches are on average *cheaper* than the unflagged
+ones, 3.126 against 3.421 kcal/mol.
+
+The mechanism is the 3′-terminal base itself. A mismatch there costs 0.811 kcal/mol on
+average; one base further in costs 3.704. A terminal pair frays and gives up one stack
+where an internal mismatch breaks two. So the position the rule treats as the most
+dangerous of all is the one that costs almost nothing to bind — and that is not a
+contradiction, it is the point. The two quantities are about different mechanisms. The rule
+is about extension from an unpaired 3′ terminus; ΔΔG is about whether the oligo binds at
+all. **Neither is a calibration of the other, and replacing the positional rule with a
+thermodynamic one would have discarded the extension mechanism entirely.** That is the
+first thing this section establishes, and it argues for keeping clause 2 rather than
+weakening it further.
+
+**What ΔΔG does add is a mechanism the rule cannot see.** Clause 3 of `likely_failing`
+counts mismatches — `SEVERE_MISMATCH_LOAD = 3` — and never weighs them, so a mismatch
+costing 5.3 kcal/mol and one costing 0.5 are the same fact to it. Scoring the named
+mutations of §4.5 against the annealing step the published protocols specify puts a number
+on what that misses. Of the 25 named mutations, 18 leave the oligo's Tm clear of the whole
+55–60 °C range, 6 land inside it, and one falls below all of it:
+
+| mutation | oligo | from 3′ | in window | ΔΔG | ΔTm | Tm | verdict | share of corpus |
+|---|---|---|---|---|---|---|---|---|
+| C28291A | N1-F | 15 | no | 5.26 | −9.76 | 53.56 | below 55 °C | 2.75% |
+| C26292T | E-F | 2 | yes | 5.63 | −7.89 | 55.99 | inside the range | 0.02% |
+| T15521A | RdRp-R | 16 | no | 3.40 | −3.82 | 56.38 | inside the range | 0.09% |
+| C29171T | N2-F | 12 | no | 4.60 | −7.16 | 56.59 | inside the range | 0.19% |
+| C26270T | E-F | 24 | no | 4.60 | −5.33 | 58.54 | inside the range | 56.61% |
+| C29215T | N2-R | 2 | yes | 3.67 | −6.56 | 58.89 | inside the range | 0.55% |
+| A26275G | E-F | 19 | no | 3.44 | −3.98 | 59.89 | inside the range | 1.67% |
+
+**Five of the seven sit outside the 3′ window**, and each is a single mismatch, so no
+clause of `likely_failing` fires for any of them. C28291A drops the CDC N1 forward primer
+to 53.56 °C, below even the low end of the range, in 2.75% of 291,827 genomes. C26270T
+drops the Charité E forward primer to 58.54 °C in 56.61% of them — from 24 bases away from
+the 3′ end, which is to say from the far 5′ end of the oligo, the region §4 and the rule
+both treat as harmless.
+
+Three cautions, because this is a model and not a bench.
+
+*The range is doing work.* Six of the seven clear 55 °C and fail 60 °C, so for them the
+answer is a fact about which protocol a laboratory ran rather than about the genome. That
+is why both ends are reported and neither is called "the" margin: a single threshold would
+have resolved those six by itself, silently, in whichever direction the threshold was
+picked. It also reconciles the Charité E result with the assay's history — the E assay
+stayed in clinical use through Omicron, and at 55 °C C26270T clears by 3.54 °C.
+
+*The probes were the near-miss.* The N1 probe mutation C28311T is carried by 57.19% of the
+corpus and gives up 5.24 kcal/mol, a 6.63 °C drop — which reads as alarming until the
+margin is computed. Hydrolysis probes are designed hot, and every one of the twelve named
+probe mutations still clears 60 °C with at least 4.5 °C to spare. The alarming version of
+this paragraph was written first and the margin calculation refuted it. It also vindicates
+the existing code: clause 2 ignores probe 3′ ends, and nothing here gives a reason to
+change that.
+
+*ΔΔG is not a failure prediction.* A two-state duplex model contains no polymerase, no
+cycling and no extension. It ranks mismatches by how much binding they cost and says
+nothing about whether a reaction yields product. The quantity is reported as a difference
+rather than as an absolute ΔG for the same reason: the mismatch parameters carry about 6.4%
+average deviation on ΔG°37, and a difference between two duplexes sharing every stack but
+one cancels most of it.
+
+**What this changes in the paper.** Nothing in §4.5's published rates, which are the
+positional rule's output and stay as they are. What it changes is the direction of the
+threat. §4 is about `likely_failing` being too *loose* — flagging assays that laboratories
+were still running. §4.6 says it is also too *tight* on an axis it cannot see: a
+count-based load clause cannot distinguish a mismatch that costs a tenth of a degree from
+one that costs ten, and the largest binding losses in this corpus are carried by mutations
+no clause of the rule flags at all. Both are failures of the same kind — a rule with
+numbers in it that were never measured — and the second one was invisible until there was
+something independent to measure it against.
+
 # 5. Threats to validity
 
 **The failure rule is uncalibrated** (§4). This is the dominant threat and it is the
@@ -399,7 +507,13 @@ not a result. `tests/test_published_numbers.py` checks every figure in the READM
 the result file it came from, per corpus. The figures and the grid rebuild with
 `research/sensitivity.py`, and section 5's length-threshold figures with
 `research/length_threshold.py`; `tests/test_length_threshold_claims.py` compares the
-latter's numbers against the prose that quotes them.
+latter's numbers against the prose that quotes them. Section 4.6's thermodynamics rebuild
+with `research/thermo_landscape.py`, which needs no corpus - it is exhaustive over the
+fifteen published oligos - and `tests/test_thermo.py` both reads its table back out of the
+manuscript and checks `assaydrift.thermo` against Biopython over 35,204 duplexes. Biopython
+is a test-only oracle: the default CI matrix installs nothing but pytest and ruff, which is
+what proves the package has no runtime dependencies, and a separate job installs the oracle
+so the cross-check actually runs somewhere.
 
 # References
 
@@ -418,6 +532,11 @@ latter's numbers against the prose that quotes them.
   carrying paired mismatches of concern, defined as a mismatch in the 3′ half of a primer
   in **both** assays of a two-assay panel.
   <https://doi.org/10.1093/ofid/ofad500.522>
+- [@allawi1997] Allawi, H. T. and SantaLucia, J. *Thermodynamics and NMR of Internal G·T Mismatches in DNA.* Biochemistry 36(34):10581–10594, 1997. Nearest-neighbour parameters for Watson-Crick stacks and for internal mismatches. <https://doi.org/10.1021/bi962590c>
+- [@santalucia1998] SantaLucia, J. *A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics.* PNAS 95(4):1460–1465, 1998. The unified parameter set and the length-dependent salt correction used here. <https://doi.org/10.1073/pnas.95.4.1460>
+- [@peyret1999] Peyret, N., Seneviratne, P. A., Allawi, H. T. and SantaLucia, J. *Nearest-Neighbor Thermodynamics and NMR of DNA Sequences with Internal A·A, C·C, G·G, and T·T Mismatches.* Biochemistry 38(12):3468–3477, 1999. <https://doi.org/10.1021/bi9825091>
+- [@santalucia2004] SantaLucia, J. and Hicks, D. *The Thermodynamics of DNA Structural Motifs.* Annu. Rev. Biophys. Biomol. Struct. 33:415–440, 2004. Reports about 6.4% average deviation on ΔG°37 for mismatched duplexes, the figure §4.6 quotes. <https://doi.org/10.1146/annurev.biophys.32.110601.141800>
+- [@vonahsen2001] von Ahsen, N., Wittwer, C. T. and Schütz, E. *Oligonucleotide Melting Temperatures under PCR Conditions.* Clin. Chem. 47(11):1956–1961, 2001. The magnesium-to-sodium equivalence used in the salt correction. <https://doi.org/10.1093/clinchem/47.11.1956>
 - [@lefever2013] Lefever, S., Pattyn, F., Hellemans, J. and Vandesompele, J. *Single-Nucleotide Polymorphisms and Other Mismatches Reduce Performance of Quantitative PCR Assays.* Clin. Chem. 59(10):1470–1480, 2013. <https://doi.org/10.1373/clinchem.2013.203653>
 
 > **Citation status.** @wetlab2025 **has now been read** — the article text, not a search

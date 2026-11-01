@@ -303,6 +303,47 @@ CDC withdrew its EUA request for the 2019-nCoV Real-Time RT-PCR Diagnostic Panel
 [2021-12-31](https://www.aacc.org/cln/articles/2021/september/cdc-planning-to-withdraw-request-for-eua-of-sars-cov-2-pcr-test),
 because other tests had been authorised, not because it stopped detecting its target.
 
+### Does the 3' rule track binding energy? No
+
+The published rate rests on a positional rule: a mismatch in the last five bases of a primer counts as stopping the
+reaction. That is a primer-design convention, not a measurement, so `assaydrift.thermo` computes one that is -
+nearest-neighbour duplex free energy, with the parameters of Allawi & SantaLucia (1997), Peyret et al. (1999),
+SantaLucia & Peyret (2001) and SantaLucia (1998) - and the two are compared over every single substitution in all
+fifteen published oligos.
+
+They do not agree. The probability that a mismatch the rule flags costs more binding energy than one it ignores is
+**0.4605**, slightly worse than a coin flip, and the rank correlation between distance from the 3' end and the
+energy cost is **-0.055**. The reason is the 3' terminal base itself: a mismatch there costs **0.811 kcal/mol** on
+average against **3.704** one base further in, because a terminal pair frays and gives up one stack where an
+internal mismatch breaks two.
+
+That is not an argument for dropping the rule - the two measure different mechanisms, extension versus binding - but
+it does expose a gap. Scored against the 55-60 C annealing step the protocols specify, seven of the twenty-five
+named mutations leave a primer's melting temperature inside or below that range, and **five of the seven sit outside
+the 3' window**, each as a single mismatch, so no clause of the rule fires for any of them:
+
+| mutation | oligo | bases from 3' | in window | ddG kcal/mol | dTm C | Tm C | share of corpus |
+|---|---|---|---|---|---|---|---|
+| C28291A | N1-F | 15 | no | 5.26 | -9.76 | 53.56 | 2.75% |
+| C26292T | E-F | 2 | yes | 5.63 | -7.89 | 55.99 | 0.02% |
+| T15521A | RdRp-R | 16 | no | 3.40 | -3.82 | 56.38 | 0.09% |
+| C29171T | N2-F | 12 | no | 4.60 | -7.16 | 56.59 | 0.19% |
+| C26270T | E-F | 24 | no | 4.60 | -5.33 | 58.54 | 56.61% |
+| C29215T | N2-R | 2 | yes | 3.67 | -6.56 | 58.89 | 0.55% |
+| A26275G | E-F | 19 | no | 3.44 | -3.98 | 59.89 | 1.67% |
+
+C26270T is carried by 56.61% of 291,827 genomes and sits 24 bases from the 3' end - the far 5' end of the oligo,
+the region the rule treats as harmless. Only C28291A falls below the whole range; the other six clear 55 C and fail
+60 C, which makes them a fact about which protocol a laboratory ran rather than about the genome, and is why both
+ends are reported instead of one margin.
+
+The twelve named *probe* mutations all clear 60 C with at least 4.5 C to spare, including the one carried by 57.19%
+of the corpus. The alarming reading of that mutation was written first and the margin calculation refuted it.
+
+The model is cross-checked against Biopython over 35,204 duplexes and agrees to floating-point noise, in both
+directions: where the published tables have no value - two adjacent mismatches - both implementations refuse rather
+than inventing one. Rebuild with `python research/thermo_landscape.py`, which needs no corpus.
+
 ## Tech stack
 
 - Python 3.10+, standard library only: `urllib` for NCBI E-utilities, `re`, `json`, `gzip`, `argparse`
