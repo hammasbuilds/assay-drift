@@ -133,6 +133,12 @@ ANALYSIS_SOURCES = (
     "scripts/analyse.py",
 )
 
+# The oldest interpreter whose `source_digest` agrees with every later one. Below this,
+# `ast.unparse` renders `lambda :` with a space and parenthesises tuple targets, so the
+# digest differs for reasons that are not a change in the code. The staleness test skips
+# there and says why; it does not compare and fail.
+ANALYSIS_DIGEST_STABLE_FROM = (3, 11)
+
 
 def source_digest(root: Path | None = None) -> str | None:
     """A digest of the analysis code's *syntax tree*, not of its bytes.
@@ -143,10 +149,19 @@ def source_digest(root: Path | None = None) -> str | None:
     date of all three files and would have demanded another three-hour run to republish
     identical results.
 
-    `ast.dump` drops comments, blank lines and every formatting choice while keeping
-    every expression, so reformatting leaves this digest unchanged and editing a
+    `ast.unparse` renders the tree back to canonical source: comments, blank lines,
+    quote style, trailing commas and every other formatting choice are gone, while every
+    expression remains, so reformatting leaves this digest unchanged and editing a
     threshold does not. Docstrings are kept: they carry the thresholds' justifications
     and a changed one is worth noticing.
+
+    **Not `ast.dump`**, which was the first version of this and could never pass on a
+    second interpreter. `ast.dump` prints every AST field by name and the field set
+    changes with the language, so over these three files it produces three different
+    digests across 3.10 to 3.14. `ast.unparse` produces one digest from 3.11 on; 3.10
+    differs only in cosmetics it rendered differently - `lambda :` with a space, and
+    parentheses around tuple targets - and `_ANALYSIS_DIGEST_STABLE_FROM` records that
+    so the staleness test can skip rather than fail there.
 
     None when a source cannot be read or parsed, which the test treats as "cannot say"
     rather than as agreement.
@@ -163,7 +178,7 @@ def source_digest(root: Path | None = None) -> str | None:
         except (OSError, SyntaxError):
             return None
         out.update(name.encode("utf-8"))
-        out.update(ast.dump(tree, include_attributes=False).encode("utf-8"))
+        out.update(ast.unparse(tree).encode("utf-8"))
     return out.hexdigest()
 
 
@@ -438,6 +453,10 @@ def main() -> int:
         "source_revision": _source_revision(),
         # What the staleness guard compares. See `source_digest`.
         "analysis_source_digest": source_digest(),
+        # Which interpreter rendered that digest. `ast.unparse` agrees from 3.11 on and
+        # 3.10 renders tuple targets and `lambda :` differently, so a reader comparing
+        # two artefacts needs to know whether a difference is the code or the compiler.
+        "analysis_source_python": f"{sys.version_info[0]}.{sys.version_info[1]}",
         # Built from this run's arguments. It was a constant, so a file produced from the
         # 291,827-sequence corpus carried the command that rebuilds the 2,765-sequence one
         # - the same defect as `manifest` naming data/accessions.tsv whatever was read,

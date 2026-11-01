@@ -182,7 +182,23 @@ def test_the_big_results_come_from_the_code_in_this_repository():
     So the comparison is a digest of the sources' *syntax trees*, recorded in the artefact
     when it was generated. Reformatting leaves it unchanged; editing a threshold, a
     comparison or a docstring does not.
+
+    The fourth version fixed the thing the third hid. This test had never run in CI,
+    because the module skipped there on a corpus that is not committed, and the moment
+    it did run it failed on every runner: the digest was `ast.dump`, which prints every
+    AST field by name, and the field set changes with the language. Over these three
+    files it produces three different digests across 3.10 to 3.14 - so the guard could
+    pass only on the interpreter that generated the artefact. `ast.unparse` produces one
+    digest from 3.11 on, and 3.10 differs only in cosmetics it renders differently, so
+    the comparison is skipped there and said to be skipped rather than normalised away
+    with regular expressions.
     """
+    if sys.version_info[:2] < (3, 11):
+        pytest.skip(
+            "ast.unparse renders `lambda :` with a space and parenthesises tuple "
+            "targets before 3.11, so the digest differs for reasons that are not a "
+            "change in the analysis code"
+        )
     run = json.loads(DRIFT_BIG.read_text(encoding="utf-8"))["_run"]
     recorded = run.get("analysis_source_digest")
     if recorded is None:
@@ -275,3 +291,73 @@ def test_the_digest_ignores_formatting_and_notices_a_changed_threshold(tmp_path)
     assert plant("gutted", gut) != original, (
         "the digest did not move when AssayResult.usable was replaced with True"
     )
+
+
+def test_the_digest_is_the_same_under_every_interpreter_from_3_11():
+    """The claim the skip above rests on, checked against real interpreters.
+
+    `ANALYSIS_DIGEST_STABLE_FROM` is an assertion about other Python versions, and an
+    assertion about versions you cannot run is a guess. uv keeps the whole supported
+    range on this machine, so where they exist the digest is computed under each and
+    compared; where they do not, this skips rather than pretending.
+
+    The reason it matters: the previous digest was `ast.dump`, which disagreed across
+    3.10/3.11, 3.12, and 3.13/3.14 - three different values for one unchanged tree -
+    and nothing noticed until the guard ran on a second interpreter for the first time.
+    """
+    import os
+    import subprocess  # noqa: PLC0415
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from analyse import ANALYSIS_DIGEST_STABLE_FROM, source_digest  # noqa: PLC0415
+
+    home = os.environ.get("UV_PYTHON_INSTALL_DIR") or os.path.expanduser(
+        "~/AppData/Roaming/uv/python"
+    )
+    base = Path(home)
+    if not base.is_dir():
+        pytest.skip(f"no interpreter collection at {base}")
+
+    probe = (
+        "import sys, pathlib;"
+        f"sys.path.insert(0, {str(ROOT / 'scripts')!r});"
+        "from analyse import source_digest;"
+        f"print(source_digest(pathlib.Path({str(ROOT)!r})))"
+    )
+
+    digests: dict[tuple[int, int], str] = {}
+    for entry in sorted(base.glob("cpython-3.*-*")):
+        exe = entry / "python.exe"
+        if not exe.is_file():
+            exe = entry / "bin" / "python3"
+        if not exe.is_file():
+            continue
+        try:
+            version = subprocess.run(
+                [str(exe), "-I", "-c", "import sys;print(sys.version_info[0],sys.version_info[1])"],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+            if version.returncode != 0:
+                continue
+            major, minor = (int(x) for x in version.stdout.split())
+            if (major, minor) < ANALYSIS_DIGEST_STABLE_FROM:
+                continue
+            got = subprocess.run(
+                [str(exe), "-I", "-c", probe], capture_output=True, text=True, timeout=120
+            )
+        except (OSError, ValueError, subprocess.SubprocessError):
+            continue
+        if got.returncode == 0 and got.stdout.strip() not in {"", "None"}:
+            digests[(major, minor)] = got.stdout.strip()
+
+    if len(digests) < 2:
+        pytest.skip(f"fewer than two interpreters at or above {ANALYSIS_DIGEST_STABLE_FROM}")
+
+    assert len(set(digests.values())) == 1, (
+        f"the digest is not stable across interpreters: "
+        f"{ {v: d[:12] for v, d in sorted(digests.items())} }"
+    )
+    here = source_digest(ROOT)
+    assert here in set(digests.values()), (here, sorted(digests))

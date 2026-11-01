@@ -1,0 +1,25 @@
+{
+ "what": "Record lengths in the 291,827-record corpus, to say how much the 25,000-base MIN_WHOLE_GENOME threshold decides. Only the length field is read.",
+ "records": 291827,
+ "published_threshold": 25000,
+ "below_published": 1,
+ "largest_below": 2859,
+ "smallest_at_or_above": 28645,
+ "gap_around_the_threshold": 25786,
+ "count_below_each_candidate": {
+  "20000": 1,
+  "25000": 1,
+  "30000": 291825
+ },
+ "classification_moves_between_candidates": {
+  "20000->25000": 0,
+  "25000->30000": 291824
+ },
+ "percentiles": {
+  "min": 2859,
+  "p01": 29559,
+  "p05": 29657,
+  "median": 29810,
+  "max": 30026
+ }
+}

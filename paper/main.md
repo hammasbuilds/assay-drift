@@ -365,6 +365,22 @@ reported as a lost oligo, because that is the finding the rule must not be able 
 A threat bullet that describes a guard is worth only as much as the guard, and this one
 was describing a narrower check than it claimed.
 
+**The 25,000-base constant is itself an uncalibrated threshold.** The bullet above fixes
+one rule by introducing a second number chosen by judgement, in a paper whose §4 is about
+precisely that. `research/length_threshold.py` reads only the `length` field of all
+291,827 records and reports where they fall: exactly one is below 25,000 bases (LR877184,
+2,859), the shortest record at or above it is 28,645, and the 25,786 bases between them
+are empty. Every threshold in that band classifies the corpus identically, so the
+published value is not doing any work it could do differently. The asymmetry matters more
+than the band: at 30,000 bases — a fifth higher, and 26 bases short of this corpus's
+longest record at 30,026 — the clause would flip for 291,824 records, leaving two of
+291,827 on the other side of it and swallowing the corpus whole. The constant is safe
+downward across a wide band and ruinous just upward, and it is safe only because an NCBI
+complete-genome filter made the corpus near-uniformly full-length (median 29,810, 1st
+percentile 29,559). That is a property of the corpus, not of the method: on a
+fragment-rich set the number would need calibrating, and this paper has not calibrated
+it.
+
 **One alignment implementation.** The matcher is compared against Biopython's
 `PairwiseAligner` on 300 oligo–genome pairs: 270 agree on the binding site, and every
 full-length disagreement is a published primer's deliberate degenerate base that a
@@ -381,7 +397,9 @@ Both corpora rebuild from committed manifests — `data/accessions.tsv` and
 `data/accessions_big.tsv.gz` — because a published rate whose corpus cannot be rebuilt is
 not a result. `tests/test_published_numbers.py` checks every figure in the README against
 the result file it came from, per corpus. The figures and the grid rebuild with
-`research/sensitivity.py`.
+`research/sensitivity.py`, and section 5's length-threshold figures with
+`research/length_threshold.py`; `tests/test_length_threshold_claims.py` compares the
+latter's numbers against the prose that quotes them.
 
 # References
 
