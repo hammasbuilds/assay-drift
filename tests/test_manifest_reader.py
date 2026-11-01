@@ -25,7 +25,11 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import analyse  # noqa: E402
+# Imported under a guard. CI's second job copies `tests/` alone next to an installed
+# distribution, where `scripts/` does not exist; a bare `import analyse` raises
+# ModuleNotFoundError during collection, which fails the whole job rather than skipping
+# this file. Both modules in this repository that reach into `scripts/` did that.
+analyse = pytest.importorskip("analyse", reason="scripts/ is not shipped with the tests")
 import fetch  # noqa: E402
 
 READERS = pytest.mark.parametrize(

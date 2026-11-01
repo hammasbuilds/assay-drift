@@ -38,9 +38,11 @@ measured directly, at about one cycle of Ct shift and no false negative. At 291,
 genomes the pair does appear, **52 times in 54,755 3′-proximal hits, 0.095% of them**
 (§4.5), which puts a measured base rate under the surveillance claim instead of an
 absence. We therefore
-withdraw our most alarming number, Charité RdRp's 11.16%, as a failure prediction and
-reframe the category as **surveillance**: those genomes are one mutation away from a
-configuration that does have wet-lab evidence behind it (§4).
+withdraw our most alarming number as a failure prediction — Charité RdRp's **18.29%** on
+the 291,827-genome corpus, 11.16% on the 2,765-genome one, which fall to 0.00018 and
+0.0004 when clause 2 requires the two mismatches the bench measured — and reframe the
+category as **surveillance**: those genomes are one mutation away from a configuration
+that does have wet-lab evidence behind it (§4, §4.5).
 
 # 1. Introduction
 
@@ -59,10 +61,23 @@ primer/probe sets from eight laboratory-developed tests and found most with no m
 in over 98% of genomes, with three sets problematic [@pcrstrainer]. A 2025 wet-lab study
 tested assays in vitro and found most performed well despite mismatches, measured by PCR
 efficiency and Ct shift — concluding that in-silico false-negative predictions may
-overstate risk [@wetlab2025].
+overstate risk [@wetlab2025]. A 2021 study re-evaluated eleven primer/probe sets against
+84,305 genomes collected between June 2020 and January 2021 and reported the China CDC
+N-gene assay's inclusivity continuing to fall as new mismatches appeared, the others
+holding above 99% [@genes2021]. BioFire runs the only ongoing programme of this kind we
+found: monthly in-silico screening that had covered 12,744,136 sequences by March 2023
+[@biofire2023].
 
-None of those reports a time series with a stated independence structure, and the last of
-them is a direct challenge to the category this tool's most alarming verdict belongs to.
+**What is new here, stated narrowly.** Time series of this kind exist — [@genes2021] is
+one, over seven months and eleven assays, and [@biofire2023] is a continuing one. Neither
+reports an **independence structure**: both count sequences, and sequences deposited in
+one submission are not independent observations of a virus population. Neither publishes
+a per-period effective sample size, and neither states a floor a period must clear before
+it may carry an endpoint. Those are this paper's methodological contribution, over a
+span — 2020 to 2026 — roughly ten times the longer of the two. The claim that no time
+series existed appeared in an earlier draft and was false; it is the fourth absence-based
+claim in this author's related work to fail on a second literature pass, and the pattern
+is recorded in the citation note rather than the single correction.
 
 **Contributions.**
 
@@ -214,11 +229,16 @@ one mutation away from a configuration with wet-lab evidence behind it, and that
 useful thing to watch and a different claim from the one the name makes.
 
 Accordingly the tool now reports the clustered rate beside the published one, and this
-paper's abstract and §3 are to be read with 4.3 in force.
+paper's abstract and §3 are to be read with 4.3 in force. §4.5 carries the whole argument
+to the 291,827-genome corpus, where the rate being withdrawn is 0.1829 rather than 0.1116
+and the conclusion is the same.
 
 ## 4.4 Figures
 
-All three rebuild via `python research/sensitivity.py && python research/run_all.py`.
+All four rebuild via `python research/sensitivity.py && python research/run_all.py`.
+Figures 1 to 3 are over the 2,765-genome corpus, because the sensitivity grid is twelve
+three-hour passes; Figure 4 is the published setting over all 291,827 genomes, which
+needs no grid.
 
 ![Figure 1](../research/figures/fig1_clause_decomposition.png)
 
@@ -242,6 +262,10 @@ genomes: **395 assay–genome pairs carry exactly one and none carries two or mo
 rule fires on one. The only direct in-vitro measurement of one reports about a single
 cycle of Ct shift and no false negative; two produce a 9–12 cycle shift and a real one.
 Charité RdRp's 11.16% is composed entirely of the left-hand bars.
+
+![Figure 4](../research/figures/fig4_big_corpus_decomposition.png)
+
+**Figure 4.** The re-scoring of section 4.5 over all 291,827 genomes, at the published settings, 281,456 to 289,945 usable sequences per assay. Clause 1 - an oligo with no binding site, the only clause a bench would not dispute - is zero for all five and so does not appear. Requiring **two** 3'-proximal mismatches instead of one divides Charité RdRp's rate by 990 and leaves CDC N1's essentially unchanged (0.0062 to 0.0050), because N1's rate is mismatch load and RdRp's is single 3'-proximal mismatches. The pair does occur at this corpus size - 52 times in 54,755 3'-proximal hits - which is what makes the surveillance framing a measured claim rather than an absence.
 
 ## 4.5 The same re-scoring over 291,827 genomes
 
@@ -285,8 +309,23 @@ zeroes in §4.2 is not:
 | Charité E | 98 | 0 | 0% |
 | Charité RdRp | 51,465 | 48 | 0.093% |
 
-52 pairs in 54,755 3′-proximal hits, and 52 in 1,434,094 assay–genome evaluations. This
-strengthens §4.3 rather than weakening it: the configuration Otwell et al. found does
+52 pairs in 54,755 3′-proximal hits, and 52 in 1,434,094 assay–genome evaluations —
+0.0036% of evaluations.
+
+**An external number, and why it is not a validation.** BioFire's ongoing surveillance
+reports 481 of 12,744,136 sequences, **0.0038%**, carrying "paired mismatches of concern"
+[@biofire2023]. The two figures agree to one significant figure and they are not the same
+quantity. Theirs is a 3′-half mismatch in *both* assays of a two-assay panel; ours is two
+mismatches inside one primer's 3′ window. An agreement in magnitude between two different
+definitions is a coincidence until someone computes one of them on the other's corpus,
+and this paper does not. What does carry over is their design argument: a panel that calls
+positive on either of two independent targets tolerates a mismatch that would be
+diagnostic failure for a single-target test. All five assays studied here are
+single-target laboratory-developed tests, so the mitigation that makes 0.0038% tolerable
+for BioFire does not apply to them — which is a reason to watch the configuration, and
+the same conclusion §4.3 reaches from the other direction.
+
+This strengthens §4.3 rather than weakening it: the configuration Otwell et al. found does
 cause false negatives is **reachable** — it was reached, by two assays, in six quarters —
 and its base rate among the genomes `likely_failing` flags is about one in a thousand.
 That is what "one mutation away" is worth as a number, and it is a figure only a corpus of
@@ -351,6 +390,16 @@ the result file it came from, per corpus. The figures and the grid rebuild with
 - [@primermonitor] *Primer Monitor: an online tool to track SARS-CoV-2 variants that may impact primers used in diagnostic assays.* New England Biolabs.
 - [@pcrstrainer] *PCR_strainer* — assessment of 15 primer/probe sets from eight laboratory-developed tests.
 - [@wetlab2025] Otwell, T., Knight, B., Coryell, M., Stone, J., Davis, P., Necciai, B., Carlson, P. and Sozhamannan, S. *Reality check: testing the in silico predictions of false negative results due to mutations in SARS-CoV-2 PCR assays using templates with mismatches in vitro.* Front. Cell. Infect. Microbiol. 15, 2025. <https://doi.org/10.3389/fcimb.2025.1524025>
+- [@genes2021] *Deepening of In Silico Evaluation of SARS-CoV-2 Detection RT-qPCR Assays
+  in the Context of New Variants.* Genes 12(4):565, 2021. Eleven primer/probe sets against
+  84,305 genomes collected June 2020 to January 2021.
+  <https://doi.org/10.3390/genes12040565>
+- [@biofire2023] *Ongoing Surveillance of SARS-CoV-2 for In Silico Analysis to Monitor the
+  Performance of SARS-CoV-2 Assays in BIOFIRE Panels.* Open Forum Infect. Dis. 10(Suppl 2),
+  abstract 452, 2023. 12,744,136 sequences analysed as of 21 March 2023; 481 (0.0038%)
+  carrying paired mismatches of concern, defined as a mismatch in the 3′ half of a primer
+  in **both** assays of a two-assay panel.
+  <https://doi.org/10.1093/ofid/ofad500.522>
 - [@lefever2013] Lefever, S., Pattyn, F., Hellemans, J. and Vandesompele, J. *Single-Nucleotide Polymorphisms and Other Mismatches Reduce Performance of Quantitative PCR Assays.* Clin. Chem. 59(10):1470–1480, 2013. <https://doi.org/10.1373/clinchem.2013.203653>
 
 > **Citation status.** @wetlab2025 **has now been read** — the article text, not a search
@@ -368,6 +417,19 @@ the result file it came from, per corpus. The figures and the grid rebuild with
 > submission — in particular to check whether its results section reports anything about
 > single mismatches at 1–2 bases from the 3′ terminus, which the abstract does not and
 > which is the exact configuration §4.2 turns on.
+>
+> @biofire2023 **was read** — it is a conference abstract, so there is little to read,
+> and both numbers quoted here (12,744,136 and 481 / 0.0038%) and its definition of a
+> paired mismatch are taken from its own sentences. The definition is quoted because it
+> differs from ours, which is the whole point of the comparison in §4.5.
+>
+> @genes2021 is **quoted from a search summary**: the publisher returns 403 and the PMC
+> mirror is behind a browser check. The three facts used of it — eleven primer/probe
+> sets, 84,305 genomes, June 2020 to January 2021, the China CDC N assay's inclusivity
+> falling while the others held above 99% — must be confirmed against the article before
+> submission, and the §1 contribution claim rests on a *negative* about it (that it
+> reports no independence structure) which a summary cannot establish. That negative is
+> the weakest sentence in §1 and is flagged as such here rather than in the text.
 >
 > The remaining four references are still quoted from search summaries and must be read
 > before submission.

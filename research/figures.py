@@ -11,6 +11,7 @@ answering a question nobody asked.
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import matplotlib
@@ -239,3 +240,102 @@ def three_prime_distribution(counts: dict[str, dict[int, int]]) -> tuple[Path, P
         f"negative. Charite RdRp's 11.16% is composed entirely of the left-hand bar."
     )
     return pdf, png, caption
+
+
+def big_corpus_decomposition(totals: dict[str, dict[str, int]]) -> tuple[Path, Path, str]:
+    """The withdrawal, over 291,827 genomes rather than 2,765.
+
+    Figures 1 to 3 are all drawn over the 2,765-genome corpus, because the sensitivity
+    grid is twelve three-hour passes and only one of them was affordable at the larger
+    size. Section 4.5 re-scored the *published setting* over all 291,827 genomes, which
+    needs no grid - and a reviewer reading three figures over a corpus a hundred times
+    smaller than the paper's headline is entitled to ask why the large one has none.
+
+    A log axis, because the two rates differ by three orders of magnitude for Charite
+    RdRp and by none at all for CDC N1. That difference is the finding: for RdRp the
+    published rate is made almost entirely of single 3'-proximal mismatches, which the
+    only direct in-vitro measurement says do not cause a false negative; for N1 it is
+    made of mismatch load, which the re-scoring leaves untouched.
+    """
+    published, clustered, labels = [], [], []
+    for assay in ASSAYS:
+        t = totals[assay]
+        usable = t["usable"]
+        published.append(t["failing"] / usable)
+        clustered.append((t["three_prime_pair"] + t["severe_load"]) / usable)
+        labels.append(assay)
+
+    x = range(len(labels))
+    width = 0.38
+    fig, ax = plt.subplots(figsize=(7.6, 4.4))
+    ax.bar(
+        [i - width / 2 for i in x],
+        published,
+        width=width,
+        color=ORANGE,
+        hatch="..",
+        edgecolor="white",
+        linewidth=0.6,
+        label="published: one mismatch in a primer's last five bases",
+    )
+    ax.bar(
+        [i + width / 2 for i in x],
+        clustered,
+        width=width,
+        color=BLUE,
+        edgecolor="white",
+        linewidth=0.6,
+        label="re-scored: two or more (the configuration that fails in vitro)",
+    )
+    ax.set_yscale("log")
+    floor = min([v for v in published + clustered if v > 0]) / 4
+    ax.set_ylim(floor, 3.0)
+
+    def two_figures(value: float) -> str:
+        """Two significant figures, which is all these rates carry."""
+        if value == 0:
+            return "0"
+        places = max(0, -int(math.floor(math.log10(value))) + 1)
+        return f"{value:.{places}f}"
+
+    for i, (a, b) in enumerate(zip(published, clustered, strict=True)):
+        # Four decimals for the published rate, because that is how sections 4.5 and
+        # the README print it and a figure that rounds it to 0.18 reads as a different
+        # number from the table beside it.
+        ax.text(i - width / 2, a * 1.25, f"{a:.4f}", ha="center", fontsize=8)
+        ax.text(i + width / 2, b * 1.25, two_figures(b), ha="center", fontsize=8)
+        # Above both bars, not along the floor: on a log axis the floor is where the
+        # shorter bar starts, so a label there sits behind the taller one.
+        ax.text(
+            i,
+            max(a, b) * 4.0,
+            f"÷ {a / b:,.0f}" if b > 0 and a / b >= 2 else "unchanged",
+            ha="center",
+            fontsize=8.5,
+            color="#444444",
+            fontweight="medium",
+        )
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(labels, fontsize=9, rotation=15, ha="right")
+    ax.set_ylabel("share of usable sequences called likely_failing (log)", fontsize=10)
+    ax.legend(fontsize=8, frameon=False, loc="upper left")
+    _bare(ax)
+
+    rdrp = ASSAYS.index("Charite RdRp")
+    n1 = ASSAYS.index("CDC N1")
+    pairs = sum(t["three_prime_pair"] for t in totals.values())
+    hits = sum(t["three_prime"] for t in totals.values())
+    caption = (
+        "The re-scoring of section 4.5 over all 291,827 genomes, at the published "
+        f"settings, {min(t['usable'] for t in totals.values()):,} to "
+        f"{max(t['usable'] for t in totals.values()):,} usable sequences per assay. "
+        "Clause 1 - an oligo with no binding site, the only clause a bench would not "
+        "dispute - is zero for all five and so does not appear. Requiring **two** "
+        "3'-proximal mismatches instead of one divides Charite RdRp's rate by "
+        f"{published[rdrp] / clustered[rdrp]:,.0f} and leaves CDC N1's essentially "
+        f"unchanged ({published[n1]:.4f} to {clustered[n1]:.4f}), because N1's rate is "
+        "mismatch load and RdRp's is single 3'-proximal mismatches. The pair does occur "
+        f"at this corpus size - {pairs} times in {hits:,} 3'-proximal hits - which is "
+        "what makes the surveillance framing a measured claim rather than an absence."
+    )
+    return (*_save(fig, "fig4_big_corpus_decomposition"), caption)

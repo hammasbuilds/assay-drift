@@ -62,11 +62,22 @@ def default_manifest(data: Path) -> Path:
     fetch.py writes data/sequences.jsonl beside data/accessions.tsv, and
     data/sequences_big.jsonl beside data/accessions_big.tsv, so the name follows the data
     rather than being fixed.
+
+    The large manifest is committed gzipped - 13.4 MB of text against 1.54 MB - so the
+    plain `.tsv` exists only where fetch.py has decompressed it. Falling back to the
+    `.gz`, which `_manifest_lines` reads, is the difference between a fresh clone
+    recording its corpus identity and recording `manifest: null` with the manifest
+    sitting in the same directory.
     """
     name = data.name.replace("sequences", "accessions")
     if name.endswith(".jsonl"):
         name = name[: -len(".jsonl")] + ".tsv"
-    return data.parent / name
+    plain = data.parent / name
+    if not plain.is_file():
+        gzipped = data.parent / f"{name}.gz"
+        if gzipped.is_file():
+            return gzipped
+    return plain
 
 
 def show(path: Path) -> str:
@@ -196,15 +207,21 @@ def _reproduce(args: argparse.Namespace, manifest: Path) -> str:
     Paths go through show(), so a manifest outside the repository prints as an absolute
     path rather than raising - and data/ in this checkout is a Windows junction, which
     is why show() uses absolute() and not resolve().
+
+    The manifest is named whether or not it is on disk. It was `if manifest.is_file()`,
+    which made the recorded command depend on the state of the tree at the moment the
+    string was formatted rather than on the run it describes: this repository ships the
+    large manifest gzipped, so every clone would have been handed a command with no
+    `--manifest` in it, rebuilding the 2,765-genome corpus under the name of the
+    291,827-genome one. The local tree happened to hold a decompressed copy, so the
+    guard passed here and failed on every CI runner, which is the honest version of
+    events.
     """
-    parts = ["python scripts/fetch.py --from-manifest"]
-    if manifest.is_file():
-        parts[0] += f" --manifest {show(manifest)}"
+    parts = [f"python scripts/fetch.py --from-manifest --manifest {show(manifest)}"]
     run = "python scripts/analyse.py"
     if args.data is not None:
         run += f" --data {show(args.data)}"
-    if manifest.is_file():
-        run += f" --manifest {show(manifest)}"
+    run += f" --manifest {show(manifest)}"
     if args.granularity:
         run += f" --granularity {args.granularity}"
     parts.append(run)

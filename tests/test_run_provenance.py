@@ -24,10 +24,16 @@ import argparse
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import analyse  # noqa: E402
+# Imported under a guard. CI's second job copies `tests/` alone next to an installed
+# distribution, where `scripts/` does not exist; a bare `import analyse` raises
+# ModuleNotFoundError during collection, which fails the whole job rather than skipping
+# this file. Both modules in this repository that reach into `scripts/` did that.
+analyse = pytest.importorskip("analyse", reason="scripts/ is not shipped with the tests")
 
 
 def _ns(data: Path | None, granularity: str = "quarter") -> argparse.Namespace:
@@ -66,9 +72,49 @@ def test_reproduce_does_not_raise_on_a_path_outside_the_repository() -> None:
     assert "elsewhere.jsonl" in command
 
 
-def test_reproduce_handles_a_manifest_that_is_not_there() -> None:
-    command = analyse._reproduce(_ns(None), ROOT / "data" / "no_such_manifest.tsv")
-    assert "--manifest" not in command
+def test_reproduce_names_the_manifest_even_when_it_is_not_on_disk() -> None:
+    """This asserted the opposite, and the opposite was the defect.
+
+    The reproduce string describes a run that has already happened. Omitting the
+    manifest because the file is not there at formatting time makes the recorded command
+    depend on the state of the tree rather than on the run - and this repository ships
+    the large manifest gzipped, so no clone has `data/accessions_big.tsv`. Every reader
+    outside the laptop that produced the artefact would have been handed a command that
+    rebuilds the 2,765-genome corpus under the name of the 291,827-genome one.
+
+    The old assertion passed here, where a decompressed copy happens to exist, and
+    failed on every CI runner.
+    """
+    absent = ROOT / "data" / "no_such_manifest.tsv"
+    assert not absent.exists()
+    command = analyse._reproduce(_ns(None), absent)
+    assert command.count("--manifest no_such_manifest.tsv") == 0
+    assert command.count("--manifest data/no_such_manifest.tsv") == 2, command
+
+
+def test_the_default_manifest_falls_back_to_the_committed_gzip(tmp_path) -> None:
+    """The manifest in the repository is the gzipped one, and the default must find it.
+
+    `default_manifest` derived `accessions_big.tsv` and stopped, so a fresh clone running
+    the documented command recorded `manifest: null` and `manifest_records: null` with
+    the manifest committed two directories away. `_manifest_lines` has read `.gz` all
+    along; only the lookup could not reach it.
+    """
+    data = tmp_path / "sequences_big.jsonl"
+    data.write_text("", encoding="utf-8")
+
+    # Neither present: the plain name, so the message names what a reader should create.
+    assert analyse.default_manifest(data).name == "accessions_big.tsv"
+
+    gzipped = tmp_path / "accessions_big.tsv.gz"
+    gzipped.write_bytes(b"")
+    assert analyse.default_manifest(data) == gzipped
+
+    # The plain file wins when both exist - fetch.py writes it, and reading text beats
+    # decompressing the same content.
+    plain = tmp_path / "accessions_big.tsv"
+    plain.write_text("", encoding="utf-8")
+    assert analyse.default_manifest(data) == plain
 
 
 def test_the_run_records_which_code_produced_it() -> None:

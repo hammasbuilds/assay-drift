@@ -35,6 +35,31 @@ ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "research" / "results"
 SENSITIVITY = RESULTS / "sensitivity.json"
 CORPUS = ROOT / "data" / "sequences.jsonl"
+BIG = ROOT / "results" / "drift_big.json"
+
+
+def big_corpus_totals() -> dict[str, dict[str, int]] | None:
+    """Per-assay totals over the 291,827-genome run, summed from its quarters.
+
+    Read from the committed artefact, not recomputed: one pass over that corpus is about
+    three hours and figure 4 is a view of a measurement that has already been made.
+    """
+    if not BIG.exists():
+        return None
+    data = json.loads(BIG.read_text(encoding="utf-8"))
+    fields = ("usable", "failing", "three_prime", "three_prime_pair", "severe_load", "lost_oligo")
+    out: dict[str, dict[str, int]] = {}
+    for assay, body in data.items():
+        if assay == "_run":
+            continue
+        agg = dict.fromkeys(fields, 0)
+        for period in body["periods"].values():
+            if "three_prime_pair" not in period:
+                return None
+            for field in fields:
+                agg[field] += period.get(field) or 0
+        out[assay] = agg
+    return out
 
 
 def three_prime_counts() -> dict[str, dict[int, int]]:
@@ -95,6 +120,14 @@ def main() -> int:
         print(f"  {png.name}")
     else:
         print(f"  (no {CORPUS.name}; skipping figure 3)")
+
+    big = big_corpus_totals()
+    if big is None:
+        print(f"  (no usable {BIG.name}; skipping figure 4)")
+    else:
+        _, png, caption = figures.big_corpus_decomposition(big)
+        captions["fig4_big_corpus_decomposition"] = caption
+        print(f"  {png.name}")
 
     path = RESULTS / "captions.json"
     path.write_text(json.dumps(captions, indent=1), encoding="utf-8")

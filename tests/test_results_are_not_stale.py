@@ -37,9 +37,20 @@ DRIFT = ROOT / "results" / "drift.json"
 DRIFT_BIG = ROOT / "results" / "drift_big.json"
 ANALYSE = ROOT / "scripts" / "analyse.py"
 
+# Only what every test in the file needs. This was
+# `SMALL.exists() and DRIFT.exists() and ANALYSE.exists()`, which gated the whole module
+# on the 2,765-genome corpus - a file that is not committed. The effect was that all
+# twelve tests here skipped on every CI runner, including the two that need nothing but
+# the committed `results/drift_big.json` and the committed source. The guard that exists
+# to catch "the published numbers did not come from this code" ran on one laptop and
+# nowhere else, which is the one place it is least needed.
 pytestmark = pytest.mark.skipif(
-    not (SMALL.exists() and DRIFT.exists() and ANALYSE.exists()),
-    reason="the corpus and results are not shipped with the tests",
+    not ANALYSE.exists(), reason="scripts/analyse.py is not shipped with the tests"
+)
+
+needs_the_small_corpus = pytest.mark.skipif(
+    not (SMALL.exists() and DRIFT.exists()),
+    reason="the 2,765-genome corpus and its results are not shipped with the tests",
 )
 
 
@@ -78,6 +89,7 @@ def committed() -> dict:
     return json.loads(DRIFT.read_text(encoding="utf-8"))
 
 
+@needs_the_small_corpus
 def test_the_same_corpus_was_measured(fresh, committed):
     """If the corpus differs, every other assertion here is meaningless."""
     assert fresh["_run"]["corpus_identity_sha256"] == committed["_run"]["corpus_identity_sha256"]
@@ -88,10 +100,12 @@ def assays(payload: dict) -> list[str]:
     return sorted(k for k in payload if not k.startswith("_"))
 
 
+@needs_the_small_corpus
 def test_the_same_assays_are_reported(fresh, committed):
     assert assays(fresh) == assays(committed)
 
 
+@needs_the_small_corpus
 @pytest.mark.parametrize("field", ["first_period", "last_period", "enough_to_say"])
 def test_trend_endpoints_reproduce(fresh, committed, field):
     """The field that actually went stale, checked by name.
@@ -109,6 +123,7 @@ def test_trend_endpoints_reproduce(fresh, committed, field):
         )
 
 
+@needs_the_small_corpus
 @pytest.mark.parametrize("field", ["first_rate", "last_rate", "worst_rate"])
 def test_trend_rates_reproduce(fresh, committed, field):
     for assay in assays(committed):
@@ -124,6 +139,7 @@ def test_trend_rates_reproduce(fresh, committed, field):
         )
 
 
+@needs_the_small_corpus
 def test_every_period_reproduces(fresh, committed):
     """Not just the endpoints - a stale middle is as wrong as a stale end."""
     for assay in assays(committed):
@@ -138,6 +154,7 @@ def test_every_period_reproduces(fresh, committed):
                 )
 
 
+@needs_the_small_corpus
 def test_the_clustered_rate_is_present_in_the_committed_results(committed):
     """A field the code computes but the artefact predates is the same staleness bug."""
     for assay in assays(committed):
