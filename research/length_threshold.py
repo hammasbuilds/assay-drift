@@ -68,8 +68,7 @@ def main() -> int:
         "gap_around_the_threshold": (min(over) - max(under)) if under and over else None,
         "count_below_each_candidate": below,
         "classification_moves_between_candidates": {
-            f"{a}->{b}": below[b] - below[a]
-            for a, b in itertools.pairwise(CANDIDATES)
+            f"{a}->{b}": below[b] - below[a] for a, b in itertools.pairwise(CANDIDATES)
         },
         "percentiles": {
             "min": lengths[0],
