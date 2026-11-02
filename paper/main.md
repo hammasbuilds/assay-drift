@@ -40,7 +40,7 @@ genomes the pair does appear, **52 times in 54,755 3′-proximal hits, 0.095% of
 absence. We therefore
 withdraw our most alarming number as a failure prediction — Charité RdRp's **18.29%** on
 the 291,827-genome corpus, 11.16% on the 2,765-genome one, which fall to 0.00018 and
-0.0004 when clause 2 requires the two mismatches the bench measured — and reframe the
+0.0000 when clause 2 requires the two mismatches the bench measured — and reframe the
 category as **surveillance**: those genomes are one mutation away from a configuration
 that does have wet-lab evidence behind it (§4, §4.5).
 
@@ -190,11 +190,28 @@ shapes:
 | CDC N2 | 0.0245 | **0.0000** | 0.0000 | **0.0000** |
 | CDC N3 | 0.0058 | **0.0000** | 0.0000 | **0.0000** |
 | Charité E | 0.0011 | **0.0000** | 0.0000 | **0.0000** |
-| Charité RdRp | 0.1116 | **0.0004** | 0.0004 | **0.0000** |
+| Charité RdRp | 0.1116 | **0.0000** | 0.0000 | **0.0000** |
 
 The clustered column is identical to dropping clause 2 altogether, which is not a
 coincidence and not an artefact — at this corpus size. §4.5 repeats the re-scoring over
-291,827 genomes, where the two columns part company. The distribution of 3′-proximal mismatch counts over all
+291,827 genomes, where the two columns part company.
+
+Charité RdRp's two middle cells read **0.0004** until this grid was run at full scale, and
+the correction is worth stating because of how it was found rather than for its size. The
+grid re-implements the three clauses so it can vary the window and the load without
+re-aligning, and it had implemented the mismatch-load clause as `total >= load`, omitting
+the per-assay baseline the production rule subtracts — `baseline_for(assay)`, each assay's
+own mismatch count against the 2019 reference, which is **1 for Charité RdRp and 0 for every
+other assay**. `baseline_for`'s own docstring says that scoring RdRp against zero "would
+report it as broken for every sequence ever collected, including the reference itself", and
+that is what the grid did, for that one assay. On this corpus it was off by a single genome
+and invisible: the published rate is dominated by clause 2, and the load clause only shows
+once clause 2 is removed, which is exactly the two cells above. At 291,827 genomes the same
+line put RdRp's load clause at 406 where the pipeline says 4. Two implementations of one
+rule had disagreed from the start and nothing compared them;
+`tests/test_grid_agrees_with_the_pipeline.py` now checks five identities per assay per
+corpus — population, published rule, load clause, clustered clause and clause 1 — against
+`results/drift*.json`, and two of them failed before the fix. The distribution of 3′-proximal mismatch counts over all
 2,765 genomes is:
 
 | Assay | 0 in window | 1 | ≥2 |
@@ -249,14 +266,22 @@ this paragraph and §5 both said twelve until the script was read again.
 the published settings (3′ window 5, mismatch load 3), about 2,719 usable sequences per
 assay. The grey floor is the only clause a bench would not dispute — an oligo with no
 binding site cannot prime — and it is **zero for all five assays**. For Charité RdRp the
-3′-window clause alone accounts for 0.1112 of a 0.1116 rate.
+3′-window clause alone accounts for 0.1116 of a 0.1116 rate — all of it.
 
 ![Figure 2](../research/figures/fig2_sensitivity_heatmap.png)
 
-**Figure 2.** `likely_failing` for Charité RdRp across both thresholds, 2,759 usable
-sequences. The blue box is the published setting. The rate ranges from 0.1116 to 0.1174
-across choices that are all defensible, and neither threshold was calibrated against a
-bench.
+**Figure 2.** `likely_failing` across both thresholds, for the two assays that answer
+differently. The blue box is the published setting; each panel carries its own colour scale
+and the value is printed in every cell. Neither threshold was calibrated against a bench,
+and the consequence is **opposite in the two panels**. Charité RdRp's rate does not move at
+all across the twelve choices: every flagged genome carries a single mismatch inside the
+innermost three bases, so widening the window adds nothing and the load clause fires on none
+of them. CDC N1's runs from 0.3924 to 0.0004, **a factor of about 981**, because its rate is
+made of mismatch load where RdRp's is made of 3′-proximal position. The published rule
+reports both as the same kind of finding. This figure drew RdRp alone until the grid's
+baseline bug was fixed, at which point RdRp's twelve cells became identical and a
+single-panel figure captioned "the thresholds are uncalibrated" showed a uniform block —
+which reads as the opposite, that the choice does not matter.
 
 ![Figure 3](../research/figures/fig3_three_prime_distribution.png)
 
@@ -268,7 +293,7 @@ Charité RdRp's 11.16% is composed entirely of the left-hand bars.
 
 ![Figure 4](../research/figures/fig4_big_corpus_decomposition.png)
 
-**Figure 4.** The re-scoring of section 4.5 over all 291,827 genomes, at the published settings, 281,456 to 289,945 usable sequences per assay. Clause 1 - an oligo with no binding site, the only clause a bench would not dispute - is zero for all five and so does not appear. Requiring **two** 3'-proximal mismatches instead of one divides Charité RdRp's rate by 990 and leaves CDC N1's essentially unchanged (0.0062 to 0.0050), because N1's rate is mismatch load and RdRp's is single 3'-proximal mismatches. The pair does occur at this corpus size - 52 times in 54,755 3'-proximal hits - which is what makes the surveillance framing a measured claim rather than an absence.
+**Figure 4.** The re-scoring of section 4.5 over all 291,827 genomes, at the published settings, 281,456 to 289,945 usable sequences per assay. Clause 1 - an oligo with no binding site, the only clause a bench would not dispute - is zero for all five and so does not appear. Requiring **two** 3'-proximal mismatches instead of one divides Charité RdRp's rate by 1,009 and leaves CDC N1's essentially unchanged (0.0062 to 0.0050), because N1's rate is mismatch load and RdRp's is single 3'-proximal mismatches. The pair does occur at this corpus size - 52 times in 54,755 3'-proximal hits - which is what makes the surveillance framing a measured claim rather than an absence.
 
 ## 4.5 The same re-scoring over 291,827 genomes
 
@@ -300,6 +325,20 @@ that the region was lost.
 at two mismatches takes that rate to 0.00018, a factor of a thousand. §4.3's withdrawal
 therefore does not rest on the small corpus; it is the same withdrawal, over a hundred times as
 many genomes.
+
+**The clustered column is a union, and it was briefly a sum.** The clustered rule fires
+on a lost oligo, *or* a 3′-proximal pair, *or* a severe mismatch load, and
+`AssayResult.clustered_failing` evaluates exactly that; `summarise` counts it as
+`failing_clustered` and the analysis script exports it. Figure 4 nevertheless rebuilt the
+quantity as `three_prime_pair + severe_load`, which double-counts any genome in two clauses
+and omits any that lost an oligo outright. Over the 2,765-genome corpus the sum and the
+union agree for all five assays, because nothing there is in two clauses at once — which is
+why this survived §4.2 — and over 291,827 they do not: the sum over-counts CDC N1 by 4
+genomes and Charité RdRp by 1. **The table above is unaffected**; every cell rounds the same
+at the precision it publishes, which is the second reason nothing noticed. What moved is
+figure 4's caption, from "divides RdRp's rate by 990" to a factor of **1,009**. The figure
+now reads `failing_clustered`, and `tests/test_clustered_is_the_union_not_the_sum.py`
+forbids anything outside the library turning the two counters into a clustered rate again.
 
 **Pairs exist, and they are rare in a way worth quantifying.** The column that was all
 zeroes in §4.2 is not:

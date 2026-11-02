@@ -43,7 +43,15 @@ def _totals():
         if assay == "_run":
             continue
         agg = dict.fromkeys(
-            ("usable", "three_prime", "three_prime_pair", "severe_load", "lost_oligo"), 0
+            (
+                "usable",
+                "three_prime",
+                "three_prime_pair",
+                "severe_load",
+                "lost_oligo",
+                "failing_clustered",
+            ),
+            0,
         )
         for s in body["periods"].values():
             if "three_prime_pair" not in s:
@@ -144,7 +152,11 @@ def test_requiring_two_three_prime_mismatches_drops_rdrp_by_three_orders():
     totals = _totals()
     rdrp = totals["Charite RdRp"]
     published = rdrp["three_prime"] / rdrp["usable"]
-    clustered = (rdrp["three_prime_pair"] + rdrp["severe_load"]) / rdrp["usable"]
+    # `failing_clustered`, not the two counters added: the rule is a union and the sum
+    # double-counts a genome in both clauses - 1 of RdRp's at this corpus size. Both
+    # round to 0.00018, which is why the published table is unchanged, and is also
+    # exactly why nothing noticed. See test_clustered_is_the_union_not_the_sum.py.
+    clustered = rdrp["failing_clustered"] / rdrp["usable"]
     assert f"{published:.4f}" == "0.1829", f"{published:.4f}"
     assert clustered < published / 500, (clustered, published)
     assert f"{clustered:.5f}" == "0.00018", f"{clustered:.5f}"
@@ -168,7 +180,7 @@ def test_the_readme_withdrawal_table_matches_the_artefact():
     }
     for assay, shown in expected.items():
         agg = totals[assay]
-        rate = (agg["three_prime_pair"] + agg["severe_load"]) / agg["usable"]
+        rate = agg["failing_clustered"] / agg["usable"]
         places = len(shown.split(".")[1])
         assert f"{rate:.{places}f}" == shown, (assay, f"{rate:.{places}f}", shown)
         assert f"| {shown} |" in readme or f"| **{shown}** |" in readme, (assay, shown)

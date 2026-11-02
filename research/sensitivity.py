@@ -91,7 +91,25 @@ def wilson(successes: int, n: int, z: float = 1.96) -> dict | None:
 
 
 def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bool]]]:
-    """Per sequence per assay: (any_oligo_lost, 3' mismatches, total mismatches, usable).
+    """Per sequence per assay: (any_oligo_lost, 3' mismatches, EXCESS mismatches, usable).
+
+    The third element is `total_mismatches - baseline_for(assay)`, not the raw total, and
+    that is the whole point of this docstring. The production predicate is
+
+        self.total_mismatches - baseline >= SEVERE_MISMATCH_LOAD
+
+    and `baseline_for` is the assay's own mismatch count against the 2019 reference:
+    **Charite RdRp shipped with one**, every other assay with none. `baseline_for`'s own
+    docstring says scoring RdRp against zero "would report it as broken for every sequence
+    ever collected, including the reference itself".
+
+    This file re-implemented the clause as `total >= load` and so did exactly that. Over
+    the full corpus it put RdRp's load clause at **406** genomes where the published
+    pipeline's `severe_load` is **4** - a hundredfold, on the one assay with a non-zero
+    baseline, and invisible on the other four. It was found by comparing the two corpora's
+    grids against each other and then against `results/drift_big.json`, not by reading
+    either one: the published rate is dominated by the 3' clause, so the error never
+    reached the headline column and nothing disagreed until the clause was isolated.
 
     Aligned once per window, because the 3' count is computed during alignment against
     `match.THREE_PRIME_WINDOW` and `Hit` keeps the count, not the positions - so the
@@ -101,11 +119,16 @@ def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bo
     import assaydrift.match as match
 
     match.THREE_PRIME_WINDOW = window  # before the first alignment
-    from analyse import load  # noqa: PLC0415
+    from analyse import baseline_for, load  # noqa: PLC0415
 
     from assaydrift.analyze import AssayResult  # noqa: PLC0415
     from assaydrift.match import find_oligo  # noqa: PLC0415
     from assaydrift.primers import ASSAYS  # noqa: PLC0415
+
+    # One lookup per assay, not per sequence. Imported from the analysis script rather
+    # than hard-coded: an assay's baseline is a property of its published oligos, and a
+    # constant here would be a second copy of it.
+    baselines = {assay.name: baseline_for(assay) for assay in ASSAYS}
 
     out: dict[str, list] = {assay.name: [] for assay in ASSAYS}
     seen = 0
@@ -133,7 +156,7 @@ def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bo
                 (
                     result.any_oligo_lost,
                     result.three_prime_mismatches,
-                    result.total_mismatches,
+                    result.total_mismatches - baselines[assay.name],
                     result.usable,
                 )
             )
@@ -146,12 +169,17 @@ def features(data: Path, window: int) -> dict[str, list[tuple[bool, int, int, bo
 def score(rows: list[tuple[bool, int, int, bool]], load: int, shape: str) -> dict:
     """Re-score already-aligned sequences under one rule shape and load.
 
+    The third element of each row is the mismatch load **in excess of the assay's own
+    baseline**, so `excess >= load` here is the production predicate
+    `total_mismatches - baseline >= SEVERE_MISMATCH_LOAD` with the load varied. See
+    `features`.
+
     `unknown` sequences are excluded exactly as the published analysis excludes them: an
     alignment with unknown bases under an oligo is not evidence either way, and folding
     them in would move every rate for a reason that has nothing to do with the rule.
     """
     failing = usable_n = 0
-    for lost, three_prime, total, usable in rows:
+    for lost, three_prime, excess, usable in rows:
         if not usable and not lost:
             continue
         usable_n += 1
@@ -160,11 +188,11 @@ def score(rows: list[tuple[bool, int, int, bool]], load: int, shape: str) -> dic
         elif shape == "oligo lost only":
             pass
         elif shape == "without the 3' clause":
-            failing += total >= load
+            failing += excess >= load
         elif shape == "clustered 3' clause":
-            failing += three_prime >= CLUSTERED_MINIMUM or total >= load
+            failing += three_prime >= CLUSTERED_MINIMUM or excess >= load
         else:
-            failing += three_prime > 0 or total >= load
+            failing += three_prime > 0 or excess >= load
     return wilson(failing, usable_n)
 
 

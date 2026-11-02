@@ -47,14 +47,27 @@ def big_corpus_totals() -> dict[str, dict[str, int]] | None:
     if not BIG.exists():
         return None
     data = json.loads(BIG.read_text(encoding="utf-8"))
-    fields = ("usable", "failing", "three_prime", "three_prime_pair", "severe_load", "lost_oligo")
+    # `failing_clustered` is the clustered rule as the library computes it - a union of
+    # three clauses. Figure 4 used to add `three_prime_pair + severe_load` instead, which
+    # double-counts a genome in two clauses and misses one that lost an oligo.
+    fields = (
+        "usable",
+        "failing",
+        "failing_clustered",
+        "three_prime",
+        "three_prime_pair",
+        "severe_load",
+        "lost_oligo",
+    )
     out: dict[str, dict[str, int]] = {}
     for assay, body in data.items():
         if assay == "_run":
             continue
         agg = dict.fromkeys(fields, 0)
         for period in body["periods"].values():
-            if "three_prime_pair" not in period:
+            if "three_prime_pair" not in period or "failing_clustered" not in period:
+                # An export written before either counter existed. Returning None skips
+                # figure 4 rather than drawing it from a field defaulted to zero.
                 return None
             for field in fields:
                 agg[field] += period.get(field) or 0

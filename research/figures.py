@@ -111,30 +111,31 @@ def clause_decomposition(grid: dict) -> tuple[Path, Path, str]:
     return (*_save(fig, "fig1_clause_decomposition"), caption)
 
 
-def sensitivity_heatmap(grid: dict, assay: str = "Charite RdRp") -> tuple[Path, Path, str]:
-    """The rate across the two thresholds, for one assay.
+WINDOWS = [3, 5, 7]
+LOADS = [2, 3, 4, 5]
 
-    Neither threshold came from a wet-lab calibration: 5 bases is a primer-design rule of
-    thumb and 3 mismatches is a judgement. This is what the published number would have
-    been under the other defensible choices.
+
+def _panel(ax, grid: dict, assay: str) -> tuple[list[list[float]], float, float]:
+    """One assay's twelve cells, each panel on its own colour scale.
+
+    A shared scale would be the wrong choice here. The two assays' rates differ by a
+    factor of thirty at the published setting, so one scale renders the smaller panel as
+    twelve indistinguishable pale squares and hides the very thing the figure is for -
+    how much each rate moves when the thresholds move. The numbers are printed in every
+    cell, so there is nothing to read off the colour that the text does not say.
     """
-    windows = [3, 5, 7]
-    loads = [2, 3, 4, 5]
-    rows = []
-    for window in windows:
-        rows.append(
-            [grid[f"{assay}|w{window}|l{load}|all three clauses"]["rate"] for load in loads]
-        )
-
-    fig, ax = plt.subplots(figsize=(5.8, 3.2))
+    rows = [
+        [grid[f"{assay}|w{window}|l{load}|all three clauses"]["rate"] for load in LOADS]
+        for window in WINDOWS
+    ]
     highest = max(max(r) for r in rows) or 1.0
-    image = ax.imshow(rows, cmap="Oranges", vmin=0, vmax=highest, aspect="auto")
-    ax.set_xticks(range(len(loads)))
-    ax.set_xticklabels([f"≥{load}" for load in loads], fontsize=9)
-    ax.set_yticks(range(len(windows)))
-    ax.set_yticklabels([f"{w} bases" for w in windows], fontsize=9)
-    ax.set_xlabel("mismatch load that counts as failing", fontsize=10)
-    ax.set_ylabel("3' window", fontsize=10)
+    lowest = min(min(r) for r in rows)
+    ax.imshow(rows, cmap="Oranges", vmin=0, vmax=highest, aspect="auto")
+    ax.set_xticks(range(len(LOADS)))
+    ax.set_xticklabels([f"≥{load}" for load in LOADS], fontsize=9)
+    ax.set_yticks(range(len(WINDOWS)))
+    ax.set_yticklabels([f"{w} bases" for w in WINDOWS], fontsize=9)
+    ax.set_xlabel("mismatch load that counts as failing", fontsize=9.5)
     for i, row in enumerate(rows):
         for j, value in enumerate(row):
             ax.text(
@@ -148,7 +149,7 @@ def sensitivity_heatmap(grid: dict, assay: str = "Charite RdRp") -> tuple[Path, 
             )
     ax.add_patch(
         plt.Rectangle(
-            (loads.index(3) - 0.5, windows.index(5) - 0.5),
+            (LOADS.index(3) - 0.5, WINDOWS.index(5) - 0.5),
             1,
             1,
             fill=False,
@@ -156,14 +157,57 @@ def sensitivity_heatmap(grid: dict, assay: str = "Charite RdRp") -> tuple[Path, 
             linewidth=2.4,
         )
     )
-    fig.colorbar(image, ax=ax, fraction=0.04, pad=0.03, label="likely_failing rate")
-    lowest = min(min(r) for r in rows)
+    return rows, lowest, highest
+
+
+def sensitivity_heatmap(
+    grid: dict, assays: tuple[str, str] = ("Charite RdRp", "CDC N1")
+) -> tuple[Path, Path, str]:
+    """The rate across the two thresholds, for the two assays that answer differently.
+
+    Neither threshold came from a wet-lab calibration: 5 bases is a primer-design rule of
+    thumb and 3 mismatches is a judgement. This is what the published number would have
+    been under the other defensible choices.
+
+    Two panels, not one. This figure plotted Charite RdRp alone, and RdRp turns out to be
+    the assay on which the answer is *nothing*: its rate is 0.1116 in all twelve cells,
+    because every one of its flagged genomes carries a single mismatch inside the
+    innermost three bases, so widening the window adds nothing and the load clause - once
+    it correctly subtracts RdRp's own baseline - fires on no genome at any load. A
+    single-panel figure therefore said "the thresholds are uncalibrated" while showing a
+    uniform block, which reads as the opposite: that the choice does not matter.
+
+    It matters enormously, on a different assay. CDC N1's rate runs from 0.3921 at load
+    two to 0.0004 at load five, a factor of about a thousand across four choices a
+    reviewer would accept, because N1's rate is made of mismatch load where RdRp's is made
+    of 3'-proximal position. That contrast is the paper's argument in one picture, and it
+    was invisible while only one assay was drawn.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 3.3))
+    spans = {}
+    for ax, assay in zip(axes, assays, strict=True):
+        rows, lowest, highest = _panel(ax, grid, assay)
+        spans[assay] = (lowest, highest)
+        n = grid[f"{assay}|w5|l3|all three clauses"]["n"]
+        ax.set_title(f"{assay} ({n:,} usable)", fontsize=10)
+    axes[0].set_ylabel("3' window", fontsize=9.5)
+    fig.tight_layout()
+
+    first, second = assays
+    lo_a, hi_a = spans[first]
+    lo_b, hi_b = spans[second]
+    moves = "does not move at all" if hi_a == lo_a else f"runs from {lo_a:.4f} to {hi_a:.4f}"
     caption = (
-        f"`likely_failing` for {assay} across both thresholds, "
-        f"{grid[f'{assay}|w5|l3|all three clauses']['n']:,} usable sequences. The blue box "
-        "is the published setting. The rate ranges from "
-        f"{lowest:.4f} to {highest:.4f} across choices that are all defensible, and "
-        "neither threshold was calibrated against a bench."
+        f"`likely_failing` across both thresholds, for the two assays that answer "
+        f"differently. The blue box is the published setting; each panel carries its own "
+        f"colour scale and the value is printed in every cell. Neither threshold was "
+        f"calibrated against a bench, and the consequence is opposite in the two panels. "
+        f"{first}'s rate {moves} across all twelve choices: every flagged genome carries a "
+        f"single mismatch inside the innermost three bases, so widening the window adds "
+        f"nothing and the load clause fires on none of them. {second}'s runs from "
+        f"{hi_b:.4f} to {lo_b:.4f}, a factor of about {hi_b / lo_b:,.0f}, because its rate "
+        f"is made of mismatch load where {first}'s is made of 3'-proximal position. The "
+        f"published rule reports both as the same kind of finding."
     )
     return (*_save(fig, "fig2_sensitivity_heatmap"), caption)
 
@@ -246,7 +290,7 @@ def big_corpus_decomposition(totals: dict[str, dict[str, int]]) -> tuple[Path, P
     """The withdrawal, over 291,827 genomes rather than 2,765.
 
     Figures 1 to 3 are all drawn over the 2,765-genome corpus, because the sensitivity
-    grid is twelve three-hour passes and only one of them was affordable at the larger
+    grid is three three-hour passes and only one of them was affordable at the larger
     size. Section 4.5 re-scored the *published setting* over all 291,827 genomes, which
     needs no grid - and a reviewer reading three figures over a corpus a hundred times
     smaller than the paper's headline is entitled to ask why the large one has none.
@@ -262,7 +306,21 @@ def big_corpus_decomposition(totals: dict[str, dict[str, int]]) -> tuple[Path, P
         t = totals[assay]
         usable = t["usable"]
         published.append(t["failing"] / usable)
-        clustered.append((t["three_prime_pair"] + t["severe_load"]) / usable)
+        # `failing_clustered`, which the library computes, and not
+        # `three_prime_pair + severe_load`, which this line used to add up.
+        #
+        # The rule is a union of three clauses and a sum is not a union: a genome that
+        # carries both a 3'-proximal pair and a severe mismatch load is counted twice, and
+        # one that lost an oligo outright is not counted at all. On the 2,765-genome corpus
+        # the two agreed exactly, because nothing was in two clauses at once. On 291,827
+        # they do not - the sum over-counts CDC N1 by 4 genomes and Charite RdRp by 1 - so
+        # the bar this figure drew was slightly too tall for the two assays that matter,
+        # and the caption's "divides RdRp's rate by 990" was really a factor of 1,009.
+        #
+        # `AssayResult.clustered_failing` is the rule, `summarise` already applies it, and
+        # `analyse.py` already exports the count. There was never a reason to re-add the
+        # clauses here. `tests/test_clustered_is_the_union_not_the_sum.py` pins it.
+        clustered.append(t["failing_clustered"] / usable)
         labels.append(assay)
 
     x = range(len(labels))
