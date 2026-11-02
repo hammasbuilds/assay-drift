@@ -1,0 +1,308 @@
+{
+ "corpora": {
+  "small": "sequences.jsonl",
+  "large": "sequences_big.jsonl"
+ },
+ "cells": {
+  "in_both": 240,
+  "only_in_small": [],
+  "only_in_large": [],
+  "comparable": 240
+ },
+ "published_against_floor": {
+  "CDC N1": {
+   "small": {
+    "published": 0.0239,
+    "floor": 0.0,
+    "claim": 0.0239
+   },
+   "large": {
+    "published": 0.0062,
+    "floor": 0.0,
+    "claim": 0.0062
+   },
+   "claim_moved": -0.0177,
+   "floor_changed_from_zero": false
+  },
+  "CDC N2": {
+   "small": {
+    "published": 0.0245,
+    "floor": 0.0,
+    "claim": 0.0245
+   },
+   "large": {
+    "published": 0.0073,
+    "floor": 0.0,
+    "claim": 0.0073
+   },
+   "claim_moved": -0.0172,
+   "floor_changed_from_zero": false
+  },
+  "CDC N3": {
+   "small": {
+    "published": 0.0058,
+    "floor": 0.0,
+    "claim": 0.0058
+   },
+   "large": {
+    "published": 0.0023,
+    "floor": 0.0,
+    "claim": 0.0023
+   },
+   "claim_moved": -0.0035,
+   "floor_changed_from_zero": false
+  },
+  "Charite E": {
+   "small": {
+    "published": 0.0011,
+    "floor": 0.0,
+    "claim": 0.0011
+   },
+   "large": {
+    "published": 0.0004,
+    "floor": 0.0,
+    "claim": 0.0004
+   },
+   "claim_moved": -0.0007,
+   "floor_changed_from_zero": false
+  },
+  "Charite RdRp": {
+   "small": {
+    "published": 0.1116,
+    "floor": 0.0,
+    "claim": 0.1116
+   },
+   "large": {
+    "published": 0.1829,
+    "floor": 0.0,
+    "claim": 0.1829
+   },
+   "claim_moved": 0.0713,
+   "floor_changed_from_zero": false
+  }
+ },
+ "clustered_against_dropped": {
+  "per_assay": {
+   "CDC N1": {
+    "small": {
+     "clustered": 0.0235,
+     "dropped": 0.0235,
+     "identical": true
+    },
+    "large": {
+     "clustered": 0.005,
+     "dropped": 0.005,
+     "identical": true
+    }
+   },
+   "CDC N2": {
+    "small": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    },
+    "large": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    }
+   },
+   "CDC N3": {
+    "small": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    },
+    "large": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    }
+   },
+   "Charite E": {
+    "small": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    },
+    "large": {
+     "clustered": 0.0001,
+     "dropped": 0.0001,
+     "identical": true
+    }
+   },
+   "Charite RdRp": {
+    "small": {
+     "clustered": 0.0,
+     "dropped": 0.0,
+     "identical": true
+    },
+    "large": {
+     "clustered": 0.0002,
+     "dropped": 0.0,
+     "identical": false
+    }
+   }
+  },
+  "identical_on_the_small_corpus": [
+   "CDC N1",
+   "CDC N2",
+   "CDC N3",
+   "Charite E",
+   "Charite RdRp"
+  ],
+  "identical_on_the_large_corpus": [
+   "CDC N1",
+   "CDC N2",
+   "CDC N3",
+   "Charite E"
+  ],
+  "parted_company_at_scale": [
+   "Charite RdRp"
+  ],
+  "became_identical_at_scale": []
+ },
+ "ordering": {
+  "small": [
+   "Charite RdRp",
+   "CDC N2",
+   "CDC N1",
+   "CDC N3",
+   "Charite E"
+  ],
+  "large": [
+   "Charite RdRp",
+   "CDC N2",
+   "CDC N1",
+   "CDC N3",
+   "Charite E"
+  ],
+  "identical": true,
+  "pairs_that_swapped": []
+ },
+ "spreads": {
+  "CDC N1": {
+   "small": {
+    "min": 0.0,
+    "max": 0.3924,
+    "spread": 0.3924
+   },
+   "large": {
+    "min": 0.0,
+    "max": 0.1693,
+    "spread": 0.1693
+   }
+  },
+  "CDC N2": {
+   "small": {
+    "min": 0.0,
+    "max": 0.0275,
+    "spread": 0.0275
+   },
+   "large": {
+    "min": 0.0,
+    "max": 0.0096,
+    "spread": 0.0096
+   }
+  },
+  "CDC N3": {
+   "small": {
+    "min": 0.0,
+    "max": 0.0112,
+    "spread": 0.0112
+   },
+   "large": {
+    "min": 0.0,
+    "max": 0.0051,
+    "spread": 0.0051
+   }
+  },
+  "Charite E": {
+   "small": {
+    "min": 0.0,
+    "max": 0.0233,
+    "spread": 0.0233
+   },
+   "large": {
+    "min": 0.0,
+    "max": 0.0179,
+    "spread": 0.0179
+   }
+  },
+  "Charite RdRp": {
+   "small": {
+    "min": 0.0,
+    "max": 0.1116,
+    "spread": 0.1116
+   },
+   "large": {
+    "min": 0.0,
+    "max": 0.1829,
+    "spread": 0.1829
+   }
+  }
+ },
+ "largest_moves": [
+  {
+   "cell": "CDC N1|w3|l2|all three clauses",
+   "small": 0.3921,
+   "large": 0.1679,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w3|l2|clustered 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w3|l2|without the 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w5|l2|clustered 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w5|l2|without the 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w7|l2|clustered 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w7|l2|without the 3' clause",
+   "small": 0.3917,
+   "large": 0.1675,
+   "moved": -0.2242
+  },
+  {
+   "cell": "CDC N1|w5|l2|all three clauses",
+   "small": 0.3921,
+   "large": 0.1683,
+   "moved": -0.2238
+  },
+  {
+   "cell": "CDC N1|w7|l2|all three clauses",
+   "small": 0.3924,
+   "large": 0.1693,
+   "moved": -0.2231
+  },
+  {
+   "cell": "Charite RdRp|w5|l2|all three clauses",
+   "small": 0.1116,
+   "large": 0.1829,
+   "moved": 0.0713
+  }
+ ],
+ "mean_absolute_move": 0.014043
+}

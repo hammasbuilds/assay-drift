@@ -1,0 +1,1714 @@
+{
+ "corpus": "sequences_big.jsonl",
+ "windows": [
+  3,
+  5,
+  7
+ ],
+ "loads": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "shapes": [
+  "all three clauses",
+  "clustered 3' clause",
+  "without the 3' clause",
+  "oligo lost only"
+ ],
+ "published_rule": {
+  "window": 5,
+  "load": 3,
+  "shape": "all three clauses"
+ },
+ "challenge": "Frontiers Cell Infect Microbiol 2025, 10.3389/fcimb.2025.1524025: assays tested in vitro mostly kept working despite primer and probe mismatches, so in-silico predictions of false negatives may overstate the risk. `likely_failing` is such a prediction; this grid measures how much of it is the rule.",
+ "conservative_floor": "oligo lost only - the clause a bench would not dispute",
+ "grid": {
+  "CDC N1|w3|l2|all three clauses": {
+   "rate": 0.1679,
+   "lo": 0.1666,
+   "hi": 0.1693,
+   "n": 289287,
+   "failing": 48585
+  },
+  "CDC N1|w3|l2|clustered 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w3|l2|without the 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w3|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w3|l3|all three clauses": {
+   "rate": 0.0056,
+   "lo": 0.0054,
+   "hi": 0.0059,
+   "n": 289287,
+   "failing": 1631
+  },
+  "CDC N1|w3|l3|clustered 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w3|l3|without the 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w3|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w3|l4|all three clauses": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.001,
+   "n": 289287,
+   "failing": 250
+  },
+  "CDC N1|w3|l4|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w3|l4|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w3|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w3|l5|all three clauses": {
+   "rate": 0.0008,
+   "lo": 0.0007,
+   "hi": 0.0009,
+   "n": 289287,
+   "failing": 239
+  },
+  "CDC N1|w3|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 4
+  },
+  "CDC N1|w3|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 3
+  },
+  "CDC N1|w3|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N2|w3|l2|all three clauses": {
+   "rate": 0.0065,
+   "lo": 0.0062,
+   "hi": 0.0068,
+   "n": 288108,
+   "failing": 1872
+  },
+  "CDC N2|w3|l2|clustered 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w3|l2|without the 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w3|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l3|all three clauses": {
+   "rate": 0.0056,
+   "lo": 0.0054,
+   "hi": 0.0059,
+   "n": 288108,
+   "failing": 1622
+  },
+  "CDC N2|w3|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w3|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w3|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l4|all three clauses": {
+   "rate": 0.0056,
+   "lo": 0.0054,
+   "hi": 0.0059,
+   "n": 288108,
+   "failing": 1619
+  },
+  "CDC N2|w3|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l5|all three clauses": {
+   "rate": 0.0056,
+   "lo": 0.0054,
+   "hi": 0.0059,
+   "n": 288108,
+   "failing": 1619
+  },
+  "CDC N2|w3|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w3|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N3|w3|l2|all three clauses": {
+   "rate": 0.002,
+   "lo": 0.0018,
+   "hi": 0.0022,
+   "n": 289945,
+   "failing": 579
+  },
+  "CDC N3|w3|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w3|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w3|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l3|all three clauses": {
+   "rate": 0.0007,
+   "lo": 0.0006,
+   "hi": 0.0008,
+   "n": 289945,
+   "failing": 194
+  },
+  "CDC N3|w3|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w3|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w3|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l4|all three clauses": {
+   "rate": 0.0007,
+   "lo": 0.0006,
+   "hi": 0.0008,
+   "n": 289945,
+   "failing": 190
+  },
+  "CDC N3|w3|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l5|all three clauses": {
+   "rate": 0.0007,
+   "lo": 0.0006,
+   "hi": 0.0008,
+   "n": 289945,
+   "failing": 190
+  },
+  "CDC N3|w3|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w3|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "Charite E|w3|l2|all three clauses": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5048
+  },
+  "Charite E|w3|l2|clustered 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w3|l2|without the 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w3|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w3|l3|all three clauses": {
+   "rate": 0.0003,
+   "lo": 0.0003,
+   "hi": 0.0004,
+   "n": 285298,
+   "failing": 91
+  },
+  "Charite E|w3|l3|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w3|l3|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w3|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w3|l4|all three clauses": {
+   "rate": 0.0003,
+   "lo": 0.0002,
+   "hi": 0.0003,
+   "n": 285298,
+   "failing": 74
+  },
+  "Charite E|w3|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w3|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w3|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w3|l5|all three clauses": {
+   "rate": 0.0003,
+   "lo": 0.0002,
+   "hi": 0.0003,
+   "n": 285298,
+   "failing": 73
+  },
+  "Charite E|w3|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w3|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w3|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l2|all three clauses": {
+   "rate": 0.1828,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51463
+  },
+  "Charite RdRp|w3|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w3|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w3|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l3|all three clauses": {
+   "rate": 0.1828,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51459
+  },
+  "Charite RdRp|w3|l3|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 43
+  },
+  "Charite RdRp|w3|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 4
+  },
+  "Charite RdRp|w3|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l4|all three clauses": {
+   "rate": 0.1828,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51459
+  },
+  "Charite RdRp|w3|l4|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 39
+  },
+  "Charite RdRp|w3|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l5|all three clauses": {
+   "rate": 0.1828,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51459
+  },
+  "Charite RdRp|w3|l5|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 39
+  },
+  "Charite RdRp|w3|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w3|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "CDC N1|w5|l2|all three clauses": {
+   "rate": 0.1683,
+   "lo": 0.167,
+   "hi": 0.1697,
+   "n": 289287,
+   "failing": 48690
+  },
+  "CDC N1|w5|l2|clustered 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w5|l2|without the 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w5|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w5|l3|all three clauses": {
+   "rate": 0.0062,
+   "lo": 0.0059,
+   "hi": 0.0065,
+   "n": 289287,
+   "failing": 1800
+  },
+  "CDC N1|w5|l3|clustered 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w5|l3|without the 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w5|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w5|l4|all three clauses": {
+   "rate": 0.0015,
+   "lo": 0.0014,
+   "hi": 0.0016,
+   "n": 289287,
+   "failing": 434
+  },
+  "CDC N1|w5|l4|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w5|l4|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w5|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w5|l5|all three clauses": {
+   "rate": 0.0015,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 289287,
+   "failing": 423
+  },
+  "CDC N1|w5|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 4
+  },
+  "CDC N1|w5|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 3
+  },
+  "CDC N1|w5|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N2|w5|l2|all three clauses": {
+   "rate": 0.0081,
+   "lo": 0.0077,
+   "hi": 0.0084,
+   "n": 288108,
+   "failing": 2320
+  },
+  "CDC N2|w5|l2|clustered 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w5|l2|without the 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w5|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l3|all three clauses": {
+   "rate": 0.0073,
+   "lo": 0.007,
+   "hi": 0.0076,
+   "n": 288108,
+   "failing": 2100
+  },
+  "CDC N2|w5|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w5|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w5|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l4|all three clauses": {
+   "rate": 0.0073,
+   "lo": 0.007,
+   "hi": 0.0076,
+   "n": 288108,
+   "failing": 2097
+  },
+  "CDC N2|w5|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l5|all three clauses": {
+   "rate": 0.0073,
+   "lo": 0.007,
+   "hi": 0.0076,
+   "n": 288108,
+   "failing": 2097
+  },
+  "CDC N2|w5|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w5|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N3|w5|l2|all three clauses": {
+   "rate": 0.0036,
+   "lo": 0.0034,
+   "hi": 0.0039,
+   "n": 289945,
+   "failing": 1054
+  },
+  "CDC N3|w5|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w5|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w5|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l3|all three clauses": {
+   "rate": 0.0023,
+   "lo": 0.0022,
+   "hi": 0.0025,
+   "n": 289945,
+   "failing": 676
+  },
+  "CDC N3|w5|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w5|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w5|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l4|all three clauses": {
+   "rate": 0.0023,
+   "lo": 0.0021,
+   "hi": 0.0025,
+   "n": 289945,
+   "failing": 672
+  },
+  "CDC N3|w5|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l5|all three clauses": {
+   "rate": 0.0023,
+   "lo": 0.0021,
+   "hi": 0.0025,
+   "n": 289945,
+   "failing": 672
+  },
+  "CDC N3|w5|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w5|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "Charite E|w5|l2|all three clauses": {
+   "rate": 0.0177,
+   "lo": 0.0173,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5064
+  },
+  "Charite E|w5|l2|clustered 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w5|l2|without the 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w5|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w5|l3|all three clauses": {
+   "rate": 0.0004,
+   "lo": 0.0003,
+   "hi": 0.0005,
+   "n": 285298,
+   "failing": 114
+  },
+  "Charite E|w5|l3|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w5|l3|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w5|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w5|l4|all three clauses": {
+   "rate": 0.0003,
+   "lo": 0.0003,
+   "hi": 0.0004,
+   "n": 285298,
+   "failing": 99
+  },
+  "Charite E|w5|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w5|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w5|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w5|l5|all three clauses": {
+   "rate": 0.0003,
+   "lo": 0.0003,
+   "hi": 0.0004,
+   "n": 285298,
+   "failing": 98
+  },
+  "Charite E|w5|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w5|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w5|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l2|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51469
+  },
+  "Charite RdRp|w5|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w5|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w5|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l3|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51465
+  },
+  "Charite RdRp|w5|l3|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 51
+  },
+  "Charite RdRp|w5|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 4
+  },
+  "Charite RdRp|w5|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l4|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51465
+  },
+  "Charite RdRp|w5|l4|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 48
+  },
+  "Charite RdRp|w5|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l5|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1814,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51465
+  },
+  "Charite RdRp|w5|l5|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0001,
+   "hi": 0.0002,
+   "n": 281456,
+   "failing": 48
+  },
+  "Charite RdRp|w5|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w5|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "CDC N1|w7|l2|all three clauses": {
+   "rate": 0.1693,
+   "lo": 0.1679,
+   "hi": 0.1707,
+   "n": 289287,
+   "failing": 48974
+  },
+  "CDC N1|w7|l2|clustered 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w7|l2|without the 3' clause": {
+   "rate": 0.1675,
+   "lo": 0.1661,
+   "hi": 0.1689,
+   "n": 289287,
+   "failing": 48452
+  },
+  "CDC N1|w7|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w7|l3|all three clauses": {
+   "rate": 0.0076,
+   "lo": 0.0073,
+   "hi": 0.008,
+   "n": 289287,
+   "failing": 2208
+  },
+  "CDC N1|w7|l3|clustered 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w7|l3|without the 3' clause": {
+   "rate": 0.005,
+   "lo": 0.0047,
+   "hi": 0.0053,
+   "n": 289287,
+   "failing": 1445
+  },
+  "CDC N1|w7|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w7|l4|all three clauses": {
+   "rate": 0.0034,
+   "lo": 0.0032,
+   "hi": 0.0036,
+   "n": 289287,
+   "failing": 971
+  },
+  "CDC N1|w7|l4|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w7|l4|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0001,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 27
+  },
+  "CDC N1|w7|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N1|w7|l5|all three clauses": {
+   "rate": 0.0033,
+   "lo": 0.0031,
+   "hi": 0.0035,
+   "n": 289287,
+   "failing": 962
+  },
+  "CDC N1|w7|l5|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 289287,
+   "failing": 16
+  },
+  "CDC N1|w7|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 3
+  },
+  "CDC N1|w7|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289287,
+   "failing": 0
+  },
+  "CDC N2|w7|l2|all three clauses": {
+   "rate": 0.0096,
+   "lo": 0.0093,
+   "hi": 0.01,
+   "n": 288108,
+   "failing": 2778
+  },
+  "CDC N2|w7|l2|clustered 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w7|l2|without the 3' clause": {
+   "rate": 0.0009,
+   "lo": 0.0008,
+   "hi": 0.0011,
+   "n": 288108,
+   "failing": 270
+  },
+  "CDC N2|w7|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w7|l3|all three clauses": {
+   "rate": 0.0089,
+   "lo": 0.0086,
+   "hi": 0.0093,
+   "n": 288108,
+   "failing": 2576
+  },
+  "CDC N2|w7|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 288108,
+   "failing": 8
+  },
+  "CDC N2|w7|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w7|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w7|l4|all three clauses": {
+   "rate": 0.0089,
+   "lo": 0.0086,
+   "hi": 0.0093,
+   "n": 288108,
+   "failing": 2573
+  },
+  "CDC N2|w7|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w7|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w7|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w7|l5|all three clauses": {
+   "rate": 0.0089,
+   "lo": 0.0086,
+   "hi": 0.0093,
+   "n": 288108,
+   "failing": 2573
+  },
+  "CDC N2|w7|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 4
+  },
+  "CDC N2|w7|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N2|w7|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 288108,
+   "failing": 0
+  },
+  "CDC N3|w7|l2|all three clauses": {
+   "rate": 0.0051,
+   "lo": 0.0048,
+   "hi": 0.0053,
+   "n": 289945,
+   "failing": 1470
+  },
+  "CDC N3|w7|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w7|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0015,
+   "n": 289945,
+   "failing": 405
+  },
+  "CDC N3|w7|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l3|all three clauses": {
+   "rate": 0.0038,
+   "lo": 0.0036,
+   "hi": 0.0041,
+   "n": 289945,
+   "failing": 1110
+  },
+  "CDC N3|w7|l3|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w7|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 4
+  },
+  "CDC N3|w7|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l4|all three clauses": {
+   "rate": 0.0038,
+   "lo": 0.0036,
+   "hi": 0.004,
+   "n": 289945,
+   "failing": 1107
+  },
+  "CDC N3|w7|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l5|all three clauses": {
+   "rate": 0.0038,
+   "lo": 0.0036,
+   "hi": 0.004,
+   "n": 289945,
+   "failing": 1107
+  },
+  "CDC N3|w7|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "CDC N3|w7|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 289945,
+   "failing": 0
+  },
+  "Charite E|w7|l2|all three clauses": {
+   "rate": 0.0179,
+   "lo": 0.0174,
+   "hi": 0.0184,
+   "n": 285298,
+   "failing": 5106
+  },
+  "Charite E|w7|l2|clustered 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w7|l2|without the 3' clause": {
+   "rate": 0.0177,
+   "lo": 0.0172,
+   "hi": 0.0182,
+   "n": 285298,
+   "failing": 5042
+  },
+  "Charite E|w7|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w7|l3|all three clauses": {
+   "rate": 0.0006,
+   "lo": 0.0006,
+   "hi": 0.0007,
+   "n": 285298,
+   "failing": 184
+  },
+  "Charite E|w7|l3|clustered 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w7|l3|without the 3' clause": {
+   "rate": 0.0001,
+   "lo": 0.0,
+   "hi": 0.0001,
+   "n": 285298,
+   "failing": 20
+  },
+  "Charite E|w7|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w7|l4|all three clauses": {
+   "rate": 0.0006,
+   "lo": 0.0005,
+   "hi": 0.0007,
+   "n": 285298,
+   "failing": 173
+  },
+  "Charite E|w7|l4|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w7|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 1
+  },
+  "Charite E|w7|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w7|l5|all three clauses": {
+   "rate": 0.0006,
+   "lo": 0.0005,
+   "hi": 0.0007,
+   "n": 285298,
+   "failing": 172
+  },
+  "Charite E|w7|l5|clustered 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w7|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite E|w7|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 285298,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l2|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1815,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51482
+  },
+  "Charite RdRp|w7|l2|clustered 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w7|l2|without the 3' clause": {
+   "rate": 0.0014,
+   "lo": 0.0013,
+   "hi": 0.0016,
+   "n": 281456,
+   "failing": 406
+  },
+  "Charite RdRp|w7|l2|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l3|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1815,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51480
+  },
+  "Charite RdRp|w7|l3|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0002,
+   "hi": 0.0003,
+   "n": 281456,
+   "failing": 61
+  },
+  "Charite RdRp|w7|l3|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 4
+  },
+  "Charite RdRp|w7|l3|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l4|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1815,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51480
+  },
+  "Charite RdRp|w7|l4|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0002,
+   "hi": 0.0003,
+   "n": 281456,
+   "failing": 61
+  },
+  "Charite RdRp|w7|l4|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l4|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l5|all three clauses": {
+   "rate": 0.1829,
+   "lo": 0.1815,
+   "hi": 0.1843,
+   "n": 281456,
+   "failing": 51480
+  },
+  "Charite RdRp|w7|l5|clustered 3' clause": {
+   "rate": 0.0002,
+   "lo": 0.0002,
+   "hi": 0.0003,
+   "n": 281456,
+   "failing": 61
+  },
+  "Charite RdRp|w7|l5|without the 3' clause": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  },
+  "Charite RdRp|w7|l5|oligo lost only": {
+   "rate": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "n": 281456,
+   "failing": 0
+  }
+ },
+ "merged_from": [
+  "big-w3.json",
+  "big-w5.json",
+  "big-w7.json"
+ ]
+}

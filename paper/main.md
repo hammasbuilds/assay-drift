@@ -278,7 +278,10 @@ all across the twelve choices: every flagged genome carries a single mismatch in
 innermost three bases, so widening the window adds nothing and the load clause fires on none
 of them. CDC N1's runs from 0.3924 to 0.0004, **a factor of about 981**, because its rate is
 made of mismatch load where RdRp's is made of 3′-proximal position. The published rule
-reports both as the same kind of finding. This figure drew RdRp alone until the grid's
+reports both as the same kind of finding. Both panels are the smaller corpus, as figures 1
+to 3 are; §5 re-runs the whole grid over the large one, where RdRp's invariance holds
+exactly and the contrast survives with CDC N1's factor several times smaller. This figure
+drew RdRp alone until the grid's
 baseline bug was fixed, at which point RdRp's twelve cells became identical and a
 single-panel figure captioned "the thresholds are uncalibrated" showed a uniform block —
 which reads as the opposite, that the choice does not matter.
@@ -536,10 +539,34 @@ it.
 full-length disagreement is a published primer's deliberate degenerate base that a
 substitution matrix counts as a mismatch. That validates the aligner, not the rule.
 
-**The sensitivity grid is the small corpus.** One pass over 291,827 genomes is about three
-hours and the grid is twelve passes. The direction is reported; the magnitudes are the
-2,765-genome subset's. The published setting alone was re-scored over all 291,827
-genomes (§4.5) and the conclusion does not move, but the grid around it has not been.
+**The sensitivity grid has now been run over both corpora, and one of its magnitudes was
+the small corpus's.** This section previously said the grid was the 2,765-genome subset
+and reported only the direction. It is three passes over whichever corpus it is given, not
+twelve, and all three have been run over all 291,827 genomes; `research/grid_corpora.py`
+compares the two grids cell by cell, over all 240 comparable cells.
+
+Three things hold and one magnitude does not.
+
+**The ordering is identical.** Ranked by the published rate, the five assays come out
+Charité RdRp > CDC N2 > CDC N1 > CDC N3 > Charité E on both corpora.
+
+**The clustered column parts company from dropping clause 2 for exactly one assay, and
+§4.2 named it.** On 2,765 genomes the two are identical for all five; on 291,827 they are
+identical for four and differ for Charité RdRp. That was §4.2's forward reference, and it
+is now confirmed by the grid at full scale rather than by the published setting alone.
+
+**Charité RdRp is insensitive to both thresholds at either size.** Its rate is 0.1116 in
+all twelve cells of the small grid and 0.1828 to 0.1829 in all twelve of the large one:
+every genome it flags carries a single mismatch inside the innermost three bases, so
+widening the window reaches nothing further and the load clause fires on none of them.
+Figure 2's left panel is therefore not a small-corpus artefact.
+
+**Its right panel is, in magnitude.** CDC N1's rate runs from 0.3924 to 0.0004 across the
+twelve choices on the small corpus, a factor of about 981, and from 0.1693 to 0.0008 on the
+large one — a factor of about **212**. The contrast the figure is for survives: N1 remains
+the assay the thresholds move and RdRp the one they do not. But the small corpus overstates
+how far by about fourfold, and figure 2 is drawn on it, as figures 1 to 3 are. The spread
+narrows for four of the five assays at scale and widens only for RdRp.
 
 # 6. Reproducibility
 
