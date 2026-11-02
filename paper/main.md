@@ -236,9 +236,12 @@ and the conclusion is the same.
 ## 4.4 Figures
 
 All four rebuild via `python research/sensitivity.py && python research/run_all.py`.
-Figures 1 to 3 are over the 2,765-genome corpus, because the sensitivity grid is twelve
-three-hour passes; Figure 4 is the published setting over all 291,827 genomes, which
-needs no grid.
+Figures 1 to 3 are over the 2,765-genome corpus; Figure 4 is the published setting over all
+291,827 genomes. Only the 3′ **window** costs a pass over the corpus — the count is produced
+during alignment and `Hit` keeps the count rather than the positions, so a window cannot be
+varied after the fact, while the load and the shape are re-scored from the aligned rows in
+memory. The grid is therefore three passes over whichever corpus it is run on, not twelve;
+this paragraph and §5 both said twelve until the script was read again.
 
 ![Figure 1](../research/figures/fig1_clause_decomposition.png)
 

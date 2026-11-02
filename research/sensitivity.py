@@ -25,13 +25,21 @@ Clause 1 alone is the conservative floor - the only prediction a bench would not
 because an oligo with no binding site cannot prime. The distance between that floor and
 the published rate is the size of the claim being made on top of the data.
 
-Run on `data/sequences.jsonl` (2,765 genomes, minutes). The published headline uses the
-291,827-genome corpus at window 5 / load 3; one pass over that takes about three hours,
-so the grid is measured on the small corpus and its direction reported, not extrapolated
-to the large one.
+Only the **window** costs a pass. The 3' count is produced during alignment and `Hit`
+keeps the count rather than the positions, so a window cannot be varied after the fact;
+the load and the shape can, and are re-scored from the aligned rows in memory. The grid
+is therefore three passes, not twelve - a figure the manuscript's section 5 got wrong
+until this file was read again.
+
+One pass over the 291,827-genome corpus is about three hours, and the three windows are
+independent, so `--window` grids one of them and `--merge` joins the parts. That is how
+the large corpus was gridded: three concurrent processes, one wall-clock pass.
 
     .venv-research/Scripts/python research/sensitivity.py
     .venv-research/Scripts/python research/sensitivity.py --data data/sequences_big.jsonl
+    # or, concurrently, one process per window, then a merge:
+    ... --data data/sequences_big.jsonl --window 3 --out part-w3.json
+    ... --merge part-w3.json,part-w5.json,part-w7.json --out sensitivity_big.json
 """
 
 from __future__ import annotations
@@ -164,16 +172,34 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", type=Path, default=ROOT / "data" / "sequences.jsonl")
     ap.add_argument("--out", type=Path, default=ROOT / "research" / "results" / "sensitivity.json")
+    ap.add_argument(
+        "--window",
+        type=int,
+        default=None,
+        choices=WINDOWS,
+        help="grid only this 3' window, so the three passes can run concurrently over "
+        "a corpus where one pass is hours. Parts join with --merge",
+    )
+    ap.add_argument(
+        "--merge",
+        default=None,
+        help="comma-separated part files written by --window runs, joined into one "
+        "grid. A set that misses a window, or whose parts disagree about the "
+        "corpus or about a shared cell, is refused rather than merged",
+    )
     args = ap.parse_args()
+    if args.merge:
+        return merge([Path(q.strip()) for q in args.merge.split(",") if q.strip()], args.out)
     if not args.data.exists():
         raise SystemExit(f"no sequence store at {args.data}")
+    windows = WINDOWS if args.window is None else (args.window,)
 
     print(
         f"sensitivity grid over {args.data.name}: "
-        f"{len(WINDOWS)} window(s) x {len(LOADS)} load(s) x {len(SHAPES)} shape(s)\n"
+        f"{len(windows)} window(s) x {len(LOADS)} load(s) x {len(SHAPES)} shape(s)\n"
     )
     grid: dict = {}
-    for window in WINDOWS:
+    for window in windows:
         per_assay = features(args.data, window)
         for assay, rows in per_assay.items():
             for load in LOADS:
@@ -181,6 +207,23 @@ def main() -> int:
                     key = f"{assay}|w{window}|l{load}|{shape}"
                     grid[key] = score(rows, load, shape)
 
+    if 5 in windows:
+        _tables(grid)
+    else:
+        print(
+            f"\nwindow {windows[0]} only: the published cell is at window 5, so the "
+            "comparison tables come from the merge rather than from this part"
+        )
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        json.dumps(_payload(args.data.name, windows, grid), indent=1), encoding="utf-8"
+    )
+    print(f"\nwritten to {args.out.name}")
+    return 0
+
+
+def _tables(grid: dict) -> None:
+    """The two comparisons the grid exists for, printed from whatever grid holds them."""
     published = {}
     floor = {}
     for assay in {k.split("|")[0] for k in grid}:
@@ -201,30 +244,58 @@ def main() -> int:
             f"(spread {max(rates) - min(rates):.4f})"
         )
 
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
-        json.dumps(
-            {
-                "corpus": args.data.name,
-                "windows": list(WINDOWS),
-                "loads": list(LOADS),
-                "shapes": list(SHAPES),
-                "published_rule": {"window": 5, "load": 3, "shape": "all three clauses"},
-                "challenge": (
-                    "Frontiers Cell Infect Microbiol 2025, 10.3389/fcimb.2025.1524025: assays "
-                    "tested in vitro mostly kept working despite primer and probe mismatches, so "
-                    "in-silico predictions of false negatives may overstate the risk. "
-                    "`likely_failing` is such a prediction; this grid measures how much of it is "
-                    "the rule."
-                ),
-                "conservative_floor": "oligo lost only - the clause a bench would not dispute",
-                "grid": grid,
-            },
-            indent=1,
+
+def _payload(corpus: str, windows, grid: dict) -> dict:
+    return {
+        "corpus": corpus,
+        "windows": list(windows),
+        "loads": list(LOADS),
+        "shapes": list(SHAPES),
+        "published_rule": {"window": 5, "load": 3, "shape": "all three clauses"},
+        "challenge": (
+            "Frontiers Cell Infect Microbiol 2025, 10.3389/fcimb.2025.1524025: assays "
+            "tested in vitro mostly kept working despite primer and probe mismatches, so "
+            "in-silico predictions of false negatives may overstate the risk. "
+            "`likely_failing` is such a prediction; this grid measures how much of it is "
+            "the rule."
         ),
-        encoding="utf-8",
-    )
-    print(f"\nwritten to {args.out.name}")
+        "conservative_floor": "oligo lost only - the clause a bench would not dispute",
+        "grid": grid,
+    }
+
+
+def merge(parts: list[Path], out: Path) -> int:
+    """Join per-window parts into one grid.
+
+    A set that does not cover every window is refused rather than merged. The headline
+    this file carries is a *range* across the grid, and a range over two of three windows
+    is narrower than the truth while looking like the result. Two parts measured over
+    different corpora would be worse: the rates would be comparable in shape and about
+    different populations, so the corpus name has to agree as well.
+    """
+    loaded = []
+    for part in parts:
+        if not part.exists():
+            raise SystemExit(f"missing part: {part}")
+        loaded.append(json.loads(part.read_text(encoding="utf-8")))
+    corpora = {q["corpus"] for q in loaded}
+    if len(corpora) != 1:
+        raise SystemExit(f"parts disagree about the corpus: {sorted(corpora)}")
+    covered = sorted({w for q in loaded for w in q["windows"]})
+    if covered != sorted(WINDOWS):
+        raise SystemExit(f"parts cover windows {covered}, not {sorted(WINDOWS)}")
+    grid: dict = {}
+    for q in loaded:
+        for key, value in q["grid"].items():
+            if key in grid and grid[key] != value:
+                raise SystemExit(f"parts disagree about cell {key}")
+            grid[key] = value
+    _tables(grid)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    payload = _payload(loaded[0]["corpus"], WINDOWS, grid)
+    payload["merged_from"] = sorted(q.name for q in parts)
+    out.write_text(json.dumps(payload, indent=1), encoding="utf-8")
+    print(f"\nmerged {len(parts)} part(s) -> {out.name}")
     return 0
 
 
