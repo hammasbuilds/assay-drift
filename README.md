@@ -236,16 +236,18 @@ endpoints must now pass: 2021-Q4 has an effective n of 5.2 and 2026-Q1 of 4.0. T
 is a much quieter number in every row.
 
 **How independent those quarters are.** Sequences from one submission are not independent observations, so each
-quarter is grouped by (country, accession block) and given a Kish effective sample size:
+quarter is grouped by (country, accession block) and given a Kish effective sample size. Counted for **CDC N1**,
+for the same reason the larger table below names its assay: `clusters` and `effective n` are computed over the
+records an assay can actually score, so each assay gives a slightly different count:
 
-| quarter | sequences | submitter groups | effective n |
+| quarter | usable sequences | submitter groups | effective n |
 |---|---:|---:|---:|
-| **2022-Q4, the baseline of every row above** | 421 | 42 | **19.1** |
-| **2025-Q4, the endpoint of every row above** | 327 | 23 | **11.2** |
+| **2022-Q4, the baseline of every row above** | 420 | 42 | **19.1** |
+| **2025-Q4, the endpoint of every row above** | 324 | 23 | **11.2** |
 | 2020-Q1, the former baseline | 153 | 11 | 2.4 |
 | 2021-Q4, Charité RdRp's worst quarter | 330 | 20 | 5.2 |
 | 2024-Q1 | 159 | **4** | **1.1** |
-| 2026-Q3, the former endpoint | 196 | 33 | 4.6 |
+| 2026-Q3, the former endpoint | 193 | 33 | 4.6 |
 
 Three quarters sit after the endpoint and are excluded from it for this reason (2026-Q1 at 4.0, 2026-Q2 at 4.7,
 2026-Q3 at 4.6). Downloads are stratified by deposit year, so collection quarters are uneven (2022-Q1, 2024-Q2
