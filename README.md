@@ -255,15 +255,26 @@ and 2024-Q3 hold no sequences); the year view below is the steadier one.
 
 ### The same data by year
 
-`scripts/analyse.py --granularity year` regroups the same 2,765 sequences:
+`scripts/analyse.py --granularity year` regroups the same 2,765 sequences, and the result
+is committed as [`results/drift_by_year.json`](results/drift_by_year.json) so the table can
+be checked rather than taken on trust. Four of its cells were stale until that was done:
+Charité E's 2026 failing rate read 0.9% against a measured 0.6%, and CDC N2's three 2026
+cells read 68.8%, 15.8% and 15.8% against 69.4%, 15.3% and 15.3%. The table predates one of
+the ambiguity corrections in the matcher, and the arithmetic says which way it moved: CDC
+N2's 2026 figures are now 51 failing of 333 usable, where the published 15.8% needs 53 of
+335 — two records left the usable population and both had been counted as failing. A
+sequence carrying a degenerate base under an oligo is not evidence either way and is
+excluded rather than scored, so a correction to what counts as ambiguous moves records out
+of the denominator and out of the numerator at once. 2026 is the year with the fewest
+sequences, which is why two records move it and no other year visibly:
 
 | Assay | Exact match 2020 | Exact match 2026 | Likely failing 2026 | Likely failing, worst year |
 |---|---:|---:|---:|---|
 | **CDC N1** | 99.0% | **0.0%** | 7.0% | 7.0% (2026) |
-| **Charité E** | 98.8% | **0.0%** | 0.9% | 0.9% (2026) |
+| **Charité E** | 98.8% | **0.0%** | 0.6% | 0.6% (2026) |
 | **Charité RdRp** | 98.3% | 87.0% | 13.0% | **38.3% (2021)** |
 | CDC N3 *(retired)* | 99.3% | 90.3% | 0.9% | 2.0% (2023) |
-| **CDC N2** | 98.0% | 68.8% | **15.8%** | 15.8% (2026) |
+| **CDC N2** | 98.0% | 69.4% | **15.3%** | 15.3% (2026) |
 
 ### The mutation behind each change
 
