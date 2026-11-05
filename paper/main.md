@@ -53,31 +53,72 @@ apart, and the gap is this paper's subject.
 
 **Related work.** An automated validation website screens deployed assays against genome
 databases using ThermonucleotideBLAST, reporting per-assay recall and mismatch
-heatmaps [@bioinformatics2020]. assayM maps primer and probe regions onto a genome browser
-and counts strains with mutations in those regions [@assaym]. NEB's Primer Monitor tracks
-GISAID sequences against user-supplied primer sets, released after FDA guidance urged
-developers to monitor primer alignment [@primermonitor]. PCR_strainer examined 15
+heatmaps [@bioinformatics2020]. Its definition of a predicted false negative is worth
+quoting, because it is close to the rule this paper takes apart: any one of three or more
+mismatches in an oligo/target alignment, a predicted melting temperature below 40°C, or
+**one or more mismatches in the last two 3′ positions of a primer**, the last attributed to
+Li et al. (2004). Two of those three are the clauses examined in §4 — a mismatch-count
+threshold and a 3′-proximity rule — arrived at independently and set at a comparable place,
+which is why this paper's question is about the family of rules and not about one
+implementation. assayM is a web application for monitoring mutations in the
+primer and probe sequences published by the WHO, or in custom ones, across globally
+available SARS-CoV-2 genome datasets [@assaym]. NEB's Primer Monitor tracks **NCBI
+GenBank** sequences against user-supplied primer sets and notifies a subscriber when a
+variant overlapping a primer set passes a threshold fraction of observed sequences in a
+region; it was released after FDA guidance urged developers to monitor primer alignment
+[@primermonitor]. PCR_strainer examined 15
 primer/probe sets from eight laboratory-developed tests and found most with no mismatches
 in over 98% of genomes, with three sets problematic [@pcrstrainer]. A 2025 wet-lab study
 tested assays in vitro and found most performed well despite mismatches, measured by PCR
 efficiency and Ct shift — concluding that in-silico false-negative predictions may
 overstate risk [@wetlab2025]. A 2021 study re-evaluated eleven primer/probe sets against
 84,305 genomes collected between June 2020 and January 2021 and reported the China CDC
-N-gene assay's inclusivity continuing to fall as new mismatches appeared, the others
-holding above 99% [@genes2021]. BioFire runs the only ongoing programme of this kind we
+N-gene assay's inclusivity continuing to fall as new mismatches appeared — 63.89%, down
+from 86.03% in April and 74.54% in May 2020 — while the others held above 99%
+[@genes2021]. BioFire runs the only ongoing programme of this kind we
 found: monthly in-silico screening that had covered 12,744,136 sequences by March 2023
 [@biofire2023].
 
 **What is new here, stated narrowly.** Time series of this kind exist — [@genes2021] is
-one, over seven months and eleven assays, and [@biofire2023] is a continuing one. Neither
-reports an **independence structure**: both count sequences, and sequences deposited in
-one submission are not independent observations of a virus population. Neither publishes
-a per-period effective sample size, and neither states a floor a period must clear before
-it may carry an endpoint. Those are this paper's methodological contribution, over a
+one, over seven months and eleven assays, and [@biofire2023] is a continuing one. The
+distinction this paper draws is between **removing duplicates** and **weighting for
+independence**, and it is a real distinction rather than a convenient one.
+
+[@genes2021] does deduplicate, and thoroughly: it discards genomes carrying more than one
+undetermined base, leaving 154,602, then collapses identical sequences with CD-HIT-EST at
+a 1.0 identity cut-off and keeps one representative of each cluster — **84,305 of 154,602,
+so 45.5% of its high-quality set was an exact duplicate of something else**. That is not
+raw sequence counting and this paper does not claim it is. What it does not do is treat the
+survivors as anything other than equally independent: two genomes from one submission
+differing at a single base are two observations, and no submitter-level grouping,
+cluster weighting or effective sample size appears anywhere in its methods or results.
+[@bioinformatics2020] goes less far again — its only deduplication is across databases,
+preferring the GISAID copy of a genome also in GenBank — and its recall is computed over
+every genome as one observation.
+
+Exact-duplicate removal and independence weighting answer different questions, and the
+distance between them is measurable on this corpus. The first stops one sequence being
+counted twice; the second asks how many *independent* observations a rate rests on.
+Applying [@genes2021]'s own procedure to 2024-Q1 here — collapse byte-identical genomes,
+keep one of each — takes **159 sequences to 153**, a reduction of 3.8%. That quarter's Kish
+effective sample size is **1.1**. Deduplication removes six sequences; independence
+weighting says the remaining 153 are worth about one observation between them, because they
+are near-identical deposits from four submitter groups rather than one hundred and
+fifty-three independent looks at a virus population. Across the whole 2,765-genome corpus
+only 4.0% of sequences are an exact duplicate of another, so this gap is not an artefact of
+one quarter: at corpus scale exact-duplicate removal has almost nothing to remove, and the
+independence problem is almost entirely untouched by it.
+
+Neither prior series publishes a per-period effective sample size, and neither states a
+floor a period must clear before it may carry an endpoint. Those are this paper's methodological contribution, over a
 span — 2020 to 2026 — roughly ten times the longer of the two. The claim that no time
 series existed appeared in an earlier draft and was false; it is the fourth absence-based
-claim in this author's related work to fail on a second literature pass, and the pattern
-is recorded in the citation note rather than the single correction.
+claim in this author's related work to fail on a second literature pass. A fifth has since
+failed: that [@genes2021] reported no independence structure at all, which reading the
+article disproved — it deduplicates exactly, it simply does not weight. The pattern, not
+the individual corrections, is recorded in the citation note. An absence is the one kind of
+claim a search summary cannot establish, and this fifth one was written from a search
+summary and fell the moment the article itself was read.
 
 **Contributions.**
 
@@ -158,6 +199,32 @@ Their blocking threshold is also far above clause 3: *"≥4 mismatches in a sing
 blocks a reaction completely, as does three in one primer with two in the other. Clause 3
 fires at three mismatches **anywhere across the assay**, which is below the published
 threshold for a single primer.
+
+**The narrower form of the rule has a stranger provenance still.** The public validation
+website of [@bioinformatics2020] uses a two-base window rather than five, and states its
+source: a predicted false negative includes *"one or more mismatches in the last two 3′
+positions of a primer that are reported by Li et al. (2004) to inhibit detection by
+increasing detection Ct ≥2"*. That citation is [@taqmama] — *Genotyping with TaqMAMA* —
+and TaqMAMA is not a study of assay robustness. It is an **allele-discrimination genotyping
+method**: TaqMan combined with the Mismatch Amplification Mutation Assay, in which a
+3′-terminal mismatch is **deliberately engineered** so that the primer fails on the allele
+it is not meant to detect. Its abstract describes using plasmids that model every type of
+polymorphism *"to understand the relationship between TaqMAMA primer/template mismatches
+and their strength of allelic discrimination"*, and offers the result as a way to *"improve
+allelic discrimination ... through directed use of nucleotide mismatches"*.
+
+So the Ct ≥2 is a **design target measured on plasmids**: how well an intentional terminal
+mismatch suppresses the wrong allele, which for a genotyping assay is the thing you want to
+maximise. It is read, two steps later, as the threshold at which a naturally occurring
+mismatch in a diagnostic assay should be called a predicted false negative. The quantity is
+the same number and the claim is close to its reverse — an engineered mismatch chosen for
+maximal suppression, on a plasmid, standing in for an incidental one on a viral genome.
+
+This is the clearest instance of the pattern this section is about, and it is not this
+paper's rule: `likely_failing` uses five bases, not two. It is offered because it shows the
+mechanism by which such thresholds travel. Neither window was calibrated against a
+diagnostic bench; one is a conclusion read backwards and the other is a genotyping design
+guide read sideways.
 
 Otwell et al. [@wetlab2025] then tested 16 assays against over 200 synthetic templates in
 vitro, and their results separate position from count in a way clause 2 cannot:
@@ -409,9 +476,30 @@ implementation of the same published model, over 35,204 duplexes covering every 
 substitution at every position of randomly drawn oligos plus every member of every
 degenerate pool in the catalogue. The two agree to floating-point noise. The check is
 two-sided: adjacent mismatches make a stack no published table covers, and where the
-oracle refuses to produce a number this module refuses too, rather than inventing one. That
-limitation is real and not hypothetical — C28311T and C28312T are adjacent bases of the
-same N1 probe.
+oracle refuses to produce a number this module refuses too, rather than inventing one.
+
+**How often that refusal fires, over 291,827 genomes.** The limitation was argued from a
+single example — C28311T and C28312T are adjacent bases of the same N1 probe — which
+establishes that it is not hypothetical and says nothing about its size.
+`research/tandem_gap.py` aligns all fifteen oligos against the full corpus and counts it:
+**3,481 of 736,212 mismatched alignments carry adjacent mismatches, 0.47%**, out of
+4,377,390 alignments in all. Indels are counted separately and excluded (794), because a
+gap is a different kind of unscorable from a stack with no parameters. The longest run of
+adjacent mismatches anywhere in the corpus is **three**.
+
+It is not spread evenly, and where it concentrates is the point. Eight of the fifteen
+oligos ever hit the case at all, and **CDC N1's probe accounts for 3,398 of the 3,481 —
+97.6% of them** — at 2.03% of its own mismatched alignments; no other oligo exceeds 0.5%.
+The paper's one example was therefore drawn from the only oligo where the gap is common,
+which is the right example to have picked and worth saying rather than leaving to look like
+a coincidence.
+
+For this section's own argument the gap is smaller still. The 3′ rule applies to primers,
+and across all ten primers the unscorable case occurs **77 times in 558,723 mismatched
+primer alignments — 0.0138%**, against 3,404 in 177,489 on the five probes. The comparison
+below enumerates single substitutions, where the case cannot arise by construction; this
+measures how far that idealisation is from the corpus, and on primers the answer is about
+one alignment in seven thousand.
 
 **The prediction, written before the measurement.** The 3′ rule exists because polymerase
 extends from that terminus. If it is a usable proxy for how much a mismatch costs, ΔΔG
@@ -606,6 +694,7 @@ so the cross-check actually runs somewhere.
 - [@peyret1999] Peyret, N., Seneviratne, P. A., Allawi, H. T. and SantaLucia, J. *Nearest-Neighbor Thermodynamics and NMR of DNA Sequences with Internal A·A, C·C, G·G, and T·T Mismatches.* Biochemistry 38(12):3468–3477, 1999. <https://doi.org/10.1021/bi9825091>
 - [@santalucia2004] SantaLucia, J. and Hicks, D. *The Thermodynamics of DNA Structural Motifs.* Annu. Rev. Biophys. Biomol. Struct. 33:415–440, 2004. Reports about 6.4% average deviation on ΔG°37 for mismatched duplexes, the figure §4.6 quotes. <https://doi.org/10.1146/annurev.biophys.32.110601.141800>
 - [@vonahsen2001] von Ahsen, N., Wittwer, C. T. and Schütz, E. *Oligonucleotide Melting Temperatures under PCR Conditions.* Clin. Chem. 47(11):1956–1961, 2001. The magnesium-to-sodium equivalence used in the salt correction. <https://doi.org/10.1093/clinchem/47.11.1956>
+- [@taqmama] Li, B., Kadura, I., Fu, D.-J. and Watson, D. E. *Genotyping with TaqMAMA.* Genomics 83(2):311–320, 2004. The allele-discrimination genotyping method whose plasmid measurements are cited by [@bioinformatics2020] as the basis for treating a mismatch in a primer's last two 3′ bases as a predicted false negative. <https://doi.org/10.1016/j.ygeno.2003.08.005>
 - [@lefever2013] Lefever, S., Pattyn, F., Hellemans, J. and Vandesompele, J. *Single-Nucleotide Polymorphisms and Other Mismatches Reduce Performance of Quantitative PCR Assays.* Clin. Chem. 59(10):1470–1480, 2013. <https://doi.org/10.1373/clinchem.2013.203653>
 
 > **Citation status.** @wetlab2025 **has now been read** — the article text, not a search
@@ -629,13 +718,46 @@ so the cross-check actually runs somewhere.
 > paired mismatch are taken from its own sentences. The definition is quoted because it
 > differs from ours, which is the whole point of the comparison in §4.5.
 >
-> @genes2021 is **quoted from a search summary**: the publisher returns 403 and the PMC
-> mirror is behind a browser check. The three facts used of it — eleven primer/probe
-> sets, 84,305 genomes, June 2020 to January 2021, the China CDC N assay's inclusivity
-> falling while the others held above 99% — must be confirmed against the article before
-> submission, and the §1 contribution claim rests on a *negative* about it (that it
-> reports no independence structure) which a summary cannot establish. That negative is
-> the weakest sentence in §1 and is flagged as such here rather than in the text.
+> @genes2021 **has now been read** — the full article text, via Europe PMC's REST API
+> (`PMC8069896`), after the publisher returned 403 and the PMC web mirror showed a browser
+> check. Reading it confirmed the three positive facts and **falsified the negative**.
+> Confirmed: eleven primer/probe sets, 84,305 genomes, June 2020 to January 2021, and the
+> China CDC N assay alone falling — 63.89%, from 86.03% in April and 74.54% in May 2020 —
+> while the others held above 99%. Falsified: §1 said it reported no independence structure
+> at all. It deduplicates, and heavily: high-quality genomes are reduced to 154,602 and then
+> collapsed with CD-HIT-EST at a 1.0 identity cut-off to 84,305 representatives, so 45.5%
+> of its high-quality set was an exact duplicate. §1 now draws the distinction it should
+> have drawn in the first place — duplicate removal is not independence weighting — and
+> measures the gap between them on this corpus rather than asserting it. This is the fifth
+> absence-based claim in this author's related work to fail on a further pass, and the
+> first to be caught by reading the source rather than by a reviewer.
 >
-> The remaining four references are still quoted from search summaries and must be read
-> before submission.
+> @taqmama was traced and its **abstract read**: it is the source [@bioinformatics2020]
+> gives for the two-base 3′ rule, and it is a genotyping-method paper, not an assay-failure
+> study. The sentence quoting it in §4.1 is from [@bioinformatics2020]'s own text; the
+> description of what TaqMAMA is, and the two phrases quoted from it, are from the Genomics
+> abstract. Its full text is subscription-only and was not read, so §4.1 makes no claim
+> about its per-position measurements — only about what the study was *for*, which the
+> abstract states plainly and which is the whole of the argument made from it.
+>
+> @bioinformatics2020 **has now been read** (Bioinformatics 37(7):1024). Its predicted
+> false-negative criteria are quoted in §2 from the article: three or more mismatches in an
+> oligo/target alignment, a predicted Tm below 40°C, or any mismatch in the last two 3′
+> positions of a primer. Its only deduplication is across databases — the GISAID copy is
+> kept where a genome appears in both — and its recall counts every genome as one
+> observation, which is the comparison §1 makes.
+>
+> @assaym is now described **from its abstract and its authors' own repository**, not
+> from a search summary. bioRxiv returns 403 to automated fetches, but Europe PMC carries
+> the preprint record (`PPR256106`) and the abstract is complete there; the repository
+> linked from it describes the tool as tracking "sensitivity of RT-PCR primers on COVID-19
+> Variants". An earlier draft said assayM "maps primer and probe regions onto a genome
+> browser", which neither source supports; that sentence has been replaced with what they
+> do say. The full text remains unread and no number in this paper comes from it.
+>
+> @primermonitor is described **from the tool's own pages**, which state its data source
+> twice as NCBI GenBank; an earlier draft said GISAID. Its mismatch-scoring method is not
+> published there, and this paper cites it only for the kind of question it answers. A DOI
+> circulating for a Primer Monitor preprint, 10.1101/2022.04.22.489186, is **not that
+> paper** — it resolves to a *Bacillus cereus* marker study — and is deliberately not
+> cited here.
