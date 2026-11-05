@@ -582,6 +582,68 @@ no clause of the rule flags at all. Both are failures of the same kind — a rul
 numbers in it that were never measured — and the second one was invisible until there was
 something independent to measure it against.
 
+## 4.7 Does any of this hold beyond these five assays?
+
+Everything above is derived from five assays: the CDC panel, the two Charité assays, and
+N3 as a positive control. The claim being made is structural rather than assay-specific -
+that the published rate is produced almost entirely by clause 2 firing on a *single*
+3′-proximal mismatch - and five assays is a thin base for a claim about how a family of
+rules behaves. `primers.ADDITIONAL_ASSAYS` adds eight further deployed protocols and
+`research/cohort_generality.py` scores both cohorts with the same unchanged rule.
+
+The eight are Charité N, HKU's ORF1b and N, China CDC's ORF1ab and N, Institut Pasteur's
+IP2 and IP4, and Thailand NIH's N. Only Charité N was read from the article that published
+it; the rest come from a compilation and were admitted only after binding the 2019
+reference exactly, in the region their names claim, with the probe inside their own
+amplicon. One candidate failed that check and was dropped rather than repaired — see the
+note above `ADDITIONAL_ASSAYS`.
+
+**The decomposition holds for eleven of the thirteen.** For every one of those eleven,
+clause 2 alone — the 3′ clause firing with no severe mismatch load — accounts for
+**exactly 100%** of the genomes the rule flags. Ten of them are also at 100% on the
+narrower question of whether that evidence is a *single* 3′-proximal mismatch rather than
+a pair; HKU N is the one exception, at 97.9%, which is two genomes:
+
+| assay | flagged | clause 2 alone | a *lone* 3′ mismatch |
+|---|---:|---:|---:|
+| Charité RdRp | 308 | 100% | 100% |
+| HKU N | 94 | 100% | 97.9% |
+| CDC N2 | 67 | 100% | 100% |
+| Charité N | 54 | 100% | 100% |
+| CDC N3 | 16 | 100% | 100% |
+| Pasteur IP2 | 7 | 100% | 100% |
+| China CDC ORF1ab | 5 | 100% | 100% |
+| HKU ORF1b | 4 | 100% | 100% |
+| Charité E | 3 | 100% | 100% |
+| Pasteur IP4 | 3 | 100% | 100% |
+| Thailand N | 1 | 100% | 100% |
+
+**The two exceptions are the same exception**, and it is not a failure of the
+decomposition but the other branch of it. CDC N1 and China CDC N are flagged almost
+entirely by mismatch *load* rather than by position — 64 of CDC N1's 65 and 2,187 of China
+CDC N's 2,188 — which is clause 3, the clause §4.1 finds is set below the published
+blocking threshold rather than above what the bench licenses. They are a different
+argument, not a counter-example to this one.
+
+**Report this per assay, because the pooled figure says the opposite.** Over the eight new
+assays together, clause 2 alone accounts for 7.2% of flagged genomes, which reads as a
+flat contradiction of §4.3. It is one assay: China CDC N contributes **2,188 of the 2,356**
+flagged genomes, 92.9% of the cohort's total, at a failing rate of 79.4%. Remove it and the
+other seven are **168 flagged, 100% clause 2 alone**. A pooled rate over assays with
+three-order-of-magnitude different denominators is a weighted average dominated by whichever
+assay is most broken, and it would have buried the result it was computed to test.
+
+That China CDC N is the outlier is itself a check rather than a surprise. [@genes2021]
+reports the China CDC N assay as the one whose inclusivity collapsed — 63.89% by January
+2021, from 86.03% in April 2020, while the other ten assays it tracks held above 99%. A
+different corpus, a different method and a different decade of deposits put the same assay
+in the same place, which is the closest thing to external validation this study has.
+
+One denominator is worth naming: Thailand NIH's N assay is usable on 640 genomes against
+2,719 to 2,761 for every other assay, because its 57-base amplicon and 16-base probe are
+short enough that ambiguous bases exclude it far more often. Its single flagged genome is
+not evidence of anything, and it is in the table for completeness rather than for weight.
+
 # 5. Threats to validity
 
 **The failure rule is uncalibrated** (§4). This is the dominant threat and it is the
