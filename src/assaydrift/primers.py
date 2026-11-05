@@ -22,6 +22,22 @@ Corman VM et al. "Detection of 2019 novel coronavirus (2019-nCoV) by real-time
 The N3 assay is included **because it was withdrawn**. CDC removed it from the
 panel in 2020, so it is the one assay here already known to have had a problem,
 which makes it the closest thing available to a positive control.
+
+Two cohorts
+-----------
+`ASSAYS` is those five, and every published per-assay number in this repository
+is about them. `ADDITIONAL_ASSAYS` is eight further deployed protocols - Charite
+N, HKU's ORF1b and N, China CDC's ORF1ab and N, Institut Pasteur's IP2 and IP4,
+and Thailand NIH's N - added so that section 4's claim about a *family* of rules
+can be tested somewhere other than the five assays it was derived from. They are
+a separate list precisely so that adding them moves nothing already published;
+`research/cohort_generality.py` scores both with the same rule.
+
+Only Charite N was read from the article that published it. The other seven come
+from a compilation and are admitted on three structural checks - exact binding to
+NC_045512.2, binding in the region their names claim, and a valid amplicon with
+the probe inside - which one candidate failed. See the comment above
+`ADDITIONAL_ASSAYS` for that case and why it was dropped rather than repaired.
 """
 
 from __future__ import annotations
@@ -134,6 +150,128 @@ ASSAYS: list[Assay] = [
 ]
 
 
+# A second cohort, for asking whether section 4's findings are about these five assays or
+# about the rule. The five above are the ones this study was built on: the CDC panel, the
+# two Charite assays, and N3 as a positive control. Eight assays is a small base for a
+# claim about how a *family* of rules behaves, so these are the other widely deployed
+# protocols, kept in their own list so that every published per-assay number above is
+# unaffected by their arrival.
+#
+# **Provenance, and why it is stated separately for each.** Only Charite N comes from the
+# article that published it: Corman et al., Euro Surveill 2020;25(3):2000045, Table 1,
+# read from the Europe PMC full text. The other seven were transcribed from a compilation
+# (Dahmani, Azzoune and Boudjema, Mol Biol Res Commun 2024;13(4):223-234, Table 1), because
+# their original protocols are PDFs this project could not reach - the NIID manual URL is
+# dead, the Chu et al. full text is not open access, and the J-STAGE copy of the NIID paper
+# is DRM-encrypted.
+#
+# A compilation can carry transcription errors, so every candidate was put through three
+# independent structural checks before being admitted here, and one failed:
+#
+#   1. **It must bind NC_045512.2 with zero mismatches.** Every assay here was designed
+#      against that genome, so anything else is a transcription error.
+#   2. **It must bind in the region its own name claims** - IP2's "12669" label against a
+#      binding site at 12,689, N-gene assays inside the N gene, and so on.
+#   3. **Its oligos must form an amplicon**: forward before reverse, 57 to 132 bases apart,
+#      with the probe strictly between them.
+#
+# The Japan NIID N2 set failed the first check and is **deliberately absent**. Its reverse
+# primer as compiled, TGGCAGCTGTGTAGGTCAAC, has one mismatch to the reference at base 6;
+# the reference there reads TGGCACCTGTGTAGGTCAAC. One of those is what NIID published and
+# this project could not establish which, so neither is here. Editing the base to match the
+# reference would have produced a sequence that passes every check in this file and might
+# not be the assay anyone ran - which is the failure mode all three checks exist to catch,
+# arrived at from the other direction.
+ADDITIONAL_ASSAYS: list[Assay] = [
+    Assay(
+        name="Charite N",
+        target_gene="N (nucleocapsid)",
+        source="Corman et al. 2020, Euro Surveill 25(3):2000045, Table 1 (read in full)",
+        oligos=[
+            Oligo("CharN-F", "CACATTGGCACCCGCAATC", "forward"),
+            Oligo("CharN-R", "GAGGAACGAGAAGAGGCTTG", "reverse"),
+            Oligo("CharN-P", "ACTTCCTCAAGGAACAACATTGCCA", "probe"),
+        ],
+    ),
+    Assay(
+        name="HKU ORF1b",
+        target_gene="ORF1b-nsp14",
+        source="Chu et al. 2020, Clin Chem 66(4):549-555, via compilation",
+        oligos=[
+            Oligo("HKU1b-F", "TGGGGYTTTACRGGTAACCT", "forward"),
+            Oligo("HKU1b-R", "AACRCGCTTAACAAAGCACTC", "reverse"),
+            Oligo("HKU1b-P", "TAGTTGTGATGCWATCATGACTAG", "probe"),
+        ],
+    ),
+    Assay(
+        name="HKU N",
+        target_gene="N (nucleocapsid)",
+        source="Chu et al. 2020, Clin Chem 66(4):549-555, via compilation",
+        oligos=[
+            Oligo("HKUN-F", "TAATCAGACAAGGAACTGATTA", "forward"),
+            Oligo("HKUN-R", "CGAAGGTGTGACTTCCATG", "reverse"),
+            Oligo("HKUN-P", "CCGCAAATTGCACAATTTGC", "probe"),
+        ],
+    ),
+    Assay(
+        name="China CDC ORF1ab",
+        target_gene="ORF1ab",
+        source="China CDC protocol, via compilation",
+        oligos=[
+            Oligo("CN1ab-F", "CCCTGTGGGTTTTACACTTAA", "forward"),
+            Oligo("CN1ab-R", "ACGATTGTGCATCAGCTGA", "reverse"),
+            Oligo("CN1ab-P", "CCGTCTGCGGTATGTGGAAAGGTTATGG", "probe"),
+        ],
+    ),
+    Assay(
+        name="China CDC N",
+        target_gene="N (nucleocapsid)",
+        source="China CDC protocol, via compilation",
+        note=(
+            "The assay [@genes2021] reports falling furthest - 63.89% inclusivity by "
+            "January 2021, from 86.03% in April 2020 - which makes it this cohort's "
+            "closest analogue to CDC N3 above."
+        ),
+        oligos=[
+            Oligo("CNN-F", "GGGGAACTTCTCCTGCTAGAAT", "forward"),
+            Oligo("CNN-R", "CAGACATTTTGCTCTCAAGCTG", "reverse"),
+            Oligo("CNN-P", "TTGCTGCTGCTTGACAGATT", "probe"),
+        ],
+    ),
+    Assay(
+        name="Pasteur IP2",
+        target_gene="ORF1ab (nsp9/nsp10)",
+        source="Institut Pasteur Paris protocol, via compilation",
+        oligos=[
+            Oligo("IP2-F", "ATGAGCTTAGTCCTGTTG", "forward"),
+            Oligo("IP2-R", "CTCCCTTTGTTGTGTTGT", "reverse"),
+            Oligo("IP2-P", "AGATGTCTTGTGCTGCCGGTA", "probe"),
+        ],
+    ),
+    Assay(
+        name="Pasteur IP4",
+        target_gene="ORF1ab (RdRp)",
+        source="Institut Pasteur Paris protocol, via compilation",
+        oligos=[
+            Oligo("IP4-F", "GGTAACTGGTATGATTTCG", "forward"),
+            Oligo("IP4-R", "CTGGTCAAGGTTAATATAGG", "reverse"),
+            Oligo("IP4-P", "TCATACAAACCACGCCAGG", "probe"),
+        ],
+    ),
+    Assay(
+        name="Thailand N",
+        target_gene="N (nucleocapsid)",
+        source="Thailand NIH protocol, via compilation",
+        note="A 57-base amplicon, the shortest here, with a 16-base probe inside it.",
+        oligos=[
+            Oligo("THN-F", "CGTTTGGTGGACCCTCAGAT", "forward"),
+            Oligo("THN-R", "CCCCACTGCGTTCTCCATT", "reverse"),
+            Oligo("THN-P", "CAACTGGCAGTAACCA", "probe"),
+        ],
+    ),
+]
+
+
 # Oligos that do NOT match the 2019 reference perfectly, with the reason.
 #
 # The rule in this file is that a primer failing against NC_045512.2 is a typo.
@@ -175,5 +313,8 @@ def by_name(name: str) -> Assay:
     raise KeyError(f"no assay named {name!r}; have {[a.name for a in ASSAYS]}")
 
 
-def all_oligos() -> list[tuple[Assay, Oligo]]:
-    return [(assay, oligo) for assay in ASSAYS for oligo in assay.oligos]
+def all_oligos(assays: list[Assay] | None = None) -> list[tuple[Assay, Oligo]]:
+    """Every (assay, oligo) pair. Defaults to the primary cohort, as it always did."""
+    return [
+        (assay, oligo) for assay in (ASSAYS if assays is None else assays) for oligo in assay.oligos
+    ]
