@@ -117,7 +117,7 @@ def _label(pair: frozenset[str] | None) -> str:
     return "·".join(sorted(pair))
 
 
-def scan(data: Path, limit: int = 0) -> dict:
+def scan(data: Path, limit: int = 0, checkpoint: Path | None = None, every: int = 20_000) -> dict:
     """Every definite mismatch under every oligo, by type and by 3' distance."""
     from analyse import load  # noqa: PLC0415
 
@@ -208,6 +208,57 @@ def scan(data: Path, limit: int = 0) -> dict:
                         lone_alignments += 1
                         lone_three_prime[_label(pair)] += 1
 
+        if checkpoint is not None and seen % every == 0:
+            checkpoint.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint.write_text(
+                json.dumps(
+                    _payload(
+                        data.name,
+                        seen,
+                        skipped_ambiguous,
+                        by_type,
+                        lone_three_prime,
+                        lone_alignments,
+                        destabilisation,
+                        partial=True,
+                    ),
+                    indent=1,
+                ),
+                encoding="utf-8",
+            )
+        if seen % 5000 == 0:
+            print(f"  {seen:,} genomes", flush=True)
+    print(f"  {seen:,} genomes scanned", flush=True)
+
+    return _payload(
+        data.name,
+        seen,
+        skipped_ambiguous,
+        by_type,
+        lone_three_prime,
+        lone_alignments,
+        destabilisation,
+        partial=False,
+    )
+
+
+def _payload(
+    corpus: str,
+    seen: int,
+    skipped_ambiguous: int,
+    by_type: dict,
+    lone_three_prime,
+    lone_alignments: int,
+    destabilisation,
+    *,
+    partial: bool,
+) -> dict:
+    """Build the result from whatever has been counted so far.
+
+    Split out so a checkpoint is the same shape as the finished artefact, flagged
+    `partial`. One pass over 291,827 genomes is hours on a shared machine, and the first
+    attempt at this scan died with its session having written nothing at all.
+    """
     # The thermodynamic second opinion, computed once per type rather than per observation.
     #
     # Both arguments go in the *oligo's own sense*; `destabilisation` takes the complement
@@ -274,7 +325,8 @@ def scan(data: Path, limit: int = 0) -> dict:
             if classify(None if label == "degenerate" else frozenset(label.split("·"))) == group
         )
     return {
-        "corpus": data.name,
+        "corpus": corpus,
+        "partial": partial,
         "source": (
             "Stadhouders et al. 2010, J Mol Diagn 12(1):109-117, abstract: single "
             "mismatches range from minor (<1.5 Ct; A-C, C-A, T-G, G-T) to severe "
@@ -293,7 +345,9 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=RESULTS / "mismatch_types.json")
     args = parser.parse_args()
 
-    payload = scan(args.data, args.limit)
+    payload = scan(args.data, args.limit, args.out.with_suffix(".partial.json"))
+    if payload["partial"]:
+        raise SystemExit("the scan returned a partial payload, which should be impossible")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=1), encoding="utf-8")
 
