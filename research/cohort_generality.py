@@ -23,6 +23,22 @@ If some assays are flagged mostly by mismatch load, the rule's weakness is narro
 claimed and the paper should say which assays it applies to.
 
 Both cohorts are scored in the same run so the comparison is like for like.
+
+A note on how long this takes, because the answer turned out to be informative. Measured
+over 25 genomes, the primary cohort costs about 36 ms per genome across its 15 oligos and
+this cohort about 105 ms across its 24 - roughly three times the cost for 1.6 times the
+oligos. Four oligos account for most of it: China CDC's N forward and ORF1ab reverse,
+Pasteur's IP2 reverse and Thailand's N reverse, at 12 to 19 ms each against 2 to 5 for a
+typical primary one.
+
+They are not failing. Every one is *found* in every genome and none needs a gapped
+alignment. What they miss is `find`'s fast path, which returns immediately on a perfect
+site; when a mutation sits under the oligo that path finds nothing and the seed scan runs
+over the whole genome instead. So an oligo is slow here precisely when it has a common
+mutation beneath it, and the runtime is a crude proxy for the drift this script measures.
+The matcher is deliberately not optimised for it: it is correct, and changing the core
+alignment to save minutes on a research script would put every published number in this
+repository back in question.
 """
 
 from __future__ import annotations

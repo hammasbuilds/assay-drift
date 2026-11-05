@@ -36,6 +36,20 @@ of the exercise:
     other. Whether they agree about which types are cheap is worth knowing before either is
     leaned on.
 
+**On how long this takes, and why a progress estimate from the start of the corpus is
+wrong.** The first 100,000 genomes scan at about 0.019 s each; genomes around index
+100,000 take about 0.14 s, seven times more. The corpus is ordered, later deposits are
+further from the 2019 reference, and `match.find` returns immediately only on a *perfect*
+site - so a genome with a mutation under an oligo falls through to the seed scan over the
+whole sequence. Cost therefore rises with exactly the quantity this script measures, and
+an ETA taken from the first tenth of the corpus understates the rest by most of a day.
+
+The same fact rules out a shortcut. A prefix of the corpus is not a sample of it: over the
+2,765-genome corpus G-T is 78% of 3'-proximal primer mismatches and over the first 100,000
+of the large one it is 96%, so stopping early would report a composition that belongs to
+the earliest deposits rather than to the corpus. Either the whole thing is scanned or a
+sample is drawn across all of it; a checkpoint is for resuming, not for publishing.
+
 The mismatch is reported as the unordered pair {primer base, template base}, because
 Stadhouders' own lists are symmetric - A-C and C-A are both minor, A-G and G-A both severe -
 so the pair carries the classification without a convention for which side comes first.
@@ -354,12 +368,12 @@ def main() -> int:
     t = payload["totals"]
     print(f"{t['genomes']:,} genomes, {t['mismatches']:,} definite mismatches")
     print(f"{t['three_prime_on_a_primer']:,} of them 3'-proximal on a primer\n")
-    print(f"{'type':8}{'Stadhouders':14}{'3prime/primer':>14}{'share':>8}{'ddG':>9}")
+    print(f"{'type':12}{'Stadhouders':14}{'3prime/primer':>14}{'share':>8}{'ddG':>9}")
     total = t["three_prime_on_a_primer"] or 1
     for row in payload["by_type"]:
         ddg = "n/a" if row["mean_delta_delta_g"] is None else f"{row['mean_delta_delta_g']:.2f}"
         print(
-            f"{row['type']:8}{row['stadhouders']:14}{row['three_prime_on_a_primer']:>14,}"
+            f"{row['type']:12}{row['stadhouders']:14}{row['three_prime_on_a_primer']:>14,}"
             f"{row['three_prime_on_a_primer'] / total:>8.1%}{ddg:>9}"
         )
     print()
